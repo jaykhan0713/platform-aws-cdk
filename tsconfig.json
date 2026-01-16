@@ -23,7 +23,12 @@
     "skipLibCheck": true,
     "typeRoots": [
       "./node_modules/@types"
-    ]
+    ],
+
+    "baseUrl": ".",
+    "paths": {
+      "lib/*": ["lib/*"]
+    }
   },
   "exclude": [
     "node_modules",

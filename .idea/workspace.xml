@@ -5,7 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b0a30dc6-23cb-46dd-b064-52592fccd8f7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bin/platform-aws-cdk.ts" beforeDir="false" afterPath="$PROJECT_DIR$/bin/platform-aws-cdk.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/platform-aws-cdk-stack.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,6 +23,9 @@
   &quot;associatedIndex&quot;: 3
 }</component>
   <component name="ProjectId" id="38M3Qc9nerM908cFiDgNVRMB3DM" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -26,20 +33,46 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/jayk1/IdeaProjects/platform-aws-cdk",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "configurable.group.editor",
+    "ts.external.directory.path": "C:\\Users\\jayk1\\AppData\\Roaming\\JetBrains\\IntelliJIdea2025.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\jayk1\IdeaProjects\platform-aws-cdk\lib\stacks\ssm" />
+      <recent name="C:\Users\jayk1\IdeaProjects\platform-aws-cdk\lib\config\ssm" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="platform-aws-cdk" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="platform-aws-cdk" />
+      <option name="filePath" />
+      <method v="2" />
+    </configuration>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -57,11 +90,32 @@
       <updated>1768595597767</updated>
       <workItem from="1768595599223" duration="227000" />
       <workItem from="1768595833952" duration="48000" />
-      <workItem from="1768595895428" duration="391000" />
+      <workItem from="1768595895428" duration="5501000" />
+      <workItem from="1768602985808" duration="515000" />
+      <workItem from="1768603512219" duration="106000" />
+      <workItem from="1768603624032" duration="61000" />
+      <workItem from="1768603692714" duration="72000" />
+      <workItem from="1768603772781" duration="45000" />
+      <workItem from="1768603845472" duration="2308000" />
+      <workItem from="1768606182741" duration="27000" />
+      <workItem from="1768606227281" duration="139000" />
+      <workItem from="1768606373174" duration="171000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+    <option name="exactExcludedFiles">
+      <list>
+        <option value="$PROJECT_DIR$/test/platform-aws-cdk.test.js" />
+        <option value="$PROJECT_DIR$/test/platform-aws-cdk.test.d.ts" />
+        <option value="$PROJECT_DIR$/bin/platform-aws-cdk.js" />
+        <option value="$PROJECT_DIR$/bin/platform-aws-cdk.d.ts" />
+      </list>
+    </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
