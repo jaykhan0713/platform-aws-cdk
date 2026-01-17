@@ -2,22 +2,33 @@ export class ParameterPaths {
     private constructor() {}
 
     private static readonly PLATFORM_ROOT = '/jay-platform'
-    private static readonly GLOBAL = 'global'
-    private static readonly SERVICES = 'services'
+    private static readonly OBSERVABILITY = 'observability'
 
-    static rootPrefix(env: string): string {
+    private static rootPrefix(env: string): string {
         return `${this.PLATFORM_ROOT}/${env}`
     }
 
-    static globalPrefix(env: string): string {
-        return `${this.rootPrefix(env)}/${this.GLOBAL}`
+    // global
+
+    private static globalPrefix(env: string): string {
+        return `${this.rootPrefix(env)}/global`
     }
 
-    static servicesPrefix(env: string): string {
-        return `${this.rootPrefix(env)}/${this.SERVICES}`
+    static globalObservabilityPrefix(env: string) : string {
+        return `${this.globalPrefix(env)}/${this.OBSERVABILITY}`
+    }
+
+    // services
+
+    private static servicesPrefix(env: string): string {
+        return `${this.rootPrefix(env)}/services`
     }
 
     static servicePrefix(env: string, serviceName: string): string {
         return `${this.servicesPrefix(env)}/${serviceName}`
+    }
+
+    static serviceObservabilityPrefix(env: string, serviceName: string) : string {
+        return `${this.servicePrefix(env, serviceName)}/${this.OBSERVABILITY}`
     }
 }

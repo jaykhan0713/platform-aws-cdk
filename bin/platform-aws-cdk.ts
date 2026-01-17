@@ -1,9 +1,10 @@
 import { App } from 'aws-cdk-lib'
-import { PlatformParametersStack } from 'lib/stacks/ssm/platform-parameters-stack'
+
+import { ServiceParametersStack } from 'lib/stacks/ssm/service-parameters-stack'
 
 const app = new App()
 
-new PlatformParametersStack(app, 'EdgeServiceParameters', {
+new ServiceParametersStack(app, 'jay-platform-edge-service-ssm-params', {
     envName: 'prod',
     serviceName: 'edge-service'
 })
