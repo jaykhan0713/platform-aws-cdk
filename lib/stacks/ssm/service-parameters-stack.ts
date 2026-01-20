@@ -1,7 +1,7 @@
-import { RemovalPolicy, Stack,  StackProps, CfnOutput } from 'aws-cdk-lib';
+import {CfnOutput, RemovalPolicy, Stack, StackProps} from 'aws-cdk-lib';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 
-import { Construct } from 'constructs';
+import {Construct} from 'constructs';
 
 import {ParameterPaths} from 'lib/config/ssm/parameter-paths';
 
@@ -23,7 +23,31 @@ export class ServiceParametersStack extends Stack {
         const observabilityPrefix = ParameterPaths.serviceObservabilityPrefix(envName, serviceName)
 
         // adot
-        const adotCollectorConfigSuffix = `${observabilityPrefix}/adot/collector/config.yaml`
+        const adotCollectorConfigName = `${observabilityPrefix}/adot/collector/config.yaml`
+
+        const placeholderOtelConfig = [
+            'receivers: {}',
+            'exporters: {}',
+            'service:',
+            '  pipelines: {}',
+            ''
+        ].join('\n')
+
+        const adotCollectorConfigParam = new ssm.StringParameter(
+            this,
+            'AdotCollectorConfigYaml',
+            {
+                parameterName: adotCollectorConfigName,
+                description: `ADOT collector config for ${serviceName} (${envName}). Managed in ssm param store`,
+                stringValue: placeholderOtelConfig
+            }
+        )
+
+        adotCollectorConfigParam.applyRemovalPolicy(RemovalPolicy.RETAIN)
+
+        new CfnOutput(this, 'AdotCollectorConfigYamlParamName', {
+            value: adotCollectorConfigParam.parameterName
+        })
 
     }
 }
