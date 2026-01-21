@@ -40,7 +40,7 @@ export class CoreObservabilityStack extends BaseStack {
         //Outputs with ssm exports
         this.ampWorkspaceArn = ampWorkspace.attrArn
         new ssm.StringParameter(this, 'AmpWorkspaceArnParam', {
-            parameterName: `/jay-platform/${this.envConfig.envName}/platform/observability/amp/workspace-arn`,
+            parameterName: `/jay-platform/${this.envConfig.envName}/core/observability/amp/workspace-arn`,
             description: 'AMP workspace ARN for IAM policies',
             stringValue: this.ampWorkspaceArn,
         })
@@ -54,7 +54,7 @@ export class CoreObservabilityStack extends BaseStack {
             URL: ampWorkspace.attrPrometheusEndpoint,
         })
         new ssm.StringParameter(this, 'AmpRemoteWriteEndpointParam', {
-            parameterName: `/jay-platform/${this.envConfig.envName}/platform/observability/amp/remote-write-endpoint`,
+            parameterName: `/jay-platform/${this.envConfig.envName}/core/observability/amp/remote-write-endpoint`,
             description: 'AMP remote_write endpoint for ADOT collectors',
             stringValue: this.ampRemoteWriteEndpoint,
         })

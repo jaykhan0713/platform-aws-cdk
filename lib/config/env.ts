@@ -18,8 +18,8 @@ export type EnvConfig = {
 
 const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
     prod: {
-        account: process.env.CDK_DEFAULT_ACCOUNT ?? '454842419646',
-        region: process.env.CDK_DEFAULT_REGION ?? 'us-west-2',
+        account: '454842419646',
+        region: 'us-west-2',
         projectName: 'jay-platform',
         tags: { managedBy: 'cdk' }
     }
