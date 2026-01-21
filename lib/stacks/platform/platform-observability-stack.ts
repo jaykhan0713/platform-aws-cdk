@@ -1,0 +1,108 @@
+import * as cdk from 'aws-cdk-lib'
+import * as aps from 'aws-cdk-lib/aws-aps'
+import * as ssm from 'aws-cdk-lib/aws-ssm'
+
+import { TagKeys } from 'lib/config/tags';
+import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack';
+
+/**
+ * jay-platform observability: AMP (prometheus) workspace + shared outputs for ADOT per-task sidecars
+ */
+export class PlatformObservabilityStack extends BaseStack {
+    /**
+     * Workspace ID (ws-...) for URL paths
+     */
+    public readonly ampWorkspaceId: string
+    /**
+     * AMP workspace ARN (useful for IAM policies)
+     */
+    public readonly ampWorkspaceArn: string
+    /**
+     * AMP Prometheus endpoint (ends with /api/v1/)
+     */
+    public readonly ampPrometheusEndpoint: string
+    /**
+     * ADOT remote_write endpoint for metrics ingestion
+     */
+    public readonly ampRemoteWriteEndpoint: string
+    /**
+     * Grafana Prometheus datasource base URL (SigV4)
+     */
+    public readonly ampQueryEndpoint: string
+
+    public constructor(
+        scope: cdk.App,
+        id: string,
+        props: BaseStackProps
+    ) {
+        super(scope, id, props)
+
+        this.templateOptions.description =
+            'jay-platform observability: SSM + AMP (prometheus) workspace + shared outputs for ADOT per-task sidecars'
+
+        // Resources
+        const aliasName = `${this.envConfig.projectName}-amp-${this.envConfig.envName}`
+
+        const ampWorkspace = new aps.CfnWorkspace(this, 'AmpWorkspace', {
+            alias: `${aliasName}`
+        })
+        cdk.Tags.of(ampWorkspace).add(
+            TagKeys.Name,
+            `${aliasName}`
+        )
+
+        //Outputs with ssm exports
+        this.ampWorkspaceArn = ampWorkspace.attrArn
+        new ssm.StringParameter(this, 'AmpWorkspaceArnParam', {
+            parameterName: `/jay-platform/${this.envConfig.envName}/platform/observability/amp/workspace-arn`,
+            description: 'AMP workspace ARN for IAM policies',
+            stringValue: this.ampWorkspaceArn,
+        })
+        new cdk.CfnOutput(this, 'CfnOutputAmpWorkspaceArn', {
+            key: 'AmpWorkspaceArn',
+            description: 'AMP workspace ARN (useful for IAM policies)',
+            value: this.ampWorkspaceArn.toString(),
+        })
+
+        this.ampRemoteWriteEndpoint = cdk.Fn.sub('${URL}api/v1/remote_write', {
+            URL: ampWorkspace.attrPrometheusEndpoint,
+        })
+        new ssm.StringParameter(this, 'AmpRemoteWriteEndpointParam', {
+            parameterName: `/jay-platform/${this.envConfig.envName}/platform/observability/amp/remote-write-endpoint`,
+            description: 'AMP remote_write endpoint for ADOT collectors',
+            stringValue: this.ampRemoteWriteEndpoint,
+        })
+        new cdk.CfnOutput(this, 'CfnOutputAmpRemoteWriteEndpoint', {
+            key: 'AmpRemoteWriteEndpoint',
+            description: 'ADOT remote_write endpoint for metrics ingestion',
+            value: this.ampRemoteWriteEndpoint.toString(),
+        })
+
+        //Outputs without ssm exports, only for cfn for visibility
+        this.ampWorkspaceId = ampWorkspace.attrWorkspaceId
+        new cdk.CfnOutput(this, 'CfnOutputAmpWorkspaceId', {
+            key: 'AmpWorkspaceId',
+            description: 'Workspace ID (ws-...) for URL paths',
+            value: this.ampWorkspaceId.toString(),
+        })
+
+        this.ampPrometheusEndpoint = cdk.Fn.sub('${URL}api/v1/', {
+            URL: ampWorkspace.attrPrometheusEndpoint,
+        })
+        new cdk.CfnOutput(this, 'CfnOutputAmpPrometheusEndpoint', {
+            key: 'AmpPrometheusEndpoint',
+            description: 'AMP Prometheus endpoint (ends with /api/v1/)',
+            value: this.ampPrometheusEndpoint.toString(),
+        })
+
+        this.ampQueryEndpoint = cdk.Fn.sub(
+            'https://aps-workspaces.${AWS::Region}.amazonaws.com/workspaces/${WsId}',
+            { WsId: ampWorkspace.attrWorkspaceId }
+        )
+        new cdk.CfnOutput(this, 'CfnOutputAmpQueryEndpoint', {
+            key: 'AmpQueryEndpoint',
+            description: 'Grafana Prometheus datasource base URL (SigV4)',
+            value: this.ampQueryEndpoint.toString(),
+        })
+    }
+}

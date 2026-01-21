@@ -15,6 +15,24 @@ aws sso login --profile jay-prod
 $env:AWS_PROFILE="jay-prod"
 ```
 
+migration of existing stacks:
+jay-platform-observability-prod is example stack name
+$env:AWS_PROFILE="jay-prod"
+jay-prod is example profile, AWS SDK must be told which profile to use
+
+```
+$env:AWS_PROFILE="jay-prod"
+```
+
+```
+npx cdk deploy jay-platform-observability-prod       
+```
+
+```
+cdk migrate --from-stack --stack-name jay-platform-observability-prod --language typescript --output-path .\_migrate
+```
+
+
 ---
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.

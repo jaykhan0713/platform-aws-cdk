@@ -1,10 +1,26 @@
-import { App } from 'aws-cdk-lib'
+import * as cdk from 'aws-cdk-lib'
 
-import { ServiceParametersStack } from 'lib/stacks/ssm/service-parameters-stack'
+import {EnvName, getEnvConfig, toCdkStackProps} from 'lib/config/env';
+import { PlatformObservabilityStack } from 'lib/stacks/platform/platform-observability-stack'
 
-const app = new App()
+const app = new cdk.App()
 
-new ServiceParametersStack(app, 'jay-platform-edge-service-ssm-params', {
-    envName: 'prod',
-    serviceName: 'edge-service'
-})
+// i.e cdk diff -c env=prod (for explicit but defaults to prod)
+const rawEnv = app.node.tryGetContext('env') ?? 'prod'
+if (rawEnv !== 'prod') {
+    throw new Error(`Unsupported env: ${rawEnv}`)
+}
+
+const envName: EnvName = rawEnv
+const envConfig = getEnvConfig(envName)
+const stackProps = toCdkStackProps(envConfig)
+
+new PlatformObservabilityStack(
+    app,
+    'PlatformObservability',
+    {
+        stackName: `jay-platform-observability-${envName}`,
+        ...stackProps,
+        envConfig
+    }
+)
