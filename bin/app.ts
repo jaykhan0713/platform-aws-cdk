@@ -1,7 +1,8 @@
 import * as cdk from 'aws-cdk-lib'
 
-import {EnvName, getEnvConfig, toCdkStackProps} from 'lib/config/env';
-import { PlatformObservabilityStack } from 'lib/stacks/platform/platform-observability-stack'
+import {EnvName, getEnvConfig, toCdkStackProps} from 'lib/config/env'
+import { CoreObservabilityStack } from 'lib/stacks/core/core-observability-stack'
+import { stackName } from 'lib/config/naming'
 
 const app = new cdk.App()
 
@@ -15,12 +16,17 @@ const envName: EnvName = rawEnv
 const envConfig = getEnvConfig(envName)
 const stackProps = toCdkStackProps(envConfig)
 
-new PlatformObservabilityStack(
+
+//observability stack
+const observabilityStackDomain = 'observability'
+
+new CoreObservabilityStack(
     app,
-    'PlatformObservability',
+    'CoreObservability',
     {
-        stackName: `jay-platform-observability-${envName}`,
+        stackName: stackName(envConfig, observabilityStackDomain),
         ...stackProps,
-        envConfig
+        envConfig,
+        stackDomain: observabilityStackDomain
     }
 )

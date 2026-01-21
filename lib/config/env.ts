@@ -1,6 +1,8 @@
 import { StackProps } from 'aws-cdk-lib'
 
-export type EnvName = 'prod' // | 'test'
+export type EnvName =
+    | 'prod'
+//  | 'test'
 
 export type EnvConfig = {
     envName: EnvName

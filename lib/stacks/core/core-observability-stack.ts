@@ -3,31 +3,17 @@ import * as aps from 'aws-cdk-lib/aws-aps'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
 
 import { TagKeys } from 'lib/config/tags';
-import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack';
+import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
 
 /**
  * jay-platform observability: AMP (prometheus) workspace + shared outputs for ADOT per-task sidecars
  */
-export class PlatformObservabilityStack extends BaseStack {
-    /**
-     * Workspace ID (ws-...) for URL paths
-     */
+export class CoreObservabilityStack extends BaseStack {
+
     public readonly ampWorkspaceId: string
-    /**
-     * AMP workspace ARN (useful for IAM policies)
-     */
     public readonly ampWorkspaceArn: string
-    /**
-     * AMP Prometheus endpoint (ends with /api/v1/)
-     */
     public readonly ampPrometheusEndpoint: string
-    /**
-     * ADOT remote_write endpoint for metrics ingestion
-     */
     public readonly ampRemoteWriteEndpoint: string
-    /**
-     * Grafana Prometheus datasource base URL (SigV4)
-     */
     public readonly ampQueryEndpoint: string
 
     public constructor(
