@@ -1,8 +1,5 @@
-import type { EnvConfig } from 'lib/config/env'
+import type {EnvConfig} from 'lib/config/env/env-config'
+import type { StackDomain } from 'lib/config/domain'
 
-export type StackDomain =
-    | 'observability' // | add base names as needed
-
-
-export const stackName = (cfg: EnvConfig, domain: StackDomain) =>
+export const resolveStackName = (cfg: EnvConfig, domain: StackDomain) =>
     `${cfg.projectName}-${domain}-${cfg.envName}`

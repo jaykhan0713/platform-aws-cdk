@@ -1,8 +1,8 @@
 import * as cdk from 'aws-cdk-lib'
 
-import { TagKeys } from 'lib/config/tags'
-import type { EnvConfig} from 'lib/config/env';
-import type { StackDomain } from 'lib/config/naming'
+import type { EnvConfig } from 'lib/config/env/env-config'
+import type { StackDomain } from 'lib/config/domain'
+import { TagKeys } from 'lib/config/naming'
 
 
 export interface BaseStackProps extends cdk.StackProps {

@@ -2,11 +2,12 @@ import * as cdk from 'aws-cdk-lib'
 import * as aps from 'aws-cdk-lib/aws-aps'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
 
-import { TagKeys } from 'lib/config/tags';
+import { TagKeys, resolveSsmParamPath } from 'lib/config/naming';
 import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
+import { ParamNamespace } from 'lib/config/domain'
 
 /**
- * jay-platform observability: AMP (prometheus) workspace + shared outputs for ADOT per-task sidecars
+ * Observability: AMP (prometheus) workspace + shared outputs for ADOT per-task sidecars
  */
 export class CoreObservabilityStack extends BaseStack {
 
@@ -16,6 +17,8 @@ export class CoreObservabilityStack extends BaseStack {
     public readonly ampRemoteWriteEndpoint: string
     public readonly ampQueryEndpoint: string
 
+    private readonly paramNamespace = ParamNamespace.core
+
     public constructor(
         scope: cdk.App,
         id: string,
@@ -24,7 +27,7 @@ export class CoreObservabilityStack extends BaseStack {
         super(scope, id, props)
 
         this.templateOptions.description =
-            'jay-platform observability: SSM + AMP (prometheus) workspace + shared outputs for ADOT per-task sidecars'
+            `${this.envConfig.projectName} observability: SSM + AMP (prometheus) workspace + shared outputs for ADOT per-task sidecars`
 
         // Resources
         const aliasName = `${this.envConfig.projectName}-amp-${this.envConfig.envName}`
@@ -37,10 +40,10 @@ export class CoreObservabilityStack extends BaseStack {
             `${aliasName}`
         )
 
-        //Outputs with ssm exports
+        //Outputs with exports
         this.ampWorkspaceArn = ampWorkspace.attrArn
         new ssm.StringParameter(this, 'AmpWorkspaceArnParam', {
-            parameterName: `/jay-platform/${this.envConfig.envName}/core/observability/amp/workspace-arn`,
+            parameterName: resolveSsmParamPath(this.envConfig, this.paramNamespace, this.stackDomain, 'amp/workspace-arn'),
             description: 'AMP workspace ARN for IAM policies',
             stringValue: this.ampWorkspaceArn,
         })
@@ -54,7 +57,7 @@ export class CoreObservabilityStack extends BaseStack {
             URL: ampWorkspace.attrPrometheusEndpoint,
         })
         new ssm.StringParameter(this, 'AmpRemoteWriteEndpointParam', {
-            parameterName: `/jay-platform/${this.envConfig.envName}/core/observability/amp/remote-write-endpoint`,
+            parameterName: resolveSsmParamPath(this.envConfig, this.paramNamespace, this.stackDomain, 'amp/remote-write-endpoint'),
             description: 'AMP remote_write endpoint for ADOT collectors',
             stringValue: this.ampRemoteWriteEndpoint,
         })
@@ -64,7 +67,7 @@ export class CoreObservabilityStack extends BaseStack {
             value: this.ampRemoteWriteEndpoint.toString(),
         })
 
-        //Outputs without ssm exports, only for cfn for visibility
+        //Outputs without exports, only for cfn for visibility
         this.ampWorkspaceId = ampWorkspace.attrWorkspaceId
         new cdk.CfnOutput(this, 'CfnOutputAmpWorkspaceId', {
             key: 'AmpWorkspaceId',

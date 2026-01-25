@@ -29,7 +29,7 @@ npx cdk deploy jay-platform-observability-prod
 ```
 
 ```
-cdk migrate --from-stack --stack-name jay-platform-observability-prod --language typescript --output-path .\_migrate
+cdk migrate --from-stack --stack-name jay-platform-network-endpoints-prod --language typescript --output-path .\_migrate
 ```
 
 
