@@ -1,4 +1,6 @@
 export * from 'lib/config/domain/env-name'
 export * from 'lib/config/domain/param-namespace'
+export * from 'lib/config/domain/platform-services'
 export * from 'lib/config/domain/stack-domain'
+export * from 'lib/config/domain/vpc'
 export * from 'lib/config/domain/vpce-service-name'

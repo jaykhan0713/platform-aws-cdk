@@ -1,3 +1,5 @@
+import {PlatformServices} from 'lib/config/domain/platform-services'
+
 export const StackDomain = {
     //runtime envs
     network: 'network',
@@ -5,7 +7,11 @@ export const StackDomain = {
     observability: 'observability',
     ecsCluster: 'ecs-cluster',
     ecsServicesCommon: 'ecs-services-common',
-    walletService: 'wallet-service',
+    ecrRepo: 'ecr-repo',
+
+    //platform's service stacks
+    edge: PlatformServices.edge,
+    wallet: PlatformServices.wallet,
 
     //tools env
     cicdInfra: 'cicd-infra'

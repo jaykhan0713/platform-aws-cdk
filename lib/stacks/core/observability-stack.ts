@@ -10,6 +10,8 @@ export class ObservabilityStack extends BaseStack {
 
     private readonly paramNamespace = ParamNamespace.core
 
+    private readonly apsRemoteWriteEndpoint: string
+
     public constructor(
         scope: cdk.App,
         id: string,
@@ -32,18 +34,18 @@ export class ObservabilityStack extends BaseStack {
         )
 
         //Outputs with ssm exports
-        const apsRemoteWriteEndpoint = cdk.Fn.sub('${URL}api/v1/remote_write', {
+        this.apsRemoteWriteEndpoint = cdk.Fn.sub('${URL}api/v1/remote_write', {
             URL: apsWorkspace.attrPrometheusEndpoint,
         })
         new ssm.StringParameter(this, 'ApsRemoteWriteEndpointParam', {
             parameterName: resolveSsmParamPath(this.envConfig, this.paramNamespace, this.stackDomain, 'aps/remote-write-endpoint'),
             description: 'APS remote_write endpoint for ADOT collectors',
-            stringValue: apsRemoteWriteEndpoint,
+            stringValue: this.apsRemoteWriteEndpoint,
         })
         new cdk.CfnOutput(this, 'CfnOutputApsRemoteWriteEndpoint', {
             key: 'ApsRemoteWriteEndpoint',
             description: 'ADOT remote_write endpoint for metrics ingestion',
-            value: apsRemoteWriteEndpoint.toString(),
+            value: this.apsRemoteWriteEndpoint.toString(),
         })
 
         //Outputs without ssm exports, only for cfn for visibility

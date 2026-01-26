@@ -1,4 +1,5 @@
 export * from 'lib/config/naming/iam'
+export * from 'lib/config/naming/ecr-repo'
 export * from 'lib/config/naming/stacks'
 export * from 'lib/config/naming/output-exports'
 export * from 'lib/config/naming/security-groups'

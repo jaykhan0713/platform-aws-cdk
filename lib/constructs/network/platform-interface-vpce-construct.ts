@@ -1,13 +1,14 @@
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Tags } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
+import {TagKeys} from 'lib/config/naming'
+import {SubnetSelection} from 'aws-cdk-lib/aws-ec2'
 
 export interface InterfaceVpcEndpointProps {
     vpc: ec2.IVpc
     service: ec2.IInterfaceVpcEndpointService
     privateDnsEnabled: boolean
-    subnetIds: string[]
-    routeTableId: string
+    subnets: SubnetSelection
     securityGroups: ec2.ISecurityGroup[]
     nameTag: string
 }
@@ -21,21 +22,15 @@ export class PlatformInterfaceVpceConstruct extends Construct  {
     ) {
         super(scope, id)
 
-        const subnets = props.subnetIds.map((subnetId, idx) =>
-            ec2.Subnet.fromSubnetAttributes(this, `InterfaceSubnet${idx}`, {
-                subnetId,
-                routeTableId: props.routeTableId,
-            })
-        )
         this.endpoint = new ec2.InterfaceVpcEndpoint(this, id, {
             vpc: props.vpc,
             service: props.service,
             privateDnsEnabled: props.privateDnsEnabled,
-            subnets: { subnets },
+            subnets: props.subnets,
             securityGroups: props.securityGroups
         })
 
-        Tags.of(this.endpoint).add('Name', props.nameTag)
+        Tags.of(this.endpoint).add(TagKeys.Name, props.nameTag)
     }
 
 

@@ -1,28 +1,29 @@
 import * as cdk from 'aws-cdk-lib'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 
-import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
-import {StackDomain} from 'lib/config/domain/stack-domain'
-import {VpcImports} from 'lib/config/imports/vpc-imports'
-import {resolveExportName} from 'lib/config/naming/output-exports'
+import { BaseStack } from 'lib/stacks/base-stack'
+import { StackDomain } from 'lib/config/domain/stack-domain'
+import { resolveExportName } from 'lib/config/naming'
+import type { VpcDependentStackProps } from 'lib/stacks/types'
 
 
 export class EcsClusterStack extends BaseStack {
-    constructor(scope: cdk.App, id: string, props: BaseStackProps) {
+    private readonly ecsCluster: ecs.Cluster
+
+    constructor(scope: cdk.App, id: string, props: VpcDependentStackProps) {
         super(scope,  id,  props)
 
-        const vpc = VpcImports.vpc(this, this.envConfig)
+        const vpc = props.vpc
 
-        const ecsCluster = new ecs.Cluster(this, 'EcsCluster', {
+        this.ecsCluster = new ecs.Cluster(this, 'EcsCluster', {
             vpc,
             clusterName: `${StackDomain.ecsCluster}-${this.envConfig.envName}`,
             containerInsightsV2: ecs.ContainerInsights.DISABLED
         })
 
         new cdk.CfnOutput(this, 'CfnOutputEcsClusterArn', {
-            key: 'EcsClusterArn',
             description: 'ECS Cluster Arn',
-            value: ecsCluster.clusterArn,
+            value: this.ecsCluster.clusterArn,
             exportName: resolveExportName(this.envConfig, StackDomain.ecsCluster, 'ecs-cluster-arn')
         })
     }

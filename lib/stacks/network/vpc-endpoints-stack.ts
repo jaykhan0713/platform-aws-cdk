@@ -3,12 +3,14 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as iam from 'aws-cdk-lib/aws-iam'
 
 import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
-import { VpcImports } from 'lib/config/imports/vpc-imports'
 import { Tags } from 'aws-cdk-lib'
-import {resolveSecurityGroupName, resolveVpceNameTag} from 'lib/config/naming'
-import { PlatformInterfaceVpceConstruct } from 'lib/constructs/vpc/platform-interface-vpce-construct'
+import {resolveSecurityGroupName, resolveVpceNameTag, TagKeys} from 'lib/config/naming'
+import { PlatformInterfaceVpceConstruct } from 'lib/constructs/network/platform-interface-vpce-construct'
 import {VpceServiceName} from 'lib/config/domain/vpce-service-name'
 import {EnvConfig} from 'lib/config/env/env-config'
+import {VpcDependentStackProps} from 'lib/stacks/types/vpc-dependent-stack-props'
+import { AZ } from 'lib/config/domain'
+import {Construct} from 'constructs'
 
 export class VpcEndpointsStack extends BaseStack {
 
@@ -64,13 +66,13 @@ export class VpcEndpointsStack extends BaseStack {
     public constructor(
         scope: cdk.App,
         id: string,
-        props: BaseStackProps
+        props: VpcDependentStackProps
     ) {
         super(scope, id, props)
 
         const interfaceOptions = this.envConfig.vpceConfig?.interfaceOptions
 
-        const vpc = VpcImports.vpc(this, this.envConfig)
+        const vpc = props.vpc
 
         //sg
         const sg = new ec2.SecurityGroup(this, 'VpcEndpointSecurityGroup', {
@@ -85,49 +87,54 @@ export class VpcEndpointsStack extends BaseStack {
             'Allow HTTPS from inside VPC'
         )
 
-        Tags.of(sg).add('Name', resolveSecurityGroupName(this.envConfig, this.stackDomain))
+        Tags.of(sg).add(TagKeys.Name, resolveSecurityGroupName(this.envConfig, this.stackDomain))
 
         // vpc interface endpoints
 
-        const privateSubnetIds = VpcImports.privateSubnetIds(this.envConfig)
-        if (privateSubnetIds.length === 0) throw new Error('No private subnet IDs found')
+        if (interfaceOptions?.enableEndpoints) {
 
-        const privateRouteTableId = VpcImports.privateRouteTableId(this.envConfig)
+            let subnets: ec2.SubnetSelection
 
-        const basePrivateInterfaceVpceProps = {
-            vpc,
-            privateDnsEnabled: true,
-            subnetIds: interfaceOptions?.enableMultiAz ? privateSubnetIds : [privateSubnetIds[0]],
-            routeTableId: privateRouteTableId,
-            securityGroups: [sg]
-        }
+            if (interfaceOptions?.enableInterfaceMultiAz) {
+                subnets = { subnetType: ec2.SubnetType.PRIVATE_ISOLATED }
+            } else {
+                const isolatedSubnets = vpc.selectSubnets({
+                    subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+                }).subnets
 
-        const defaultEnabled = VpcEndpointsStack.interfaceEndpointsEnabled(this.envConfig)
+                const singleAzSubnet = isolatedSubnets.find(
+                    s => s.availabilityZone === AZ.US_WEST_2A
+                )!
 
-        for (const ep of this.interfaceEndpoints) {
-            const isEnabled = ep.enabled?.(this.envConfig)
-                ?? defaultEnabled
+                subnets = { subnets: [singleAzSubnet] }
+            }
 
-            if (isEnabled) {
-                new PlatformInterfaceVpceConstruct(this, ep.id, {
-                    ...basePrivateInterfaceVpceProps,
-                    service: ep.service,
-                    nameTag: resolveVpceNameTag(this.envConfig, ep.name)
-                })
+            const basePrivateInterfaceVpceProps = {
+                vpc,
+                privateDnsEnabled: true,
+                subnets: subnets,
+                securityGroups: [sg]
+            }
+
+            for (const ep of this.interfaceEndpoints) {
+                const isEnabled = ep.enabled?.(this.envConfig)
+                    ?? true
+
+                if (isEnabled) {
+                    new PlatformInterfaceVpceConstruct(this, ep.id, {
+                        ...basePrivateInterfaceVpceProps,
+                        service: ep.service,
+                        nameTag: resolveVpceNameTag(this.envConfig, ep.name)
+                    })
+                }
             }
         }
 
         //gateway endpoints
-        const gatewaySubnets = privateSubnetIds.map((subnetId, idx) =>
-            ec2.Subnet.fromSubnetAttributes(this, `GatewaySubnet${idx}`, {
-                subnetId,
-                routeTableId: privateRouteTableId
-            })
-        )
 
         const s3Gateway = vpc.addGatewayEndpoint('S3GatewayVpcEndpoint', {
             service: ec2.GatewayVpcEndpointAwsService.S3,
-            subnets: [{ subnets: gatewaySubnets }]
+            subnets: [{ subnetType: ec2.SubnetType.PRIVATE_ISOLATED  }]
         })
 
         s3Gateway.addToPolicy(new iam.PolicyStatement({
@@ -139,17 +146,12 @@ export class VpcEndpointsStack extends BaseStack {
         }))
 
         Tags.of(s3Gateway).add(
-            'Name',
+            TagKeys.Name,
             resolveVpceNameTag(this.envConfig, VpceServiceName.s3Gateway)
         )
     }
 
-    private static interfaceEndpointsEnabled(cfg: EnvConfig): boolean {
-        return cfg.vpceConfig?.interfaceOptions.enableEndpoints === true
-    }
-
     private static ecsExecEndpointsEnabled(cfg: EnvConfig): boolean {
-        return this.interfaceEndpointsEnabled(cfg) &&
-            cfg.vpceConfig?.interfaceOptions.enableEcsExec === true
+        return cfg.vpceConfig?.interfaceOptions.enableEcsExec === true
     }
 }
