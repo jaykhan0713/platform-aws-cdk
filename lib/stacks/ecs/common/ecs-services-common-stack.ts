@@ -8,7 +8,7 @@ import {
 } from 'lib/config/naming'
 import { ParamNamespace } from 'lib/config/domain/param-namespace'
 
-export class InternalServicesStack extends BaseStack {
+export class EcsServicesCommonStack extends BaseStack {
 
     public readonly taskExecutionRole: iam.Role
 
@@ -20,7 +20,7 @@ export class InternalServicesStack extends BaseStack {
         super(scope, id, props)
 
         this.templateOptions.description =
-            'Shared resources internal services use i.e IAM roles+policies'
+            'Shared resources for ecs services, i.e IAM roles+policies'
 
         //service related
         const servicesRoles = this.createServiceRoles()
@@ -30,7 +30,7 @@ export class InternalServicesStack extends BaseStack {
     }
 
     private createServiceRoles() {
-        const taskExecutionRole = new iam.Role(this,  'InternalServicesTaskExecutionRole', {
+        const taskExecutionRole = new iam.Role(this,  'EcsServicesCommonTaskExecutionRole', {
             roleName: resolveIamRoleName(this.envConfig, this.stackDomain, 'task-execution'),
             assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
             managedPolicies: [
@@ -59,7 +59,7 @@ export class InternalServicesStack extends BaseStack {
 
         taskExecutionRole.attachInlinePolicy(ssmReadPolicy)
 
-        new cdk.CfnOutput(this, `InternalServicesTaskExecutionRoleArn`, {
+        new cdk.CfnOutput(this, `EcsServicesCommonTaskExecutionRoleArn`, {
             value: taskExecutionRole.roleArn,
             exportName: resolveExportName(this.envConfig, this.stackDomain, 'task-execution-role-arn')
         })

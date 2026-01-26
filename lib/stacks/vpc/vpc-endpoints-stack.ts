@@ -6,7 +6,7 @@ import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
 import { VpcImports } from 'lib/config/imports/vpc-imports'
 import { Tags } from 'aws-cdk-lib'
 import {resolveSecurityGroupName, resolveVpceNameTag} from 'lib/config/naming'
-import { InterfaceVpceConstruct } from 'lib/constructs/vpc/interface-vpce-construct'
+import { PlatformInterfaceVpceConstruct } from 'lib/constructs/vpc/platform-interface-vpce-construct'
 import {VpceServiceName} from 'lib/config/domain/vpce-service-name'
 import {EnvConfig} from 'lib/config/env/env-config'
 
@@ -109,7 +109,7 @@ export class VpcEndpointsStack extends BaseStack {
                 ?? defaultEnabled
 
             if (isEnabled) {
-                new InterfaceVpceConstruct(this, ep.id, {
+                new PlatformInterfaceVpceConstruct(this, ep.id, {
                     ...basePrivateInterfaceVpceProps,
                     service: ep.service,
                     nameTag: resolveVpceNameTag(this.envConfig, ep.name)

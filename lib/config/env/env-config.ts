@@ -23,6 +23,10 @@ export type EnvConfig = {
             enableMultiAz: boolean
         }
     }
+
+    ecsClusterConfig?: {
+        enableContainerInsights: boolean
+    }
 }
 
 const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
@@ -38,6 +42,10 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
                 enableEcsExec: false,
                 enableMultiAz: false
             }
+        },
+
+        ecsClusterConfig: {
+            enableContainerInsights: false
         }
     },
 

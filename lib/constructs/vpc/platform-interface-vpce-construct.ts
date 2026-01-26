@@ -12,7 +12,7 @@ export interface InterfaceVpcEndpointProps {
     nameTag: string
 }
 
-export class InterfaceVpceConstruct extends Construct  {
+export class PlatformInterfaceVpceConstruct extends Construct  {
     public readonly endpoint: ec2.InterfaceVpcEndpoint
 
     public constructor(scope: Construct,

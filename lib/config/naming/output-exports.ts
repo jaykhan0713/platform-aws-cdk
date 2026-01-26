@@ -1,5 +1,7 @@
 import type { EnvConfig } from 'lib/config/env/env-config'
 import type { StackDomain } from 'lib/config/domain'
+import {resolveStackName} from 'lib/config/naming/stacks'
 
 export const resolveExportName = (cfg: EnvConfig, domain: StackDomain, area: String) =>
-    `${cfg.projectName}-${domain}-${cfg.envName}-${area}`
+    `${resolveStackName(cfg, domain)}-${area}`
+
