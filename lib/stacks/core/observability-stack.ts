@@ -10,7 +10,8 @@ export class ObservabilityStack extends BaseStack {
 
     private readonly paramNamespace = ParamNamespace.core
 
-    private readonly apsRemoteWriteEndpoint: string
+    public readonly apsRemoteWriteEndpoint: string
+    public readonly apsWorkspaceArn: string
 
     public constructor(
         scope: cdk.App,
@@ -49,11 +50,11 @@ export class ObservabilityStack extends BaseStack {
         })
 
         //Outputs without ssm exports, only for cfn for visibility
-        const apsWorkspaceArn = apsWorkspace.attrArn
+        this.apsWorkspaceArn = apsWorkspace.attrArn
         new cdk.CfnOutput(this, 'CfnOutputApsWorkspaceArn', {
             key: 'ApsWorkspaceArn',
             description: 'APS workspace ARN (useful for IAM policies)',
-            value: apsWorkspaceArn.toString(),
+            value: this.apsWorkspaceArn.toString(),
             exportName: resolveExportName(this.envConfig, this.stackDomain, 'aps-workspace-arn')
         })
 

@@ -13,12 +13,13 @@ export interface InterfaceVpcEndpointProps {
     nameTag: string
 }
 
-export class PlatformInterfaceVpceConstruct extends Construct  {
+export class PlatformInterfaceVpce extends Construct  {
     public readonly endpoint: ec2.InterfaceVpcEndpoint
 
-    public constructor(scope: Construct,
-                       id: string,
-                       props: InterfaceVpcEndpointProps
+    public constructor(
+        scope: Construct,
+        id: string,
+        props: InterfaceVpcEndpointProps
     ) {
         super(scope, id)
 

@@ -2,15 +2,13 @@ import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as iam from 'aws-cdk-lib/aws-iam'
 
-import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
+import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import { Tags } from 'aws-cdk-lib'
 import {resolveSecurityGroupName, resolveVpceNameTag, TagKeys} from 'lib/config/naming'
-import { PlatformInterfaceVpceConstruct } from 'lib/constructs/network/platform-interface-vpce-construct'
+import { PlatformInterfaceVpce } from 'lib/constructs/vpc/platform-interface-vpce'
 import {VpceServiceName} from 'lib/config/domain/vpce-service-name'
 import {EnvConfig} from 'lib/config/env/env-config'
-import {VpcDependentStackProps} from 'lib/stacks/types/vpc-dependent-stack-props'
 import { AZ } from 'lib/config/domain'
-import {Construct} from 'constructs'
 
 export class VpcEndpointsStack extends BaseStack {
 
@@ -66,7 +64,9 @@ export class VpcEndpointsStack extends BaseStack {
     public constructor(
         scope: cdk.App,
         id: string,
-        props: VpcDependentStackProps
+        props: BaseStackProps & {
+            vpc: ec2.IVpc
+        }
     ) {
         super(scope, id, props)
 
@@ -121,7 +121,7 @@ export class VpcEndpointsStack extends BaseStack {
                     ?? true
 
                 if (isEnabled) {
-                    new PlatformInterfaceVpceConstruct(this, ep.id, {
+                    new PlatformInterfaceVpce(this, ep.id, {
                         ...basePrivateInterfaceVpceProps,
                         service: ep.service,
                         nameTag: resolveVpceNameTag(this.envConfig, ep.name)

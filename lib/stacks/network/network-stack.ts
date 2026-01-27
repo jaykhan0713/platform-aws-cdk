@@ -9,7 +9,7 @@ import { AZ } from 'lib/config/domain'
 
 export class NetworkStack extends BaseStack {
     public readonly vpc: ec2.Vpc
-    public readonly serviceConnectNamespace: servicediscovery.HttpNamespace
+    public readonly serviceConnectNamespace: servicediscovery.IHttpNamespace
 
     public constructor(scope: cdk.App,  id: string,  props: BaseStackProps) {
         super(scope, id, props)

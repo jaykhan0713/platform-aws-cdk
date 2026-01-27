@@ -10,8 +10,7 @@ import type { EnvName } from 'lib/config/domain/env-name'
 import { StackDomain } from 'lib/config/domain/stack-domain'
 import { EcsClusterStack } from 'lib/stacks/ecs/cluster/ecs-cluster-stack'
 import { NetworkStack } from 'lib/stacks/network/network-stack'
-import type {VpcDependentStackProps} from 'lib/stacks/types/vpc-dependent-stack-props'
-import {BaseStackProps} from 'lib/stacks/base-stack'
+import type { PlatformServiceRuntime } from 'lib/stacks/props'
 
 export class PlatformApp {
 
@@ -28,15 +27,24 @@ export class PlatformApp {
 
         //stack instantiations
 
-        //network, vpc related and dependant
+        //shared core/common stacks outside VPC
+        const observabilityStack = this.createObservabilityStack(stackProps, envConfig)
+        const servicesCommonStack = this.createServicesCommonStack(stackProps, envConfig)
+
+        //vpc
         const networkStack = this.createNetworkStack(stackProps, envConfig)
 
         this.createVpcEndpointsStack(stackProps, envConfig, networkStack)
-        this.createEcsClusterStack(stackProps, envConfig, networkStack)
+        const ecsClusterStack = this.createEcsClusterStack(stackProps, envConfig, networkStack)
 
-        //shared core/common stacks
-        this.createObservabilityStack(stackProps, envConfig)
-        this.createServicesCommonStack(stackProps, envConfig)
+        //platform ecs services
+        const platformServiceRuntime: PlatformServiceRuntime = {
+            vpc: networkStack.vpc,
+            serviceConnectNamespace: networkStack.serviceConnectNamespace,
+            cluster: ecsClusterStack.ecsCluster,
+            taskExecutionRole: servicesCommonStack.taskExecutionRole,
+            apsWorkspaceArn: observabilityStack.apsWorkspaceArn
+        }
 
         //tools env stack (stack resources outside of runtime)
         const toolsConfig = getEnvConfig('tools')
@@ -44,16 +52,6 @@ export class PlatformApp {
     }
 
     //network stacks
-    private toVpcDepStackProps(
-        baseStackProps: BaseStackProps,
-        networkStack: NetworkStack
-    ) : VpcDependentStackProps {
-        return  {
-            ...baseStackProps,
-            vpc: networkStack.vpc,
-            serviceConnectNamespace: networkStack.serviceConnectNamespace
-        }
-    }
 
     private createNetworkStack(stackProps: cdk.StackProps, envConfig: EnvConfig) {
         const stackDomain = StackDomain.network
@@ -77,17 +75,16 @@ export class PlatformApp {
     ) {
         const stackDomain = StackDomain.vpcEndpoints
 
-        const baseStackProps = {
-            stackName: resolveStackName(envConfig, stackDomain),
-            ...stackProps,
-            envConfig,
-            stackDomain
-        }
-
         new VpcEndpointsStack(
             this.app,
             'VpcEndpoints',
-            this.toVpcDepStackProps(baseStackProps, networkStack)
+            {
+                stackName: resolveStackName(envConfig, stackDomain),
+                ...stackProps,
+                envConfig,
+                stackDomain,
+                vpc: networkStack.vpc
+            }
         )
     }
 
@@ -99,17 +96,16 @@ export class PlatformApp {
     ) {
         const stackDomain = StackDomain.ecsCluster
 
-        const baseStackProps = {
-            stackName: resolveStackName(envConfig, stackDomain),
-            ...stackProps,
-            envConfig,
-            stackDomain
-        }
-
-        new EcsClusterStack(
+        return new EcsClusterStack(
             this.app,
             'EcsCluster',
-            this.toVpcDepStackProps(baseStackProps, networkStack)
+            {
+                stackName: resolveStackName(envConfig, stackDomain),
+                ...stackProps,
+                envConfig,
+                stackDomain,
+                vpc: networkStack.vpc
+            }
         )
     }
 
@@ -117,7 +113,7 @@ export class PlatformApp {
     private createObservabilityStack(stackProps: cdk.StackProps, envConfig: EnvConfig) {
         const stackDomain = StackDomain.observability
 
-        new ObservabilityStack(
+        return new ObservabilityStack(
             this.app,
             'Observability',
             {
@@ -133,7 +129,7 @@ export class PlatformApp {
     private createServicesCommonStack(stackProps: cdk.StackProps, envConfig: EnvConfig){
         const stackDomain = StackDomain.ecsServicesCommon
 
-        new EcsServicesCommonStack(
+        return new EcsServicesCommonStack(
             this.app,
             'EcsServicesCommon',
             {

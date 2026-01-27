@@ -1,16 +1,18 @@
 import * as cdk from 'aws-cdk-lib'
+import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 
-import { BaseStack } from 'lib/stacks/base-stack'
+import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import { StackDomain } from 'lib/config/domain/stack-domain'
 import { resolveExportName } from 'lib/config/naming'
-import type { VpcDependentStackProps } from 'lib/stacks/types'
 
 
 export class EcsClusterStack extends BaseStack {
-    private readonly ecsCluster: ecs.Cluster
+    public readonly ecsCluster: ecs.Cluster
 
-    constructor(scope: cdk.App, id: string, props: VpcDependentStackProps) {
+    constructor(scope: cdk.App, id: string, props: BaseStackProps & {
+        readonly vpc: ec2.IVpc
+    }) {
         super(scope,  id,  props)
 
         const vpc = props.vpc

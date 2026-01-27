@@ -1,1 +1,0 @@
-export * from 'lib/stacks/types/vpc-dependent-stack-props'
