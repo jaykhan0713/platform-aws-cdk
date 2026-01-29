@@ -1,25 +1,25 @@
 import * as iam from 'aws-cdk-lib/aws-iam'
 import { Construct } from 'constructs'
+
 import { resolveIamRoleName } from 'lib/config/naming'
-import { BaseStack } from 'lib/stacks/base-stack'
 import {resolveSsmParamPathArnWildcard} from 'lib/config/naming/ssm-param-paths'
 import {ParamNamespace} from 'lib/config/domain/param-namespace'
 import {IamConstants} from 'lib/config/domain/iam-constants'
-import type { PlatformServiceStackProps } from 'lib/stacks/props'
+import type { PlatformServiceRuntimeProps } from 'lib/stacks/props'
 
 export class PlatformEcsTaskRole extends Construct {
 
     public readonly taskRole: iam.Role
 
     public constructor(
-        scope: BaseStack,
+        scope: Construct,
         id: string,
-        props: PlatformServiceStackProps
+        props: PlatformServiceRuntimeProps
     ) {
         super(scope, id)
 
-        const envConfig = scope.envConfig
-        const stackDomain = scope.stackDomain
+        const envConfig = props.envConfig
+        const stackDomain = props.stackDomain
 
         this.taskRole = new iam.Role(scope, 'RuntimeServiceTaskRole', {
             roleName: resolveIamRoleName(envConfig, stackDomain, IamConstants.roleArea.ecsTask),

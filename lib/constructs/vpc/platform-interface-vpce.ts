@@ -1,5 +1,5 @@
+import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
-import { Tags } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 import {TagKeys} from 'lib/config/naming'
 import {SubnetSelection} from 'aws-cdk-lib/aws-ec2'
@@ -31,7 +31,7 @@ export class PlatformInterfaceVpce extends Construct  {
             securityGroups: props.securityGroups
         })
 
-        Tags.of(this.endpoint).add(TagKeys.Name, props.nameTag)
+        cdk.Tags.of(this.endpoint).add(TagKeys.Name, props.nameTag)
     }
 
 

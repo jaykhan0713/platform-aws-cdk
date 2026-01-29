@@ -38,7 +38,7 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
 
         vpceConfig: {
             interfaceOptions: {
-                enableEndpoints: true,
+                enableEndpoints: false,
                 enableEcsExec: false,
                 enableInterfaceMultiAz: false
             }

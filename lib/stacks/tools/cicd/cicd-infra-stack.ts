@@ -31,20 +31,12 @@ export class CicdInfraStack extends BaseStack {
 
         // Deploys as PENDING until you manually authorize it in the AWS console once
         const githubConnection = new codestarconnections.CfnConnection(this, 'GithubConnection', {
-            connectionName: `jay-github-tools`,
+            connectionName: `${props.envConfig.projectName}-github-connection`,
             providerType: 'GitHub'
         })
 
         this.githubConnectionArn = githubConnection.attrConnectionArn
 
-        new cdk.CfnOutput(this, 'GithubConnectionArn', {
-            value: this.githubConnectionArn,
-            exportName: `${this.stackName}:GithubConnectionArn`
-        })
 
-        new cdk.CfnOutput(this, 'PipelineArtifactsBucketName', {
-            value: this.artifactsBucket.bucketName,
-            exportName: `${this.stackName}:PipelineArtifactsBucketName`
-        })
     }
 }

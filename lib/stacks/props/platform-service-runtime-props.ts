@@ -5,7 +5,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import * as servicediscovery from 'aws-cdk-lib/aws-servicediscovery'
 
-export interface PlatformServiceStackProps extends BaseStackProps {
+export interface PlatformServiceRuntimeProps extends BaseStackProps {
     readonly runtime: PlatformServiceRuntime
 }
 

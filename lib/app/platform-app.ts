@@ -11,6 +11,10 @@ import { StackDomain } from 'lib/config/domain/stack-domain'
 import { EcsClusterStack } from 'lib/stacks/ecs/cluster/ecs-cluster-stack'
 import { NetworkStack } from 'lib/stacks/network/network-stack'
 import type { PlatformServiceRuntime } from 'lib/stacks/props'
+import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/platform-service-ecr-repos-stack'
+import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/platform-service-pipeline-stack'
+import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {getGithubConfig} from 'lib/config/github/github-config'
 
 export class PlatformApp {
 
@@ -48,7 +52,11 @@ export class PlatformApp {
 
         //tools env stack (stack resources outside of runtime)
         const toolsConfig = getEnvConfig('tools')
-        this.createCicdInfraStack(stackProps, toolsConfig)
+        const toolsStackProps = toCdkStackProps(toolsConfig)
+
+        const cicdInfraStack = this.createCicdInfraStack(toolsStackProps, toolsConfig)
+        const platformServiceEcrReposStack = this.createPlatformServiceEcrReposStack(toolsStackProps, toolsConfig)
+        this.createEdgeServicePipeline(toolsStackProps, toolsConfig, cicdInfraStack, platformServiceEcrReposStack)
     }
 
     //network stacks
@@ -145,7 +153,7 @@ export class PlatformApp {
     private createCicdInfraStack(stackProps: cdk.StackProps, envConfig: EnvConfig) {
         const stackDomain = StackDomain.cicdInfra
 
-        new CicdInfraStack(
+        return new CicdInfraStack(
             this.app,
             'CicdInfra',
             {
@@ -153,6 +161,54 @@ export class PlatformApp {
                 ...stackProps,
                 envConfig,
                 stackDomain
+            }
+        )
+    }
+
+    private createPlatformServiceEcrReposStack(stackProps: cdk.StackProps, envConfig: EnvConfig) {
+        const stackDomain = StackDomain.serviceEcrRepos
+
+        return new PlatformServiceEcrReposStack(
+            this.app,
+            'PlatformServiceEcrRepos',
+            {
+                stackName: resolveStackName(envConfig, stackDomain),
+                ...stackProps,
+                envConfig,
+                stackDomain
+            }
+        )
+    }
+
+    private createEdgeServicePipeline(
+        stackProps: cdk.StackProps,
+        envConfig: EnvConfig,
+        cicdrInfraStack: CicdInfraStack,
+        platformServiceEcrReposStack: PlatformServiceEcrReposStack
+    ) {
+        const stackDomain = StackDomain.edgeServicePipeline
+        const serviceName = PlatformServiceName.edgeService
+
+        const githubConfig = getGithubConfig(serviceName)
+
+        new PlatformServicePipelineStack(
+            this.app,
+            'EdgeServicePipeline',
+            {
+                stackName: resolveStackName(envConfig, stackDomain),
+                ...stackProps,
+                envConfig,
+                stackDomain,
+
+                serviceName,
+
+                artifactsBucket: cicdrInfraStack.artifactsBucket,
+                githubConnectionArn: cicdrInfraStack.githubConnectionArn,
+
+                ...githubConfig,
+
+                ecrRepo: platformServiceEcrReposStack.repos[serviceName]
+
             }
         )
     }

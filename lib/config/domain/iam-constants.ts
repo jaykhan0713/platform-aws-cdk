@@ -1,13 +1,16 @@
-// lib/config/iam/iam-constants.ts
 export const IamConstants = {
     principal: {
-        ecsTasks: 'ecs-tasks.amazonaws.com'
+        ecsTasks: 'ecs-tasks.amazonaws.com',
+        codeBuild: 'codebuild.amazonaws.com'
     },
 
     roleArea: {
         //ecs
         ecsTask: 'ecs-task',
-        ecsTaskExecution: 'ecs-task-execution'
+        ecsTaskExecution: 'ecs-task-execution',
+
+        //codebuild
+        codebuildDocker: 'code-build-docker'
     }
 
 
