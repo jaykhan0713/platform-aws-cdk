@@ -208,7 +208,6 @@ export class PlatformApp {
                 ...githubConfig,
 
                 ecrRepo: platformServiceEcrReposStack.repos[serviceName]
-
             }
         )
     }

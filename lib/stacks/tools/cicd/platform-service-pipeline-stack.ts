@@ -22,6 +22,8 @@ export interface PlatformServicePipelineStackProps extends BaseStackProps {
     ecrRepo: ecr.IRepository
 
     buildspecPath?: string
+
+    bootstrapEnabled?: boolean
 }
 
 export class PlatformServicePipelineStack extends BaseStack {
@@ -41,7 +43,12 @@ export class PlatformServicePipelineStack extends BaseStack {
             artifactsBucket: props.artifactsBucket,
             repo: props.ecrRepo,
             buildspecPath: props.buildspecPath,
-            enableReports: false
+            enableReports: false,
+            ...(
+                props.bootstrapEnabled
+                    ? { bootstrapTagName: 'bootstrap' }
+                    : {}
+            )
         })
 
         this.pipeline = new codepipeline.Pipeline(this, 'Pipeline', {

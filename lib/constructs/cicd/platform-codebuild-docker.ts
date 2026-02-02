@@ -23,6 +23,8 @@ export interface  PlatformCodeBuildDockerProjectProps extends BaseStackProps {
     // optional knobs
     enableReports?: boolean
 
+    bootstrapTagName?: string
+
 }
 
 export class PlatformCodeBuildDocker extends Construct {
@@ -62,14 +64,14 @@ export class PlatformCodeBuildDocker extends Construct {
             })
         )
 
-        // Source and artifact I/O (broad but fine for now, TODO: tighten later to pipeline prefix if you want)
+        // Source and artifact I/O (broad but fine for now, TODO: tighten later to pipeline prefix)
         props.artifactsBucket.grantReadWrite(this.role)
 
         const codeBuildProjectName = `${envConfig.projectName}-${props.serviceName}-build`
 
         // Logs: create a dedicated log group so permissions are clean and predictable
         this.logGroup = new logs.LogGroup(this, 'BuildLogGroup', {
-            logGroupName: `/aws/codebuild/${codeBuildProjectName}`, //TODO: make resolver(StackDomain)
+            logGroupName: `/codebuild/${codeBuildProjectName}`,
             retention: logs.RetentionDays.THREE_DAYS,
             removalPolicy: cdk.RemovalPolicy.DESTROY
         })
@@ -93,7 +95,8 @@ export class PlatformCodeBuildDocker extends Construct {
                 AWS_DEFAULT_REGION: { value: region },
                 ECR_REGISTRY: {value: ecrRegistry},
                 ECR_REPO_URI: { value: props.repo.repositoryUri },
-                BASE_IMAGES_REPO_URI: { value: baseImagesRepo.repositoryUri }
+                BASE_IMAGES_REPO_URI: { value: baseImagesRepo.repositoryUri },
+                BOOTSTRAP_TAG: { value: props.bootstrapTagName ?? '' }
             },
             buildSpec: codebuild.BuildSpec.fromSourceFilename(props.buildspecPath ?? 'buildspec.yml')
         })

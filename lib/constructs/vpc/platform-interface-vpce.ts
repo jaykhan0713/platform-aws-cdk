@@ -2,13 +2,12 @@ import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Construct } from 'constructs'
 import {TagKeys} from 'lib/config/naming'
-import {SubnetSelection} from 'aws-cdk-lib/aws-ec2'
 
 export interface InterfaceVpcEndpointProps {
     vpc: ec2.IVpc
     service: ec2.IInterfaceVpcEndpointService
     privateDnsEnabled: boolean
-    subnets: SubnetSelection
+    subnets: ec2.SubnetSelection
     securityGroups: ec2.ISecurityGroup[]
     nameTag: string
 }

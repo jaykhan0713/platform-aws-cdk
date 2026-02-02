@@ -1,30 +1,73 @@
 import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
-import { Construct } from 'constructs'
 
-import type { PlatformServiceRuntimeProps } from 'lib/stacks/props/platform-service-runtime-props'
-import { PlatformServiceName } from 'lib/config/domain/platform-service-name'
+import {Construct} from 'constructs'
+
+import type {PlatformServiceRuntimeProps} from 'lib/stacks/props/platform-service-runtime-props'
+import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {Duration} from 'aws-cdk-lib'
 
 interface PlatformEcsRollingServiceProps extends PlatformServiceRuntimeProps {
     serviceName: PlatformServiceName
-    taskDefinitionArn: string
+    fargateTaskDef: ecs.FargateTaskDefinition
+    desiredCount: number,
+    securityGroups: ec2.ISecurityGroup[] //sg's for task
+    healthCheckGracePeriodSeconds?: number
 
-    desiredCount: number
-
-    taskSecurityGroup: ec2.ISecurityGroup
-    subnetType: ec2.SubnetType
-
-
+    //service connect needed for as service as
+    serviceConnectServerMode?: {
+        appPortName: string
+    }
 }
 
 export class PlatformEcsRollingService extends Construct {
-    public constructor(
+    public readonly fargateService: ecs.FargateService
+
+    constructor(
         scope: Construct,
         id: string,
         props: PlatformEcsRollingServiceProps
     ) {
-        super(scope, id)
+        super(scope, id);
 
+        const serviceName = props.serviceName
+
+
+        const scConfig: ecs.ServiceConnectProps = props.serviceConnectServerMode
+            ? { //server + client mode
+                namespace: props.runtime.serviceConnectNamespace.namespaceName,
+                services: [
+                    {
+                        portMappingName: props.serviceConnectServerMode.appPortName,
+                        discoveryName: serviceName,
+                        dnsName: props.serviceName, //clients can use http://<serviceName>:8080
+                    },
+                ],
+            }
+            : { //client mode only
+                namespace: props.runtime.serviceConnectNamespace.namespaceName
+            }
+
+        const healthCheckGp =  props.healthCheckGracePeriodSeconds
+            ? { healthCheckGracePeriod: Duration.seconds(props.healthCheckGracePeriodSeconds) }
+            : {}
+
+        this.fargateService = new ecs.FargateService(this, 'FargateService', {
+            serviceName,
+            taskDefinition: props.fargateTaskDef,
+            cluster: props.runtime.cluster,
+            desiredCount: props.desiredCount,
+            assignPublicIp: false,
+            vpcSubnets: props.runtime.vpc.selectSubnets({
+                subnetType: ec2.SubnetType.PRIVATE_ISOLATED
+            }),
+            securityGroups: props.securityGroups,
+            ...healthCheckGp,
+            serviceConnectConfiguration: scConfig,
+            circuitBreaker: { rollback: true },
+            enableExecuteCommand: true //enable ecs exec
+        })
     }
+
 }

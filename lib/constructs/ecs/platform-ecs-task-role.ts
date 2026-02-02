@@ -21,7 +21,7 @@ export class PlatformEcsTaskRole extends Construct {
         const envConfig = props.envConfig
         const stackDomain = props.stackDomain
 
-        this.taskRole = new iam.Role(scope, 'RuntimeServiceTaskRole', {
+        this.taskRole = new iam.Role(this, 'RuntimeServiceTaskRole', {
             roleName: resolveIamRoleName(envConfig, stackDomain, IamConstants.roleArea.ecsTask),
             assumedBy: new iam.ServicePrincipal(IamConstants.principal.ecsTasks)
         })

@@ -76,6 +76,7 @@ export class VpcEndpointsStack extends BaseStack {
 
         //sg
         const sg = new ec2.SecurityGroup(this, 'VpcEndpointSecurityGroup', {
+            securityGroupName: resolveSecurityGroupName(this.envConfig, this.stackDomain),
             vpc,
             description: 'Allow HTTPS to interface VPCEs',
             allowAllOutbound: true
@@ -86,8 +87,6 @@ export class VpcEndpointsStack extends BaseStack {
             ec2.Port.tcp(443),
             'Allow HTTPS from inside VPC'
         )
-
-        Tags.of(sg).add(TagKeys.Name, resolveSecurityGroupName(this.envConfig, this.stackDomain))
 
         // vpc interface endpoints
 

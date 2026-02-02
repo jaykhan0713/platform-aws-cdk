@@ -19,14 +19,14 @@ export class EcsClusterStack extends BaseStack {
 
         this.ecsCluster = new ecs.Cluster(this, 'EcsCluster', {
             vpc,
-            clusterName: `${StackDomain.ecsCluster}-${this.envConfig.envName}`,
+            clusterName: `${props.envConfig.projectName}-cluster-${props.envConfig.envName}`,
             containerInsightsV2: ecs.ContainerInsights.DISABLED
         })
 
         new cdk.CfnOutput(this, 'CfnOutputEcsClusterArn', {
             description: 'ECS Cluster Arn',
             value: this.ecsCluster.clusterArn,
-            exportName: resolveExportName(this.envConfig, StackDomain.ecsCluster, 'ecs-cluster-arn')
+            exportName: resolveExportName(props.envConfig, StackDomain.ecsCluster, 'ecs-cluster-arn')
         })
     }
 }

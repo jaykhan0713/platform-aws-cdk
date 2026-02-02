@@ -23,6 +23,7 @@ export class PlatformEcsTaskSecurityGroup extends Construct {
         const { vpc } = props.runtime
 
         this.securityGroup = new ec2.SecurityGroup(this, 'EcsTaskSecurityGroup', {
+            securityGroupName: resolveSecurityGroupName(props.envConfig, props.stackDomain),
             vpc,
             description: `Platform service task SG (allow on ${props.appContainerPort} only from upstream SG)`,
             allowAllOutbound: true
@@ -34,7 +35,5 @@ export class PlatformEcsTaskSecurityGroup extends Construct {
                 : ec2.Peer.ipv4(vpc.vpcCidrBlock),
             ec2.Port.tcp(props.appContainerPort)
         )
-
-        Tags.of(this.securityGroup).add(TagKeys.Name, resolveSecurityGroupName(props.envConfig, props.stackDomain))
     }
 }
