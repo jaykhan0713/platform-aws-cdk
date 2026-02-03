@@ -1,0 +1,4 @@
+- ecs rolling service, circuitbreaker.enable + rollback = true
+- apigw and cognito migrated to cdk
+- consolidate bootstrap image on fargate service to release tag (explore)
+- CodePipeline rolling deploy
