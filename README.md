@@ -55,7 +55,7 @@ lib/
       observability-stack.ts
       network-stack.ts
     services/
-      edge-service-stack.ts
+      internal-alb-service-stack.ts
       wallet-service-stack.ts
   constructs/
     adot-sidecar-construct.ts

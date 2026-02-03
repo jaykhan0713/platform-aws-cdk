@@ -6,19 +6,16 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 
 import {Construct} from 'constructs'
 
-import type {PlatformServiceRuntimeProps} from 'lib/stacks/props/platform-service-runtime-props'
-import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
 import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
+import {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
 
-interface PlatformEcsTaskDefProps extends PlatformServiceRuntimeProps {
-    serviceName: PlatformServiceName
+interface PlatformEcsTaskDefProps extends PlatformServiceProps {
     taskDefCfg: TaskDefinitionConfig
 
-    taskRole: iam.IRole,
-    executionRole: iam.IRole
+    taskRole: iam.IRole
+    taskExecutionRole: iam.IRole
 
     appImage: ecs.ContainerImage //const image = ecs.ContainerImage.fromEcrRepository(repo, 'bootstrap')
-    adotImage: ecs.ContainerImage
 }
 
 export class PlatformEcsTaskDef extends Construct {
@@ -38,7 +35,7 @@ export class PlatformEcsTaskDef extends Construct {
         this.fargateTaskDef = new ecs.FargateTaskDefinition(this,  "ServiceFargateTaskDefinition", {
             family: `${projectName}-${serviceName}-${envName}`,
             taskRole: props.taskRole,
-            executionRole: props.executionRole,
+            executionRole: props.taskExecutionRole,
             cpu: taskDefCfg.cpu,
             memoryLimitMiB: taskDefCfg.memoryMiB,
             runtimePlatform: {
@@ -90,7 +87,7 @@ export class PlatformEcsTaskDef extends Construct {
 
         this.fargateTaskDef.addContainer('AdotContainer', {
             containerName: adot.containerName,
-            image: props.adotImage,
+            image: props.runtime.adotImage,
             cpu: adot.cpuUnits,
             memoryLimitMiB: adot.memoryMiB,
             essential: adot.essential,

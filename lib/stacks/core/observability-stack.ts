@@ -46,7 +46,7 @@ export class ObservabilityStack extends BaseStack {
         new cdk.CfnOutput(this, 'CfnOutputApsRemoteWriteEndpoint', {
             key: 'ApsRemoteWriteEndpoint',
             description: 'ADOT remote_write endpoint for metrics ingestion',
-            value: this.apsRemoteWriteEndpoint.toString(),
+            value: this.apsRemoteWriteEndpoint,
         })
 
         //Outputs without ssm exports, only for cfn for visibility
@@ -54,7 +54,7 @@ export class ObservabilityStack extends BaseStack {
         new cdk.CfnOutput(this, 'CfnOutputApsWorkspaceArn', {
             key: 'ApsWorkspaceArn',
             description: 'APS workspace ARN (useful for IAM policies)',
-            value: this.apsWorkspaceArn.toString(),
+            value: this.apsWorkspaceArn,
             exportName: resolveExportName(this.envConfig, this.stackDomain, 'aps-workspace-arn')
         })
 

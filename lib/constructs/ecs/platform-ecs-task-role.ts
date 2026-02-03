@@ -5,7 +5,11 @@ import { resolveIamRoleName } from 'lib/config/naming'
 import {resolveSsmParamPathArnWildcard} from 'lib/config/naming/ssm-param-paths'
 import {ParamNamespace} from 'lib/config/domain/param-namespace'
 import {IamConstants} from 'lib/config/domain/iam-constants'
-import type { PlatformServiceRuntimeProps } from 'lib/stacks/props'
+import {BaseStackProps} from 'lib/stacks/base-stack'
+
+export interface PlatformEcsTaskRoleProps extends BaseStackProps {
+    apsWorkspaceArn: string
+}
 
 export class PlatformEcsTaskRole extends Construct {
 
@@ -14,7 +18,7 @@ export class PlatformEcsTaskRole extends Construct {
     public constructor(
         scope: Construct,
         id: string,
-        props: PlatformServiceRuntimeProps
+        props: PlatformEcsTaskRoleProps
     ) {
         super(scope, id)
 
@@ -47,7 +51,7 @@ export class PlatformEcsTaskRole extends Construct {
                 sid: 'ApsRemoteWrite',
                 actions: ['aps:RemoteWrite'],
                 resources: [
-                    props.runtime.apsWorkspaceArn
+                    props.apsWorkspaceArn
                 ]
             })
         )

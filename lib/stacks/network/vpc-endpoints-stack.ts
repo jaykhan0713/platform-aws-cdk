@@ -4,7 +4,7 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import { Tags } from 'aws-cdk-lib'
-import {resolveSecurityGroupName, resolveVpceNameTag, TagKeys} from 'lib/config/naming'
+import { resolveVpceNameTag, TagKeys} from 'lib/config/naming'
 import { PlatformInterfaceVpce } from 'lib/constructs/vpc/platform-interface-vpce'
 import {VpceServiceName} from 'lib/config/domain/vpce-service-name'
 import {EnvConfig} from 'lib/config/env/env-config'
@@ -76,7 +76,7 @@ export class VpcEndpointsStack extends BaseStack {
 
         //sg
         const sg = new ec2.SecurityGroup(this, 'VpcEndpointSecurityGroup', {
-            securityGroupName: resolveSecurityGroupName(this.envConfig, this.stackDomain),
+            securityGroupName: `${props.envConfig.projectName}-${props.stackDomain}-sg-${props.envConfig.envName}`,
             vpc,
             description: 'Allow HTTPS to interface VPCEs',
             allowAllOutbound: true

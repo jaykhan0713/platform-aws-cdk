@@ -5,4 +5,4 @@ export const resolveSecurityGroupName = (
     envConfig: EnvConfig,
     domain: StackDomain
 ) =>
-    `${domain}-sg-${envConfig}`
+    `${domain}-sg-${envConfig.envName}`

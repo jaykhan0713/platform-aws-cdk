@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib'
+import * as ecr from 'aws-cdk-lib/aws-ecr'
 
 import { ObservabilityStack } from 'lib/stacks/core/observability-stack'
 import { resolveStackName } from 'lib/config/naming'
@@ -15,6 +16,9 @@ import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/platform-servi
 import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/platform-service-pipeline-stack'
 import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
 import {getGithubConfig} from 'lib/config/github/github-config'
+import {PlatformServiceEcrRepo} from 'lib/constructs/ecr/platform-service-ecr-repo'
+import * as ecs from 'aws-cdk-lib/aws-ecs'
+import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 
 export class PlatformApp {
 
@@ -41,15 +45,6 @@ export class PlatformApp {
         this.createVpcEndpointsStack(stackProps, envConfig, networkStack)
         const ecsClusterStack = this.createEcsClusterStack(stackProps, envConfig, networkStack)
 
-        //platform ecs services
-        const platformServiceRuntime: PlatformServiceRuntime = {
-            vpc: networkStack.vpc,
-            serviceConnectNamespace: networkStack.serviceConnectNamespace,
-            cluster: ecsClusterStack.ecsCluster,
-            taskExecutionRole: servicesCommonStack.taskExecutionRole,
-            apsWorkspaceArn: observabilityStack.apsWorkspaceArn
-        }
-
         //tools env stack (stack resources outside of runtime)
         const toolsConfig = getEnvConfig('tools')
         const toolsStackProps = toCdkStackProps(toolsConfig)
@@ -57,6 +52,36 @@ export class PlatformApp {
         const cicdInfraStack = this.createCicdInfraStack(toolsStackProps, toolsConfig)
         const platformServiceEcrReposStack = this.createPlatformServiceEcrReposStack(toolsStackProps, toolsConfig)
         this.createEdgeServicePipeline(toolsStackProps, toolsConfig, cicdInfraStack, platformServiceEcrReposStack)
+
+
+
+        //platform ecs services
+
+        //TODO: Update adot repo to actual stack
+        const adotRepo = ecr.Repository.fromRepositoryName(
+            observabilityStack,
+            'AdotRepo',
+            `${envConfig.projectName}/adot-collector`
+        )
+
+        const platformServiceRuntime: PlatformServiceRuntime = {
+            vpc: networkStack.vpc,
+            serviceConnectNamespace: networkStack.serviceConnectNamespace,
+            platformVpcLink: networkStack.platformVpcLink,
+            cluster: ecsClusterStack.ecsCluster,
+            taskExecPolicies: [servicesCommonStack.ssmReadCoreManagedPolicy],
+            apsRemoteWriteEndpoint: observabilityStack.apsRemoteWriteEndpoint,
+            apsWorkspaceArn: observabilityStack.apsWorkspaceArn,
+            adotImage: ecs.ContainerImage.fromEcrRepository(adotRepo, 'stable')
+        }
+
+        this.createInternalAlbServiceStack(
+            stackProps,
+            envConfig,
+            platformServiceRuntime,
+            PlatformServiceName.edgeService,
+            platformServiceEcrReposStack
+        )
     }
 
     //network stacks
@@ -208,6 +233,33 @@ export class PlatformApp {
                 ...githubConfig,
 
                 ecrRepo: platformServiceEcrReposStack.repos[serviceName]
+            }
+        )
+    }
+
+    private createInternalAlbServiceStack(
+        stackProps: cdk.StackProps,
+        envConfig: EnvConfig,
+        runtime: PlatformServiceRuntime,
+        serviceName: PlatformServiceName,
+        serviceEcrRepoStack: PlatformServiceEcrReposStack
+    ) {
+        const stackDomain = StackDomain.edgeService
+
+        new InternalAlbServiceStack(
+            this.app,
+            'EdgeService',
+            {
+                stackName: resolveStackName(envConfig, stackDomain),
+                ...stackProps,
+                envConfig,
+                stackDomain,
+
+                serviceName,
+                serviceRepo: serviceEcrRepoStack.repos[serviceName],
+
+                runtime
+
             }
         )
     }

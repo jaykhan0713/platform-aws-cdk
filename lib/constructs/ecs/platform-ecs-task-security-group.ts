@@ -1,13 +1,14 @@
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Construct } from 'constructs'
-import { PlatformServiceRuntimeProps } from 'lib/stacks/props/platform-service-runtime-props'
-import {Tags} from 'aws-cdk-lib'
-import {TagKeys} from 'lib/config/naming/tags'
-import {resolveSecurityGroupName} from 'lib/config/naming/security-groups'
 
-export interface PlatformEcsTaskSgProps extends PlatformServiceRuntimeProps {
+import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {BaseStackProps} from 'lib/stacks/base-stack'
+
+export interface PlatformEcsTaskSgProps extends BaseStackProps {
+    vpc: ec2.IVpc
     upstreamSg?: ec2.ISecurityGroup
     appContainerPort: number
+    serviceName: PlatformServiceName
 }
 
 export class PlatformEcsTaskSecurityGroup extends Construct {
@@ -20,19 +21,17 @@ export class PlatformEcsTaskSecurityGroup extends Construct {
     ) {
         super(scope, id)
 
-        const { vpc } = props.runtime
+        const { envConfig, serviceName, vpc } = props
 
         this.securityGroup = new ec2.SecurityGroup(this, 'EcsTaskSecurityGroup', {
-            securityGroupName: resolveSecurityGroupName(props.envConfig, props.stackDomain),
+            securityGroupName: `${envConfig.projectName}-${serviceName}-task-sg-${envConfig.envName}`,
             vpc,
             description: `Platform service task SG (allow on ${props.appContainerPort} only from upstream SG)`,
             allowAllOutbound: true
         })
 
         this.securityGroup.addIngressRule(
-            props?.upstreamSg
-                ? ec2.Peer.securityGroupId(props.upstreamSg.securityGroupId)
-                : ec2.Peer.ipv4(vpc.vpcCidrBlock),
+            props.upstreamSg ?? ec2.Peer.ipv4(vpc.vpcCidrBlock),
             ec2.Port.tcp(props.appContainerPort)
         )
     }

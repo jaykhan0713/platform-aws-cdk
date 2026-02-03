@@ -1,1 +1,1 @@
-export * from 'lib/stacks/props/platform-service-runtime-props'
+export * from 'lib/stacks/props/platform-service-props'

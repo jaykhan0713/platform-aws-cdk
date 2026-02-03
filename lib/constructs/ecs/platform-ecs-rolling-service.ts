@@ -4,20 +4,19 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 
 import {Construct} from 'constructs'
 
-import type {PlatformServiceRuntimeProps} from 'lib/stacks/props/platform-service-runtime-props'
+import type {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
 import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
 import {Duration} from 'aws-cdk-lib'
 
-interface PlatformEcsRollingServiceProps extends PlatformServiceRuntimeProps {
-    serviceName: PlatformServiceName
+interface PlatformEcsRollingServiceProps extends PlatformServiceProps {
     fargateTaskDef: ecs.FargateTaskDefinition
-    desiredCount: number,
+    desiredCount?: number,
     securityGroups: ec2.ISecurityGroup[] //sg's for task
     healthCheckGracePeriodSeconds?: number
 
     //service connect needed for as service as
     serviceConnectServerMode?: {
-        appPortName: string
+        appPortName: string //'http'
     }
 }
 
@@ -33,7 +32,6 @@ export class PlatformEcsRollingService extends Construct {
 
         const serviceName = props.serviceName
 
-
         const scConfig: ecs.ServiceConnectProps = props.serviceConnectServerMode
             ? { //server + client mode
                 namespace: props.runtime.serviceConnectNamespace.namespaceName,
@@ -41,7 +39,7 @@ export class PlatformEcsRollingService extends Construct {
                     {
                         portMappingName: props.serviceConnectServerMode.appPortName,
                         discoveryName: serviceName,
-                        dnsName: props.serviceName, //clients can use http://<serviceName>:8080
+                        dnsName: serviceName, //clients can use http://<serviceName>:8080
                     },
                 ],
             }
@@ -57,7 +55,7 @@ export class PlatformEcsRollingService extends Construct {
             serviceName,
             taskDefinition: props.fargateTaskDef,
             cluster: props.runtime.cluster,
-            desiredCount: props.desiredCount,
+            desiredCount: props.desiredCount ?? 1,
             assignPublicIp: false,
             vpcSubnets: props.runtime.vpc.selectSubnets({
                 subnetType: ec2.SubnetType.PRIVATE_ISOLATED
@@ -66,7 +64,21 @@ export class PlatformEcsRollingService extends Construct {
             ...healthCheckGp,
             serviceConnectConfiguration: scConfig,
             circuitBreaker: { rollback: true },
-            enableExecuteCommand: true //enable ecs exec
+            enableExecuteCommand: true, //enable ecs exec
+            minHealthyPercent: 100,
+            maxHealthyPercent: 200
+        })
+
+        //auto scaling
+        const scaling = this.fargateService.autoScaleTaskCount({
+            minCapacity: 1,
+            maxCapacity: 6
+        })
+
+        scaling.scaleOnCpuUtilization('CpuTargetTracking', {
+            targetUtilizationPercent: 70,
+            scaleInCooldown: cdk.Duration.seconds(180),
+            scaleOutCooldown: cdk.Duration.seconds(60)
         })
     }
 

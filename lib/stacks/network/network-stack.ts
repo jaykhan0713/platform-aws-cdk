@@ -6,10 +6,12 @@ import { BaseStack, type BaseStackProps } from 'lib/stacks/base-stack'
 import {resolveExportName} from 'lib/config/naming'
 import { StackDomain } from 'lib/config/domain/stack-domain'
 import { AZ } from 'lib/config/domain'
+import {PlatformVpcLink} from 'lib/constructs/vpc/platform-vpc-link'
 
 export class NetworkStack extends BaseStack {
     public readonly vpc: ec2.Vpc
     public readonly serviceConnectNamespace: servicediscovery.IHttpNamespace
+    public readonly platformVpcLink: PlatformVpcLink
 
     public constructor(scope: cdk.App,  id: string,  props: BaseStackProps) {
         super(scope, id, props)
@@ -58,6 +60,11 @@ export class NetworkStack extends BaseStack {
         this.serviceConnectNamespace = new servicediscovery.HttpNamespace(this, 'ServiceConnectHttpNamespace', {
             name: `${project}-http-namespace-${envName}`,
             description: `Service Connect namespace for internal services`
+        })
+
+        this.platformVpcLink = new PlatformVpcLink(this, 'PlatformVpcLink', {
+            ...props,
+            vpc: this.vpc
         })
 
         //Outputs
