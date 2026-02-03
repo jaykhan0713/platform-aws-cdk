@@ -1,4 +1,4 @@
 - ecs rolling service, circuitbreaker.enable + rollback = true
 - apigw and cognito migrated to cdk
-- consolidate bootstrap image on fargate service to release tag (explore)
-- CodePipeline rolling deploy
+- Move pipline deploy action to source cdk repo and do cdk deploy EdgeService -c imageTag=<> via second source and codebuild runner
+- CodePipeline ecs rolling deploy
