@@ -120,8 +120,8 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                             // fail early if empty
                             `test -n "$IMAGE_TAG"`,
 
-                            'npx cdk deploy "$SERVICE_STACK_NAME" --exclusively --require-approval never ' +
-                            '--parameters "${SERVICE_STACK_NAME}:${IMAGE_TAG_PARAMETER_NAME}=${IMAGE_TAG}"'
+                            'npx cdk deploy $SERVICE_STACK_NAME --require-approval never ' +
+                            '-c $IMAGE_TAG_PARAMETER_NAME=$IMAGE_TAG'
                         ]
                     }
                 }
