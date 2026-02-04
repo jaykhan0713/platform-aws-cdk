@@ -22,6 +22,9 @@ export class InternalAlbServiceStack extends BaseStack {
         const { vpc, platformVpcLink } = props.runtime
 
         const imageTag = this.node.tryGetContext('ImageTag')
+        if (typeof imageTag !== 'string' || imageTag.trim() === '') {
+            throw new Error(`${props.stackName}: ImageTag context is required`)
+        }
 
         // 1. Create  VPC, solve SG dependencies
 
@@ -38,7 +41,7 @@ export class InternalAlbServiceStack extends BaseStack {
             platformInternalAlb.securityGroup,
             ec2.Port.tcp(albHttpListenerPort),
             `VpcLink Egress to Alb on port ${albHttpListenerPort}`,
-            true //sg from different stack, rule is owned bby this stack.
+            true //sg from different stack, rule is owned by this stack.
         )
 
         // 2. create ECS Service SG and solve deps, TODO: can create map and pass configs in with key serviceName

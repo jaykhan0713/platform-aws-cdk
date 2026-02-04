@@ -44,7 +44,6 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
         const qualifier = props.bootstrapQualifier ?? 'hnb659fds'
         const cdkSrcName = props.cdkSourceArtifactName ?? 'CdkSrc'
         const buildOutputName = props.buildOutputArtifactName ?? 'BuildOutput'
-        const imageTagParam = props.imageTagParameterName ?? 'ImageTag'
 
         const deployProjectName = `${envConfig.projectName}-${props.serviceName}-deploy`
 
@@ -91,8 +90,7 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
             environmentVariables: {
                 AWS_DEFAULT_REGION: {value: region},
                 CDK_SOURCE_ARTIFACT_NAME: {value: cdkSrcName},
-                SERVICE_STACK_NAME: {value: props.serviceStackName},
-                IMAGE_TAG_PARAMETER_NAME: {value: imageTagParam}
+                SERVICE_STACK_NAME: {value: props.serviceStackName}
             },
             buildSpec: codebuild.BuildSpec.fromObject({
                 version: '0.2',
@@ -105,7 +103,7 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                             'npm ci'
                         ]
                     },
-                    build: { //TODO handle env via -c
+                    build: {
                         commands: [
                             `cd "$CODEBUILD_SRC_DIR_${cdkSrcName}"`,
 
@@ -120,7 +118,9 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                             // fail early if empty
                             `test -n "$IMAGE_TAG"`,
 
-                            'npx cdk deploy $SERVICE_STACK_NAME --require-approval never -c $IMAGE_TAG_PARAMETER_NAME=$IMAGE_TAG'
+                            'npx cdk deploy $SERVICE_STACK_NAME --require-approval never ' +
+                            `-c deploy=${props.serviceName} ` +
+                            `-c ImageTag=$IMAGE_TAG`
                         ]
                     }
                 }

@@ -56,8 +56,6 @@ export class PlatformApp {
             platformServiceEcrReposStack
         )
 
-
-
         //platform ecs services
 
         //TODO: Update adot repo to actual stack
@@ -78,13 +76,25 @@ export class PlatformApp {
             adotImage: ecs.ContainerImage.fromEcrRepository(adotRepo, 'stable')
         }
 
-        this.createEdgeServiceStack(
-            stackProps,
-            envConfig,
-            platformServiceRuntime,
-            PlatformService.edgeService,
-            platformServiceEcrReposStack
-        )
+        /**
+         * TODO: currently using deploy=<PlatformService> to stop synth when deploying
+         *  other apps as correct context keys like imageTag arent always passed in.
+         *
+         *  TODO: to simulate real org workflows, will decouple stacks to it's own
+         *   bin/'s according to their Ownership boundaries i.e network, ecs, cicd/tools in their own app.
+         */
+        const deployTarget = String(app.node.tryGetContext('deploy') ?? '')
+
+        if (deployTarget === PlatformService.edgeService) {
+            this.createEdgeServiceStack(
+                stackProps,
+                envConfig,
+                platformServiceRuntime,
+                PlatformService.edgeService,
+                platformServiceEcrReposStack
+            )
+        }
+
     }
 
     //network stacks
