@@ -21,7 +21,7 @@ export class InternalAlbServiceStack extends BaseStack {
         const { envConfig, serviceName } = props
         const { vpc, platformVpcLink } = props.runtime
 
-        const imageTag = this.node.tryGetContext('ImageTag') ?? 'bootstrap'
+        const imageTag = this.node.tryGetContext('ImageTag')
 
         // 1. Create  VPC, solve SG dependencies
 
