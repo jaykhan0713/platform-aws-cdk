@@ -21,6 +21,12 @@ export class InternalAlbServiceStack extends BaseStack {
         const { envConfig, serviceName } = props
         const { vpc, platformVpcLink } = props.runtime
 
+        //0. create CfnParameter for app image, this way stack is the source of truth for current.
+        //   also means you can cdk deploy <StackId> from local without passing in params, as long as stack is running.
+        const imageTagParam = new cdk.CfnParameter(this, 'ImageTag', {
+            type: 'String'
+        })
+
         // 1. Create  VPC, solve SG dependencies
 
         const albHttpListenerPort = 80
@@ -79,7 +85,7 @@ export class InternalAlbServiceStack extends BaseStack {
             taskDefCfg,
             taskRole,
             taskExecutionRole,
-            appImage: ecs.ContainerImage.fromEcrRepository(props.serviceRepo, 'bootstrap')
+            appImage: ecs.ContainerImage.fromEcrRepository(props.serviceRepo, imageTagParam.valueAsString)
         }).fargateTaskDef
 
         // 4. create ecs service, target groups, attach to TG
@@ -88,7 +94,7 @@ export class InternalAlbServiceStack extends BaseStack {
             fargateTaskDef,
             desiredCount: 1,
             securityGroups: [ecsTaskSg],
-            healthCheckGracePeriodSeconds: 60
+            healthCheckGracePeriodSeconds: 90
         }).fargateService
 
         new PlatformInternalAlbTargetGroup(this, 'PlatformInternalAlbTargetGroup', {

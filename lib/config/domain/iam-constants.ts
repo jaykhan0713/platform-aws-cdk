@@ -10,7 +10,8 @@ export const IamConstants = {
         ecsTaskExecution: 'ecs-task-execution',
 
         //codebuild
-        codebuildDocker: 'code-build-docker'
+        codebuildDocker: 'codebuild-docker',
+        codebuildDeploy: 'codebuild-deploy'
     }
 
 

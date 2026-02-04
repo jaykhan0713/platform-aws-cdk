@@ -63,7 +63,10 @@ export class PlatformEcsRollingService extends Construct {
             securityGroups: props.securityGroups,
             ...healthCheckGp,
             serviceConnectConfiguration: scConfig,
-            circuitBreaker: { rollback: true },
+            circuitBreaker: {
+                enable: true,
+                rollback: true
+            },
             enableExecuteCommand: true, //enable ecs exec
             minHealthyPercent: 100,
             maxHealthyPercent: 200

@@ -15,8 +15,6 @@ import type { PlatformServiceRuntime } from 'lib/stacks/props'
 import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/platform-service-ecr-repos-stack'
 import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/platform-service-pipeline-stack'
 import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
-import {getGithubConfig} from 'lib/config/github/github-config'
-import {PlatformServiceEcrRepo} from 'lib/constructs/ecr/platform-service-ecr-repo'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 
@@ -51,7 +49,12 @@ export class PlatformApp {
 
         const cicdInfraStack = this.createCicdInfraStack(toolsStackProps, toolsConfig)
         const platformServiceEcrReposStack = this.createPlatformServiceEcrReposStack(toolsStackProps, toolsConfig)
-        this.createEdgeServicePipeline(toolsStackProps, toolsConfig, cicdInfraStack, platformServiceEcrReposStack)
+        this.createEdgeServicePipeline(
+            toolsStackProps,
+            toolsConfig,
+            cicdInfraStack,
+            platformServiceEcrReposStack
+        )
 
 
 
@@ -75,7 +78,7 @@ export class PlatformApp {
             adotImage: ecs.ContainerImage.fromEcrRepository(adotRepo, 'stable')
         }
 
-        this.createInternalAlbServiceStack(
+        this.createEdgeServiceStack(
             stackProps,
             envConfig,
             platformServiceRuntime,
@@ -206,38 +209,36 @@ export class PlatformApp {
     }
 
     private createEdgeServicePipeline(
-        stackProps: cdk.StackProps,
-        envConfig: EnvConfig,
+        toolsStackProps: cdk.StackProps,
+        toolsEnvConfig: EnvConfig,
         cicdrInfraStack: CicdInfraStack,
         platformServiceEcrReposStack: PlatformServiceEcrReposStack
     ) {
         const stackDomain = StackDomain.edgeServicePipeline
         const serviceName = PlatformServiceName.edgeService
 
-        const githubConfig = getGithubConfig(serviceName)
 
         new PlatformServicePipelineStack(
             this.app,
             'EdgeServicePipeline',
             {
-                stackName: resolveStackName(envConfig, stackDomain),
-                ...stackProps,
-                envConfig,
+                stackName: resolveStackName(toolsEnvConfig, stackDomain),
+                ...toolsStackProps,
+                envConfig: toolsEnvConfig,
                 stackDomain,
 
-                serviceName,
+                serviceName, //TODO when adding more envs, handle gracefully for steps
+                serviceStackName: 'EdgeService',
 
                 artifactsBucket: cicdrInfraStack.artifactsBucket,
                 githubConnectionArn: cicdrInfraStack.githubConnectionArn,
-
-                ...githubConfig,
 
                 ecrRepo: platformServiceEcrReposStack.repos[serviceName]
             }
         )
     }
 
-    private createInternalAlbServiceStack(
+    private createEdgeServiceStack(
         stackProps: cdk.StackProps,
         envConfig: EnvConfig,
         runtime: PlatformServiceRuntime,

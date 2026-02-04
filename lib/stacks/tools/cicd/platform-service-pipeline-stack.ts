@@ -7,17 +7,15 @@ import * as s3 from 'aws-cdk-lib/aws-s3'
 import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
 import { PlatformServiceName } from 'lib/config/domain/platform-service-name'
 import { PlatformCodeBuildDocker } from 'lib/constructs/cicd/platform-codebuild-docker'
+import {getPlatformCdkGithubConfig, getServiceGithubConfig} from 'lib/config/github/github-config'
+import {PlatformCodeBuildCdkDeploy} from 'lib/constructs/cicd/platform-codebuild-cdk-deploy'
 
 export interface PlatformServicePipelineStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
+    serviceStackName: string
 
     artifactsBucket: s3.IBucket
     githubConnectionArn: string
-
-    // service repo location
-    githubOwner: string
-    githubRepo: string
-    githubBranch: string
 
     ecrRepo: ecr.IRepository
 
@@ -34,7 +32,8 @@ export class PlatformServicePipelineStack extends BaseStack {
 
         const envConfig = props.envConfig
 
-        const sourceOutput = new codepipeline.Artifact('SourceOutput')
+        const serviceSrc = new codepipeline.Artifact('ServiceSrc')
+        const cdkSrc = new codepipeline.Artifact('CdkSrc')
         const buildOutput = new codepipeline.Artifact('BuildOutput')
 
         // CodeBuild project created inside pipeline stack
@@ -51,22 +50,38 @@ export class PlatformServicePipelineStack extends BaseStack {
             )
         })
 
+        const deployBuild = new PlatformCodeBuildCdkDeploy(this, 'BuildCdkDeploy', {
+            ...props
+        })
+
         this.pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
             pipelineName: `${envConfig.projectName}-${props.serviceName}-pipeline`,
             artifactBucket: props.artifactsBucket,
             restartExecutionOnUpdate: true
         })
 
+        const serviceGit = getServiceGithubConfig(props.serviceName)
+        const cdkGit = getPlatformCdkGithubConfig()
+
         this.pipeline.addStage({
             stageName: 'Source',
             actions: [
                 new codepipelineActions.CodeStarConnectionsSourceAction({
-                    actionName: 'GitHub',
-                    owner: props.githubOwner,
-                    repo: props.githubRepo,
-                    branch: props.githubBranch,
+                    actionName: 'ServiceGitHub',
+                    owner: serviceGit.githubOwner,
+                    repo: serviceGit.githubRepo,
+                    branch: serviceGit.githubBranch,
                     connectionArn: props.githubConnectionArn,
-                    output: sourceOutput,
+                    output: serviceSrc,
+                    triggerOnPush: false
+                }),
+                new codepipelineActions.CodeStarConnectionsSourceAction({
+                    actionName: 'CdkGitHub',
+                    owner: cdkGit.githubOwner,
+                    repo: cdkGit.githubRepo,
+                    branch: cdkGit.githubBranch,
+                    connectionArn: props.githubConnectionArn,
+                    output: cdkSrc,
                     triggerOnPush: false
                 })
             ]
@@ -78,18 +93,20 @@ export class PlatformServicePipelineStack extends BaseStack {
                 new codepipelineActions.CodeBuildAction({
                     actionName: 'DockerBuildAndPush',
                     project: dockerBuild.project,
-                    input: sourceOutput,
+                    input: serviceSrc,
                     outputs: [buildOutput]
                 })
             ]
         })
 
-        // Placeholder deploy stage so you can confirm Source -> Build works end to end
         this.pipeline.addStage({
             stageName: 'Deploy',
             actions: [
-                new codepipelineActions.ManualApprovalAction({
-                    actionName: 'Hold'
+                new codepipelineActions.CodeBuildAction({
+                    actionName: 'CdkDeploy',
+                    project: deployBuild.project,
+                    input: cdkSrc,
+                    extraInputs: [buildOutput]
                 })
             ]
         })

@@ -5,7 +5,7 @@ import * as logs from 'aws-cdk-lib/aws-logs'
 import * as s3 from 'aws-cdk-lib/aws-s3'
 import {Construct} from 'constructs'
 
-import {resolveIamRoleName} from 'lib/config/naming'
+import {resolveIamRoleName} from 'lib/config/naming/index'
 import {IamConstants} from 'lib/config/domain/iam-constants'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
@@ -17,10 +17,10 @@ export interface PlatformCodeBuildCdkDeployProjectProps extends BaseStackProps {
 
     // CodePipeline artifact names (these become CODEBUILD_SRC_DIR_<name>)
     cdkSourceArtifactName?: string // default: CdkSrc
-    imageTagArtifactName?: string  // default: ImageTagArtifact
+    buildOutputArtifactName?: string //default: BuildOuput
 
     // What to deploy
-    stackName: string
+    serviceStackName: string
 
     // CFN parameter name in the stack
     imageTagParameterName?: string // default: ImageTag
@@ -43,7 +43,7 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
 
         const qualifier = props.bootstrapQualifier ?? 'hnb659fds'
         const cdkSrcName = props.cdkSourceArtifactName ?? 'CdkSrc'
-        const imageTagArtifactName = props.imageTagArtifactName ?? 'ImageTagArtifact'
+        const buildOutputName = props.buildOutputArtifactName ?? 'BuildOutput'
         const imageTagParam = props.imageTagParameterName ?? 'ImageTag'
 
         const deployProjectName = `${envConfig.projectName}-${props.serviceName}-deploy`
@@ -91,8 +91,7 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
             environmentVariables: {
                 AWS_DEFAULT_REGION: {value: region},
                 CDK_SOURCE_ARTIFACT_NAME: {value: cdkSrcName},
-                IMAGE_TAG_ARTIFACT_NAME: {value: imageTagArtifactName},
-                STACK_NAME: {value: props.stackName},
+                SERVICE_STACK_NAME: {value: props.serviceStackName},
                 IMAGE_TAG_PARAMETER_NAME: {value: imageTagParam}
             },
             buildSpec: codebuild.BuildSpec.fromObject({
@@ -102,22 +101,16 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                         commands: [
                             'node --version',
                             'npm --version',
-
-                            // CDK repo is the primary source in this project, but we still cd explicitly
                             `cd "$CODEBUILD_SRC_DIR_${cdkSrcName}"`,
-
-                            // Install deps for the CDK repo
                             'npm ci'
                         ]
                     },
                     build: {
                         commands: [
-                            // Read the image tag produced by the build step
-                            `export IMAGE_TAG="$(cat "$CODEBUILD_SRC_DIR_${imageTagArtifactName}/imagetag.txt")"`,
-
-                            // Deploy, setting CFN parameter so the stack stores it
-                            'npx cdk deploy "$STACK_NAME" --require-approval never ' +
-                            '--parameters "$IMAGE_TAG_PARAMETER_NAME=$IMAGE_TAG"'
+                            `cd "$CODEBUILD_SRC_DIR_${cdkSrcName}"`,
+                            `export IMAGE_TAG="$(cat "$CODEBUILD_SRC_DIR_${buildOutputName}/imagetag.txt")"`,
+                            'npx cdk deploy "$SERVICE_STACK_NAME" --require-approval never ' +
+                            '--parameters "${SERVICE_STACK_NAME}:${IMAGE_TAG_PARAMETER_NAME}=${IMAGE_TAG}"'
                         ]
                     }
                 }
