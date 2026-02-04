@@ -1,4 +1,4 @@
-import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {PlatformService} from 'lib/config/domain/platform-service'
 
 export const StackDomain = {
     //runtime envs
@@ -10,13 +10,13 @@ export const StackDomain = {
     serviceEcrRepos: 'service-ecr-repos',
 
     //platform's service stacks
-    edgeService: PlatformServiceName.edgeService,
+    edgeService: PlatformService.edgeService,
 
     //tools env
     cicdInfra: 'cicd-infra',
 
     //tools env pipeline stacks
-    edgeServicePipeline: `${PlatformServiceName.edgeService}-pipeline`
+    edgeServicePipeline: `${PlatformService.edgeService}-pipeline`
 } as const
 
 export type StackDomain = typeof StackDomain[keyof typeof StackDomain]

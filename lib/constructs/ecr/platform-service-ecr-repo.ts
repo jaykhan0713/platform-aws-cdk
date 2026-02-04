@@ -2,11 +2,11 @@ import * as cdk from 'aws-cdk-lib'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
 import type { BaseStackProps } from 'lib/stacks/base-stack'
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
-import { PlatformServiceName } from 'lib/config/domain/platform-service-name'
+import { PlatformService } from 'lib/config/domain/platform-service'
 import {Construct} from 'constructs'
 
 export interface PlatformServiceEcrProps extends BaseStackProps {
-    readonly serviceName: PlatformServiceName
+    readonly serviceName: PlatformService
 }
 
 export class PlatformServiceEcrRepo extends Construct {

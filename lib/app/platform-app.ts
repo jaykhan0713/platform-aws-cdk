@@ -14,7 +14,7 @@ import { NetworkStack } from 'lib/stacks/network/network-stack'
 import type { PlatformServiceRuntime } from 'lib/stacks/props'
 import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/platform-service-ecr-repos-stack'
 import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/platform-service-pipeline-stack'
-import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {PlatformService} from 'lib/config/domain/platform-service'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 
@@ -82,7 +82,7 @@ export class PlatformApp {
             stackProps,
             envConfig,
             platformServiceRuntime,
-            PlatformServiceName.edgeService,
+            PlatformService.edgeService,
             platformServiceEcrReposStack
         )
     }
@@ -215,7 +215,7 @@ export class PlatformApp {
         platformServiceEcrReposStack: PlatformServiceEcrReposStack
     ) {
         const stackDomain = StackDomain.edgeServicePipeline
-        const serviceName = PlatformServiceName.edgeService
+        const serviceName = PlatformService.edgeService
 
 
         new PlatformServicePipelineStack(
@@ -242,7 +242,7 @@ export class PlatformApp {
         stackProps: cdk.StackProps,
         envConfig: EnvConfig,
         runtime: PlatformServiceRuntime,
-        serviceName: PlatformServiceName,
+        serviceName: PlatformService,
         serviceEcrRepoStack: PlatformServiceEcrReposStack
     ) {
         const stackDomain = StackDomain.edgeService

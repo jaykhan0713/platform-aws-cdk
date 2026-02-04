@@ -1,5 +1,5 @@
 import type { EnvConfig } from 'lib/config/env/env-config'
-import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {PlatformService} from 'lib/config/domain/platform-service'
 
 export type EnvMap = Readonly<Record<string, string>>
 export type SecretMap = Readonly<Record<string, string>> // name -> ssm param path
@@ -45,7 +45,7 @@ export interface TaskDefinitionConfig {
 }
 
 export const defaultTaskDefConfig = (args: {
-    serviceName: PlatformServiceName
+    serviceName: PlatformService
     envConfig: EnvConfig
     apsRemoteWriteEndpoint: string
 }): TaskDefinitionConfig => {

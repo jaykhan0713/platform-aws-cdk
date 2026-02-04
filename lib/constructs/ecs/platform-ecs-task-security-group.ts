@@ -1,14 +1,14 @@
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Construct } from 'constructs'
 
-import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {PlatformService} from 'lib/config/domain/platform-service'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 
 export interface PlatformEcsTaskSgProps extends BaseStackProps {
     vpc: ec2.IVpc
     upstreamSg?: ec2.ISecurityGroup
     appContainerPort: number
-    serviceName: PlatformServiceName
+    serviceName: PlatformService
 }
 
 export class PlatformEcsTaskSecurityGroup extends Construct {

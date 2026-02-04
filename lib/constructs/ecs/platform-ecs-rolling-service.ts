@@ -5,8 +5,6 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 import {Construct} from 'constructs'
 
 import type {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
-import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
-import {Duration} from 'aws-cdk-lib'
 
 interface PlatformEcsRollingServiceProps extends PlatformServiceProps {
     fargateTaskDef: ecs.FargateTaskDefinition
@@ -48,7 +46,7 @@ export class PlatformEcsRollingService extends Construct {
             }
 
         const healthCheckGp =  props.healthCheckGracePeriodSeconds
-            ? { healthCheckGracePeriod: Duration.seconds(props.healthCheckGracePeriodSeconds) }
+            ? { healthCheckGracePeriod: cdk.Duration.seconds(props.healthCheckGracePeriodSeconds) }
             : {}
 
         this.fargateService = new ecs.FargateService(this, 'FargateService', {

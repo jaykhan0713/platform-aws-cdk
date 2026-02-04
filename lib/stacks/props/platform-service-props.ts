@@ -6,11 +6,11 @@ import * as ecr from 'aws-cdk-lib/aws-ecr'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import * as servicediscovery from 'aws-cdk-lib/aws-servicediscovery'
 import { PlatformVpcLink } from 'lib/constructs/vpc/platform-vpc-link'
-import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {PlatformService} from 'lib/config/domain/platform-service'
 
 export interface PlatformServiceProps extends BaseStackProps {
     readonly runtime: PlatformServiceRuntime
-    readonly serviceName: PlatformServiceName
+    readonly serviceName: PlatformService
     readonly serviceRepo: ecr.IRepository
 }
 

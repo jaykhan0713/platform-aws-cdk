@@ -4,11 +4,11 @@ import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import {Construct} from 'constructs'
 
 import type {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
-import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {PlatformService} from 'lib/config/domain/platform-service'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 
 export interface PlatformInternalAlbProps extends BaseStackProps {
-    serviceName: PlatformServiceName
+    serviceName: PlatformService
     vpc: ec2.IVpc
     upstreamSg: ec2.ISecurityGroup
     albHttpListenerPort?: number

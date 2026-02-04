@@ -9,11 +9,11 @@ import { Construct } from 'constructs'
 import { resolveIamRoleName } from 'lib/config/naming'
 import { IamConstants } from 'lib/config/domain/iam-constants'
 import {BaseStackProps} from 'lib/stacks/base-stack'
-import {PlatformServiceName} from 'lib/config/domain/platform-service-name'
+import {PlatformService} from 'lib/config/domain/platform-service'
 
 export interface  PlatformCodeBuildDockerProjectProps extends BaseStackProps {
 
-    serviceName: PlatformServiceName
+    serviceName: PlatformService
 
     artifactsBucket: s3.IBucket
     repo: ecr.IRepository //service repo
