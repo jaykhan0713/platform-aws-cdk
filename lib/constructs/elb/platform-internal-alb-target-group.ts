@@ -1,8 +1,10 @@
+import * as cdk from 'aws-cdk-lib'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import { Construct } from 'constructs'
 
 import { PlatformServiceProps } from 'lib/stacks/props/platform-service-props'
+
 
 export interface PlatformInternalAlbTargetGroupProps extends PlatformServiceProps {
     listener: elbv2.ApplicationListener
@@ -31,8 +33,11 @@ export class PlatformInternalAlbTargetGroup extends Construct {
             targetType: elbv2.TargetType.IP,
             healthCheck: {
                 path: '/actuator/health/readiness'
-            }
+            },
+            //allow existing connections to continue for Duration after ALB stops sending new requests
+            deregistrationDelay: cdk.Duration.seconds(60)
         })
+
 
         // attach ECS service to TG
         fargateService.attachToApplicationTargetGroup(tg)

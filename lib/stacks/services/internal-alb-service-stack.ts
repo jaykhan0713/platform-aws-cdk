@@ -81,7 +81,7 @@ export class InternalAlbServiceStack extends BaseStack {
             taskDefCfg,
             taskRole,
             taskExecutionRole,
-            appImage: ecs.ContainerImage.fromEcrRepository(props.serviceRepo, imageTag.valueAsString)
+            appImage: ecs.ContainerImage.fromEcrRepository(props.serviceRepo, imageTag)
         }).fargateTaskDef
 
         // 4. create ecs service, target groups, attach to TG
