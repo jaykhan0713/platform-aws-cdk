@@ -105,7 +105,7 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                             'npm ci'
                         ]
                     },
-                    build: {
+                    build: { //TODO handle env via -c
                         commands: [
                             `cd "$CODEBUILD_SRC_DIR_${cdkSrcName}"`,
 
@@ -120,8 +120,7 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                             // fail early if empty
                             `test -n "$IMAGE_TAG"`,
 
-                            'npx cdk deploy $SERVICE_STACK_NAME --require-approval never ' +
-                            '-c $IMAGE_TAG_PARAMETER_NAME=$IMAGE_TAG'
+                            'npx cdk deploy $SERVICE_STACK_NAME --require-approval never -c $IMAGE_TAG_PARAMETER_NAME=$IMAGE_TAG'
                         ]
                     }
                 }

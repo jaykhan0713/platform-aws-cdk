@@ -5,7 +5,7 @@ import { resolveStackName } from 'lib/config/naming'
 import type { EnvConfig } from 'lib/config/env/env-config'
 import type { StackDomain } from 'lib/config/domain/stack-domain'
 
-//deprecated
+//only used in proper repos where network infra lives in separate repo.
 export class VpcImports {
 
     private static readonly networkDomain: StackDomain = 'network'
