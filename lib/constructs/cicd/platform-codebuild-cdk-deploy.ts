@@ -108,7 +108,18 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                     build: {
                         commands: [
                             `cd "$CODEBUILD_SRC_DIR_${cdkSrcName}"`,
+
+                            `echo "BuildOutput dir: $CODEBUILD_SRC_DIR_${buildOutputName}"`,
+                            `ls -la "$CODEBUILD_SRC_DIR_${buildOutputName}" || true`,
+                            `echo "imagetag.txt contents:"`,
+                            `cat "$CODEBUILD_SRC_DIR_${buildOutputName}/imagetag.txt" || true`,
+
                             `export IMAGE_TAG="$(cat "$CODEBUILD_SRC_DIR_${buildOutputName}/imagetag.txt")"`,
+                            `echo "IMAGE_TAG=[$IMAGE_TAG]"`,
+
+                            // fail early if empty
+                            `test -n "$IMAGE_TAG"`,
+
                             'npx cdk deploy "$SERVICE_STACK_NAME" --require-approval never ' +
                             '--parameters "${SERVICE_STACK_NAME}:${IMAGE_TAG_PARAMETER_NAME}=${IMAGE_TAG}"'
                         ]
