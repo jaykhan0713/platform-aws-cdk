@@ -5,13 +5,13 @@ import * as ecr from 'aws-cdk-lib/aws-ecr'
 import * as s3 from 'aws-cdk-lib/aws-s3'
 
 import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
-import { PlatformService } from 'lib/config/domain/platform-service'
+import { PlatformServiceName } from 'lib/config/service/platform-service-name'
 import { PlatformCodeBuildDocker } from 'lib/constructs/cicd/platform-codebuild-docker'
 import {getPlatformCdkGithubConfig, getServiceGithubConfig} from 'lib/config/github/github-config'
 import {PlatformCodeBuildCdkDeploy} from 'lib/constructs/cicd/platform-codebuild-cdk-deploy'
 
 export interface PlatformServicePipelineStackProps extends BaseStackProps {
-    serviceName: PlatformService
+    serviceName: PlatformServiceName
     serviceStackName: string
 
     artifactsBucket: s3.IBucket

@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Construct } from 'constructs'
-import { resolveStackName } from 'lib/config/naming'
+import {resolveExportName, resolveStackName} from 'lib/config/naming'
 import type { EnvConfig } from 'lib/config/env/env-config'
 import type { StackDomain } from 'lib/config/domain/stack-domain'
 
@@ -18,38 +18,32 @@ export class VpcImports {
         return cdk.Fn.importValue(`${resolveStackName(envConfig, this.networkDomain)}-vpc-cidr`)
     }
 
-    public static privateSubnetIds(envConfig: EnvConfig) {
-        const exportingStackName = resolveStackName(envConfig, this.networkDomain)
+    public static privateIsolatedSubnetIds(envConfig: EnvConfig) {
         return [
-            cdk.Fn.importValue(`${exportingStackName}-private-subnet-a-id`),
-            cdk.Fn.importValue(`${exportingStackName}-private-subnet-b-id`)
+            cdk.Fn.importValue(resolveExportName(envConfig, this.networkDomain, 'private-isolated-subnet-0-id')),
+            cdk.Fn.importValue(resolveExportName(envConfig, this.networkDomain, 'private-isolated-subnet-1-id'))
         ]
     }
 
-    public static privateRouteTableId(envConfig: EnvConfig) {
-        return cdk.Fn.importValue(`${resolveStackName(envConfig, this.networkDomain)}-private-route-table-id`)
+    public static privateIsolatedSubnets(scope: Construct, envConfig: EnvConfig) {
+        const subnetIds = this.privateIsolatedSubnetIds(envConfig)
+
+        return subnetIds.map((subnetId, index) => {
+            return ec2.Subnet.fromSubnetId(scope, `PrivateIsolatedSubnet${index}`, subnetId)
+        })
     }
 
     public static vpc(scope: Construct, envConfig: EnvConfig) {
 
         const vpcId = this.vpcId(envConfig)
         const vpcCidrBlock = this.vpcCidr(envConfig)
-        const privateSubnetIds = this.privateSubnetIds(envConfig)
-        const privateRoutTableId = this.privateRouteTableId(envConfig)
-
-        const privateSubnetRouteTableIds = privateSubnetIds.map(() => privateRoutTableId)
-
-        const availabilityZones = [
-            `${cdk.Stack.of(scope).region}a`,
-            `${cdk.Stack.of(scope).region}b`,
-        ]
+        const privateSubnetIds = this.privateIsolatedSubnetIds(envConfig)
 
         return ec2.Vpc.fromVpcAttributes(scope, 'Vpc', {
             vpcId,
             vpcCidrBlock,
-            availabilityZones,
             privateSubnetIds,
-            privateSubnetRouteTableIds,
+            availabilityZones: cdk.Stack.of(scope).availabilityZones,
             region: envConfig.region
         })
     }

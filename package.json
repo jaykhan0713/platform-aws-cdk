@@ -8,7 +8,11 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+
+    "cdk:services": "cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/services.ts\"",
+    "cdk:network": "cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/network.ts\"",
+    "cdk:cicd": "cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/cicd.ts\""
   },
   "devDependencies": {
     "@types/jest": "^30",

@@ -15,6 +15,13 @@ aws sso login --profile jay-prod
 $env:AWS_PROFILE="jay-prod"
 ```
 
+for running different ownership boundaries (scripts in package.json)
+```
+npm run cdk:services -- diff
+npm run cdk:network -- deploy NetworkStackName
+npm run cdk:cicd -- deploy
+```
+
 migration of existing stacks:
 jay-platform-observability-prod is example stack name
 $env:AWS_PROFILE="jay-prod"

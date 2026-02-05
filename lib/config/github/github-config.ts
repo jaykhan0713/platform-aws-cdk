@@ -1,4 +1,4 @@
-import {PlatformService} from 'lib/config/domain/platform-service'
+import {PlatformServiceName} from 'lib/config/service/platform-service-name'
 
 export type GithubConfig = {
     githubOwner: string
@@ -6,7 +6,7 @@ export type GithubConfig = {
     githubBranch: string
 }
 
-const SERVICE_GITHUB_CONFIG: Record<PlatformService, GithubConfig> = {
+const SERVICE_GITHUB_CONFIG: Record<PlatformServiceName, GithubConfig> = {
     'edge-service': {
         githubOwner: 'jaykhan0713',
         githubRepo: 'edge-service',
@@ -20,7 +20,7 @@ const PLATFORM_CDK_GITHUB_CONFIG: GithubConfig = {
     githubBranch: 'main'
 }
 
-export function getServiceGithubConfig(serviceName: PlatformService): GithubConfig {
+export function getServiceGithubConfig(serviceName: PlatformServiceName): GithubConfig {
     const config = SERVICE_GITHUB_CONFIG[serviceName]
 
     if (!config) {

@@ -8,10 +8,10 @@ import {Construct} from 'constructs'
 import {resolveIamRoleName} from 'lib/config/naming/index'
 import {IamConstants} from 'lib/config/domain/iam-constants'
 import {BaseStackProps} from 'lib/stacks/base-stack'
-import {PlatformService} from 'lib/config/domain/platform-service'
+import {PlatformServiceName} from 'lib/config/service/platform-service-name'
 
 export interface PlatformCodeBuildCdkDeployProjectProps extends BaseStackProps {
-    serviceName: PlatformService
+    serviceName: PlatformServiceName
 
     artifactsBucket: s3.IBucket
 

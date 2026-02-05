@@ -1,8 +1,8 @@
 import {EnvConfig} from 'lib/config/env/env-config'
-import {PlatformService} from 'lib/config/domain/platform-service'
+import {PlatformServiceName} from 'lib/config/service/platform-service-name'
 
 export const resolvePlatformServiceRepoName = (
     cfg: EnvConfig,
-    serviceName: PlatformService
+    serviceName: PlatformServiceName
 ) =>
     `${cfg.projectName}/services/${serviceName}`

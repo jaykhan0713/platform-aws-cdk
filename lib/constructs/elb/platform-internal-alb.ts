@@ -4,11 +4,11 @@ import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import {Construct} from 'constructs'
 
 import type {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
-import {PlatformService} from 'lib/config/domain/platform-service'
+import {PlatformServiceName} from 'lib/config/service/platform-service-name'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 
 export interface PlatformInternalAlbProps extends BaseStackProps {
-    serviceName: PlatformService
+    serviceName: PlatformServiceName
     vpc: ec2.IVpc
     upstreamSg: ec2.ISecurityGroup
     albHttpListenerPort?: number
@@ -28,7 +28,7 @@ export class PlatformInternalAlb extends Construct {
 
         //egress rule set by orchestrator
         this.securityGroup = new ec2.SecurityGroup(this, 'AlbSg', {
-            securityGroupName: `${serviceName}-alb-sg-${envConfig.envName}`,
+            securityGroupName: `${envConfig.projectName}-${serviceName}-alb-sg-${envConfig.envName}`,
             vpc,
             allowAllOutbound: false //tighten to service via addEgressRule
         })

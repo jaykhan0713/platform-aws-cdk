@@ -2,10 +2,11 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import {Construct} from 'constructs'
 
 import {
-    resolveIamRoleName
+    resolveIamRoleName, resolveSsmParamPathArnWildcard
 } from 'lib/config/naming'
 import {IamConstants} from 'lib/config/domain/iam-constants'
 import {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
+import {ParamNamespace} from 'lib/config/domain/param-namespace'
 
 export class PlatformEcsTaskExecutionRole extends Construct {
 
@@ -29,9 +30,17 @@ export class PlatformEcsTaskExecutionRole extends Construct {
             ]
         })
 
-        for (const policy of props.runtime.taskExecPolicies) {
-            this.taskExecutionRole.addManagedPolicy(policy)
-        }
+        this.taskExecutionRole.addToPolicy(new iam.PolicyStatement({
+            sid: 'ReadParameters',
+            actions: [
+                'ssm:GetParameter',
+                'ssm:GetParameters',
+                'ssm:GetParametersByPath'
+            ],
+            resources: [
+                resolveSsmParamPathArnWildcard(props.envConfig, ParamNamespace.core)
+            ]
+        }))
 
     }
 }

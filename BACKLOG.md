@@ -1,2 +1,3 @@
 - apigw and cognito migrated to cdk
 - to simulate ownership boundaries, separate network, cicd, shared (ecr, ecs), services and use exports+imports
+- Update non network app.ts like ecs resources to use subnet imports instead of PRIVATE_ISOLATED

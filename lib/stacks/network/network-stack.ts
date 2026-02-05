@@ -5,7 +5,6 @@ import * as servicediscovery from 'aws-cdk-lib/aws-servicediscovery'
 import { BaseStack, type BaseStackProps } from 'lib/stacks/base-stack'
 import {resolveExportName} from 'lib/config/naming'
 import { StackDomain } from 'lib/config/domain/stack-domain'
-import { AZ } from 'lib/config/domain'
 import {PlatformVpcLink} from 'lib/constructs/vpc/platform-vpc-link'
 
 export class NetworkStack extends BaseStack {
@@ -16,13 +15,15 @@ export class NetworkStack extends BaseStack {
     public constructor(scope: cdk.App,  id: string,  props: BaseStackProps) {
         super(scope, id, props)
 
-        const envName = this.envConfig.envName
-        const project = this.envConfig.projectName
+        const envConfig = props.envConfig
+        const { envName, projectName } = envConfig
+
+        const cidrBlock = '10.0.0.0/16'
 
         this.vpc = new ec2.Vpc(this, 'Vpc', {
-            vpcName: `${project}-vpc-${envName}`,
-            ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/16'),
-            availabilityZones: [AZ.US_WEST_2A, AZ.US_WEST_2B],
+            vpcName: `${projectName}-vpc-${envName}`,
+            ipAddresses: ec2.IpAddresses.cidr(cidrBlock),
+            maxAzs: 2,
             natGateways: 0,
             subnetConfiguration: [
                 {
@@ -31,7 +32,7 @@ export class NetworkStack extends BaseStack {
                     cidrMask: 20
                 },
                 {
-                    name: 'private',
+                    name: 'private-isolated',
                     subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
                     cidrMask: 20
                 }
@@ -40,25 +41,21 @@ export class NetworkStack extends BaseStack {
 
         const azSuffix = (az: string) => az.slice(-1)
 
-        this.vpc.publicSubnets.forEach((subnet) => {
+        this.vpc.publicSubnets.forEach((subnet, index) => {
             cdk.Tags.of(subnet).add('Tier', 'public')
-            cdk.Tags.of(subnet).add(
-                'Name',
-                `public-subnet-${azSuffix(subnet.availabilityZone)}-${envName}`
-            )
+            cdk.Tags.of(subnet).add('Name', `public-subnet-${index}-${envName}`)
+            cdk.Tags.of(subnet).add('Az', subnet.availabilityZone)
         })
 
-        this.vpc.isolatedSubnets.forEach((subnet) => {
-            cdk.Tags.of(subnet).add('Tier', 'private')
-            cdk.Tags.of(subnet).add(
-                'Name',
-                `private-subnet-${azSuffix(subnet.availabilityZone)}-${envName}`
-            )
+        this.vpc.isolatedSubnets.forEach((subnet, index) => {
+            cdk.Tags.of(subnet).add('Tier', 'private-isolated')
+            cdk.Tags.of(subnet).add('Name', `private-isolated-subnet-${index}-${envName}`)
+            cdk.Tags.of(subnet).add('Az', subnet.availabilityZone)
         })
 
         // Service Connect namespace (Cloud Map Http namespace)
         this.serviceConnectNamespace = new servicediscovery.HttpNamespace(this, 'ServiceConnectHttpNamespace', {
-            name: `${project}-http-namespace-${envName}`,
+            name: `${projectName}-http-namespace-${envName}`,
             description: `Service Connect namespace for internal services`
         })
 
@@ -68,34 +65,55 @@ export class NetworkStack extends BaseStack {
         })
 
         //Outputs
-        new cdk.CfnOutput(this, 'VpcId', {
+        new cdk.CfnOutput(this, 'CfnOutputVpcId', {
             value: this.vpc.vpcId,
-            exportName: resolveExportName(this.envConfig, StackDomain.network, 'vpc-id'),
+            exportName: resolveExportName(envConfig, StackDomain.network, 'vpc-id'),
         })
 
-        const isolatedA = this.vpc.isolatedSubnets.find(s => s.availabilityZone === AZ.US_WEST_2A)
-        const isolatedB = this.vpc.isolatedSubnets.find(s => s.availabilityZone === AZ.US_WEST_2B)
+        const [isolated0, isolated1] = this.vpc.isolatedSubnets
+        if (!isolated0 || !isolated1) throw new Error('Expected 2 isolated subnets (maxAzs=2)')
 
-        if (!isolatedA || !isolatedB) throw new Error('Expected isolated subnets in us-west-2a and us-west-2b')
-
-        new cdk.CfnOutput(this, 'PrivateSubnetAId', {
-            value: isolatedA.subnetId,
-            exportName: resolveExportName(this.envConfig, StackDomain.network, 'private-subnet-a-id'),
+        new cdk.CfnOutput(this, 'CfnOutputPrivateSubnet0Id', {
+            value: isolated0.subnetId,
+            exportName: resolveExportName(envConfig, StackDomain.network, 'private-isolated-subnet-0-id'),
         })
 
-        new cdk.CfnOutput(this, 'PrivateSubnetBId', {
-            value: isolatedB.subnetId,
-            exportName: resolveExportName(this.envConfig, StackDomain.network, 'private-subnet-b-id'),
+        new cdk.CfnOutput(this, 'CfnOutputPrivateSubnet1Id', {
+            value: isolated1.subnetId,
+            exportName: resolveExportName(envConfig, StackDomain.network, 'private-isolated-subnet-1-id'),
         })
 
-        new cdk.CfnOutput(this, 'VpcCidr', {
-            value: '10.0.0.0/16',
-            exportName: resolveExportName(this.envConfig, StackDomain.network, 'vpc-cidr'),
+        new cdk.CfnOutput(this, 'CfnOutputAz0', {
+            value: isolated0.availabilityZone,
+            exportName: resolveExportName(envConfig, StackDomain.network, 'az-0'),
         })
 
-        new cdk.CfnOutput(this, 'ServiceConnectNamespaceArn', {
+        new cdk.CfnOutput(this, 'CfnOutputAz1', {
+            value: isolated0.availabilityZone,
+            exportName: resolveExportName(envConfig, StackDomain.network, 'az-1'),
+        })
+
+        new cdk.CfnOutput(this, 'CfnOutputVpcCidr', {
+            value: cidrBlock,
+            exportName: resolveExportName(envConfig, StackDomain.network, 'vpc-cidr'),
+        })
+
+        new cdk.CfnOutput(this, 'CfnOutputServiceConnectNamespaceArn', {
             value: this.serviceConnectNamespace.namespaceArn,
-            exportName: resolveExportName(this.envConfig, StackDomain.network, 'service-connect-http-namespace-arn'),
+            exportName: resolveExportName(
+                envConfig,
+                StackDomain.network,
+                'service-connect-http-namespace-arn'
+            ),
+        })
+
+        new cdk.CfnOutput(this, 'CfnOutputVpcLinkId', {
+            value: this.platformVpcLink.vpcLink.vpcLinkId,
+            exportName: resolveExportName(
+                envConfig,
+                StackDomain.network,
+                'vpc-link-id'
+            )
         })
     }
 }
