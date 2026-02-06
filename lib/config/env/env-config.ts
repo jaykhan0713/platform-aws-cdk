@@ -12,7 +12,12 @@ export type EnvConfig = {
         managedBy: string
     }
 
-    // stack-specific options grouped
+    // stack-specific options grouped //TODO separate per ownership boundaries
+
+    vpcConfig?: {
+        cidrBlock: string
+        maxAzs: number
+    }
 
     vpceConfig?: {
         interfaceOptions: {
@@ -35,6 +40,11 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
         region: 'us-west-2',
         projectName: 'jay-platform',
         tags: { managedBy: 'cdk' },
+
+        vpcConfig: {
+            cidrBlock: '10.0.0.0/16',
+            maxAzs: 2
+        },
 
         vpceConfig: {
             interfaceOptions: {

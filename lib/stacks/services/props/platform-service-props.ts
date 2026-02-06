@@ -14,13 +14,8 @@ export interface PlatformServiceProps extends BaseStackProps {
 }
 
 export interface PlatformServiceRuntime {
-    readonly vpc: ec2.IVpc
-    readonly serviceConnectNamespace: servicediscovery.IHttpNamespace
-    readonly platformVpcLink: PlatformVpcLink
     readonly cluster: ecs.ICluster
-
-    readonly apsRemoteWriteEndpoint: string
-    readonly apsWorkspaceArn: string
+    readonly serviceConnectNamespace: servicediscovery.IHttpNamespace
     readonly adotImage: ecs.ContainerImage
 }
 

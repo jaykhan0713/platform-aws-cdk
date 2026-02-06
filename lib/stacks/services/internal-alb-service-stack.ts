@@ -3,7 +3,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 
 import { BaseStack } from 'lib/stacks/base-stack'
-import {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
+import {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
 import {PlatformInternalAlb} from 'lib/constructs/elb/platform-internal-alb'
 import {PlatformEcsTaskSecurityGroup} from 'lib/constructs/ecs/platform-ecs-task-security-group'
 import {defaultTaskDefConfig} from 'lib/config/taskdef/taskdef-config'
@@ -19,7 +19,6 @@ export class InternalAlbServiceStack extends BaseStack {
         super(scope, id, props)
 
         const { envConfig, serviceName } = props
-        const { vpc, platformVpcLink } = props.runtime
 
         const imageTag = this.node.tryGetContext('ImageTag')
         if (typeof imageTag !== 'string' || imageTag.trim() === '') {

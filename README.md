@@ -15,11 +15,12 @@ aws sso login --profile jay-prod
 $env:AWS_PROFILE="jay-prod"
 ```
 
-for running different ownership boundaries (scripts in package.json)
+for running different ownership boundaries (scripts in package.json) ex:
 ```
 npm run cdk:services -- diff
 npm run cdk:network -- deploy NetworkStackName
 npm run cdk:cicd -- deploy
+npm run cdk:core -- deploy
 ```
 
 migration of existing stacks:

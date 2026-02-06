@@ -5,8 +5,7 @@ export const StackDomain = {
     network: 'network',
     vpcEndpoints: 'vpc-endpoints',
     observability: 'observability',
-    ecsCluster: 'ecs-cluster',
-    ecsServicesCommon: 'ecs-services-common',
+    serviceRuntime: 'service-runtime',
     serviceEcrRepos: 'service-ecr-repos',
 
     //platform's service stacks

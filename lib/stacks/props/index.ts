@@ -1,1 +1,0 @@
-export * from 'lib/stacks/props/platform-service-props'

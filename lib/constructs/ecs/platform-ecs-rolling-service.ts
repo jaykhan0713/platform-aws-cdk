@@ -4,7 +4,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 
 import {Construct} from 'constructs'
 
-import type {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
+import type {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
 
 interface PlatformEcsRollingServiceProps extends PlatformServiceProps {
     fargateTaskDef: ecs.FargateTaskDefinition

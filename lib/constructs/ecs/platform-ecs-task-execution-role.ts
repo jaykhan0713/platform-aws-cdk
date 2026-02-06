@@ -5,7 +5,7 @@ import {
     resolveIamRoleName, resolveSsmParamPathArnWildcard
 } from 'lib/config/naming'
 import {IamConstants} from 'lib/config/domain/iam-constants'
-import {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
+import {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
 import {ParamNamespace} from 'lib/config/domain/param-namespace'
 
 export class PlatformEcsTaskExecutionRole extends Construct {

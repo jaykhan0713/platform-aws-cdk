@@ -7,7 +7,7 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import {Construct} from 'constructs'
 
 import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
-import {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
+import {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
 
 interface PlatformEcsTaskDefProps extends PlatformServiceProps {
     taskDefCfg: TaskDefinitionConfig

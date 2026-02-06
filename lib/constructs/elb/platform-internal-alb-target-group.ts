@@ -3,7 +3,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import { Construct } from 'constructs'
 
-import { PlatformServiceProps } from 'lib/stacks/props/platform-service-props'
+import { PlatformServiceProps } from 'lib/stacks/services/props/platform-service-props'
 
 
 export interface PlatformInternalAlbTargetGroupProps extends PlatformServiceProps {

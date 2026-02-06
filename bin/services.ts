@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib'
 
-import { PlatformEcsApp } from 'lib/app/platform-ecs-app'
+import { PlatformServicesApp } from 'lib/app/platform-services-app'
 
 const app = new cdk.App()
 
-new PlatformEcsApp(app)
+new PlatformServicesApp(app)

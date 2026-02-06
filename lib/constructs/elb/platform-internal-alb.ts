@@ -3,7 +3,7 @@ import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 
 import {Construct} from 'constructs'
 
-import type {PlatformServiceProps} from 'lib/stacks/props/platform-service-props'
+import type {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
 import {PlatformServiceName} from 'lib/config/service/platform-service-name'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 

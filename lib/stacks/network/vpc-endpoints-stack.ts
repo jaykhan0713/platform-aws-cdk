@@ -70,7 +70,7 @@ export class VpcEndpointsStack extends BaseStack {
     ) {
         super(scope, id, props)
 
-        const interfaceOptions = this.envConfig.vpceConfig?.interfaceOptions
+        const interfaceOptions = props.envConfig.vpceConfig?.interfaceOptions
 
         const vpc = props.vpc
 
@@ -101,9 +101,9 @@ export class VpcEndpointsStack extends BaseStack {
                     subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
                 }).subnets
 
-                const singleAzSubnet = isolatedSubnets.find(
-                    s => s.availabilityZone === AZ.US_WEST_2A
-                )!
+                const preferredAz = cdk.Stack.of(this).availabilityZones[0]
+                const singleAzSubnet =
+                    isolatedSubnets.find(s => s.availabilityZone === preferredAz) ?? isolatedSubnets[0]
 
                 subnets = { subnets: [singleAzSubnet] }
             }
@@ -116,14 +116,14 @@ export class VpcEndpointsStack extends BaseStack {
             }
 
             for (const ep of this.interfaceEndpoints) {
-                const isEnabled = ep.enabled?.(this.envConfig)
+                const isEnabled = ep.enabled?.(props.envConfig)
                     ?? true
 
                 if (isEnabled) {
                     new PlatformInterfaceVpce(this, ep.id, {
                         ...basePrivateInterfaceVpceProps,
                         service: ep.service,
-                        nameTag: resolveVpceNameTag(this.envConfig, ep.name)
+                        nameTag: resolveVpceNameTag(props.envConfig, ep.name)
                     })
                 }
             }
@@ -146,7 +146,7 @@ export class VpcEndpointsStack extends BaseStack {
 
         Tags.of(s3Gateway).add(
             TagKeys.Name,
-            resolveVpceNameTag(this.envConfig, VpceServiceName.s3Gateway)
+            resolveVpceNameTag(props.envConfig, VpceServiceName.s3Gateway)
         )
     }
 

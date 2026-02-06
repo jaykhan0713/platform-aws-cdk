@@ -1,21 +1,15 @@
 import * as cdk from 'aws-cdk-lib'
-import * as ecr from 'aws-cdk-lib/aws-ecr'
 
-import { ObservabilityStack } from 'lib/stacks/core/observability-stack'
 import { resolveStackName } from 'lib/config/naming'
 import { CicdInfraStack } from 'lib/stacks/tools/cicd/cicd-infra-stack'
 import { VpcEndpointsStack } from 'lib/stacks/network/vpc-endpoints-stack'
 import { type EnvConfig, getEnvConfig, toCdkStackProps } from 'lib/config/env/env-config'
 import type { EnvName } from 'lib/config/domain/env-name'
 import { StackDomain } from 'lib/config/domain/stack-domain'
-import { EcsClusterStack } from 'lib/stacks/ecs/cluster/ecs-cluster-stack'
 import { NetworkStack } from 'lib/stacks/network/network-stack'
-import type { PlatformServiceRuntime } from 'lib/stacks/props'
 import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/platform-service-ecr-repos-stack'
 import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/platform-service-pipeline-stack'
 import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service-name'
-import * as ecs from 'aws-cdk-lib/aws-ecs'
-import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 
 export class PlatformApp {
 
@@ -31,9 +25,6 @@ export class PlatformApp {
         const stackProps = toCdkStackProps(envConfig)
 
         //stack instantiations
-
-        //shared core/common stacks outside VPC
-        const observabilityStack = this.createObservabilityStack(stackProps, envConfig)
 
         //vpc
         const networkStack = this.createNetworkStack(stackProps, envConfig)
@@ -130,43 +121,6 @@ export class PlatformApp {
         )
     }
 
-    //ecs cluster
-    private createEcsClusterStack(
-        stackProps: cdk.StackProps,
-        envConfig: EnvConfig,
-        networkStack: NetworkStack
-    ) {
-        const stackDomain = StackDomain.ecsCluster
-
-        return new EcsClusterStack(
-            this.app,
-            'EcsCluster',
-            {
-                stackName: resolveStackName(envConfig, stackDomain),
-                ...stackProps,
-                envConfig,
-                stackDomain,
-                vpc: networkStack.vpc
-            }
-        )
-    }
-
-    //global observability
-    private createObservabilityStack(stackProps: cdk.StackProps, envConfig: EnvConfig) {
-        const stackDomain = StackDomain.observability
-
-        return new ObservabilityStack(
-            this.app,
-            'Observability',
-            {
-                stackName: resolveStackName(envConfig, stackDomain),
-                ...stackProps,
-                envConfig,
-                stackDomain
-            }
-        )
-    }
-
     //shared cicd for 'tools' env
     private createCicdInfraStack(stackProps: cdk.StackProps, envConfig: EnvConfig) {
         const stackDomain = StackDomain.cicdInfra
@@ -201,7 +155,7 @@ export class PlatformApp {
     private createEdgeServicePipeline(
         toolsStackProps: cdk.StackProps,
         toolsEnvConfig: EnvConfig,
-        cicdrInfraStack: CicdInfraStack,
+        cicdInfraStack: CicdInfraStack,
         platformServiceEcrReposStack: PlatformServiceEcrReposStack
     ) {
         const stackDomain = StackDomain.edgeServicePipeline
@@ -220,37 +174,10 @@ export class PlatformApp {
                 serviceName, //TODO when adding more envs, handle gracefully for steps
                 serviceStackName: getStackId(serviceName),
 
-                artifactsBucket: cicdrInfraStack.artifactsBucket,
-                githubConnectionArn: cicdrInfraStack.githubConnectionArn,
+                artifactsBucket: cicdInfraStack.artifactsBucket,
+                githubConnectionArn: cicdInfraStack.githubConnectionArn,
 
                 ecrRepo: platformServiceEcrReposStack.repos[serviceName]
-            }
-        )
-    }
-
-    private createEdgeServiceStack(
-        stackProps: cdk.StackProps,
-        envConfig: EnvConfig,
-        runtime: PlatformServiceRuntime,
-        serviceName: PlatformServiceName,
-        serviceEcrRepoStack: PlatformServiceEcrReposStack
-    ) {
-        const stackDomain = StackDomain.edgeService
-
-        new InternalAlbServiceStack(
-            this.app,
-            getStackId(serviceName),
-            {
-                stackName: resolveStackName(envConfig, stackDomain),
-                ...stackProps,
-                envConfig,
-                stackDomain,
-
-                serviceName,
-                serviceRepo: serviceEcrRepoStack.repos[serviceName],
-
-                runtime
-
             }
         )
     }
