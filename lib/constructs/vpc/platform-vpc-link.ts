@@ -5,7 +5,8 @@ import { Construct } from 'constructs'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 
 export interface PlatformVpcLinkProps extends BaseStackProps {
-    vpc: ec2.IVpc
+    vpc: ec2.IVpc,
+    privateIsolatedSubnets: ec2.ISubnet[]
 }
 
 export class PlatformVpcLink extends Construct {
@@ -33,10 +34,8 @@ export class PlatformVpcLink extends Construct {
             vpc,
             securityGroups: [this.securityGroup],
             subnets: {
-                subnetType: ec2.SubnetType.PRIVATE_ISOLATED
+                subnets: props.privateIsolatedSubnets
             }
         })
-
-
     }
 }

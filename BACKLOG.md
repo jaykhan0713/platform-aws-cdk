@@ -2,4 +2,5 @@
 - to simulate ownership boundaries, separate network, cicd, shared (ecr, ecs), services and use exports+imports
 - Update non network app.ts like ecs resources to use subnet imports instead of PRIVATE_ISOLATED
 - Adot repo and base-images, otel-config.yaml to cdk (research best standard)
-- use SSM for 'tools' account (app in this case on same account) exporting resources
+- use SSM for 'tools' account (app in this case on same account) exporting resource uri's like service + other images
+- vpc link moved from network to edge

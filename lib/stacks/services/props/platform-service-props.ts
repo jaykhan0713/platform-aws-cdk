@@ -10,11 +10,11 @@ import {PlatformServiceName} from 'lib/config/service/platform-service-name'
 export interface PlatformServiceProps extends BaseStackProps {
     readonly runtime: PlatformServiceRuntime
     readonly serviceName: PlatformServiceName
-    readonly serviceRepo: ecr.IRepository
 }
 
 export interface PlatformServiceRuntime {
     readonly cluster: ecs.ICluster
+    readonly platformVpcLink?: PlatformVpcLink
     readonly serviceConnectNamespace: servicediscovery.IHttpNamespace
     readonly adotImage: ecs.ContainerImage
 }

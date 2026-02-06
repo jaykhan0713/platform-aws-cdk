@@ -41,22 +41,23 @@ export class PlatformServicesApp {
             adotImage: ecs.ContainerImage.fromEcrRepository(adotRepo, 'stable')
         }
 
-        // /**
-        //  * TODO: currently using deploy=<PlatformService> to stop synth when deploying
-        //  *  other apps as correct context keys like imageTag arent always passed in.
-        //  *
-        //  */
-        // const deployTarget = String(app.node.tryGetContext('deploy') ?? '')
-        //
-        // if (deployTarget === PlatformServiceName.edgeService) {
-        //     this.createEdgeServiceStack(
-        //         stackProps,
-        //         envConfig,
-        //         platformServiceRuntime,
-        //         PlatformServiceName.edgeService,
-        //         platformServiceEcrReposStack
-        //     )
-        // }
+
+
+        /**
+         * TODO: currently using deploy=<PlatformService> to stop synth when deploying
+         *  other apps as correct context keys like imageTag arent always passed in.
+         *
+         */
+        const deployTarget = String(app.node.tryGetContext('deploy') ?? '')
+
+        if (deployTarget === PlatformServiceName.edgeService) {
+            this.createEdgeServiceStack(
+                stackProps,
+                envConfig,
+                {...platformServiceRuntime, platformVpcLink: serviceRuntimeStack.platformVpcLink},
+                PlatformServiceName.edgeService
+            )
+        }
     }
 
     //ecs cluster + shared runtime glue
@@ -82,8 +83,8 @@ export class PlatformServicesApp {
         stackProps: cdk.StackProps,
         envConfig: EnvConfig,
         runtime: PlatformServiceRuntime,
-        serviceName: PlatformServiceName,
-        serviceEcrRepoStack: PlatformServiceEcrReposStack
+
+        serviceName: PlatformServiceName
     ) {
         const stackDomain = StackDomain.edgeService
 
@@ -95,10 +96,7 @@ export class PlatformServicesApp {
                 ...stackProps,
                 envConfig,
                 stackDomain,
-
                 serviceName,
-                serviceRepo: serviceEcrRepoStack.repos[serviceName],
-
                 runtime
 
             }

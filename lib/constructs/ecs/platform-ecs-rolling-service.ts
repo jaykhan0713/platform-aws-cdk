@@ -16,6 +16,9 @@ interface PlatformEcsRollingServiceProps extends PlatformServiceProps {
     serviceConnectServerMode?: {
         appPortName: string //'http'
     }
+
+    //network
+    privateIsolatedSubnets: ec2.ISubnet[]
 }
 
 export class PlatformEcsRollingService extends Construct {
@@ -55,9 +58,9 @@ export class PlatformEcsRollingService extends Construct {
             cluster: props.runtime.cluster,
             desiredCount: props.desiredCount ?? 1,
             assignPublicIp: false,
-            vpcSubnets: props.runtime.vpc.selectSubnets({
-                subnetType: ec2.SubnetType.PRIVATE_ISOLATED
-            }),
+            vpcSubnets: {
+                subnets: props.privateIsolatedSubnets
+            },
             securityGroups: props.securityGroups,
             ...healthCheckGp,
             serviceConnectConfiguration: scConfig,

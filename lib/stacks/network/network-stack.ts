@@ -4,12 +4,10 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import { BaseStack, type BaseStackProps } from 'lib/stacks/base-stack'
 import {resolveExportName} from 'lib/config/naming'
 import { StackDomain } from 'lib/config/domain/stack-domain'
-import {PlatformVpcLink} from 'lib/constructs/vpc/platform-vpc-link'
 import {NetworkExports} from 'lib/config/dependency/network/network-exports'
 
 export class NetworkStack extends BaseStack {
     public readonly vpc: ec2.Vpc
-    public readonly platformVpcLink: PlatformVpcLink
 
     public constructor(scope: cdk.App,  id: string,  props: BaseStackProps) {
         super(scope, id, props)
@@ -81,11 +79,6 @@ export class NetworkStack extends BaseStack {
             })
         })
 
-        this.platformVpcLink = new PlatformVpcLink(this, 'PlatformVpcLink', {
-            ...props,
-            vpc: this.vpc
-        })
-
         //Outputs
         new cdk.CfnOutput(this, 'CfnOutputVpcId', {
             value: this.vpc.vpcId,
@@ -97,13 +90,5 @@ export class NetworkStack extends BaseStack {
             exportName: resolveExportName(envConfig, StackDomain.network, NetworkExports.vpcCidr),
         })
 
-        new cdk.CfnOutput(this, 'CfnOutputVpcLinkId', {
-            value: this.platformVpcLink.vpcLink.vpcLinkId,
-            exportName: resolveExportName(
-                envConfig,
-                StackDomain.network,
-                NetworkExports.vpcLinkId
-            )
-        })
     }
 }

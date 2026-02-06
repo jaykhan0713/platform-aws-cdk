@@ -12,6 +12,9 @@ import {PlatformEcsTaskDef} from 'lib/constructs/ecs/platform-ecs-task-def'
 import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling-service'
 import {PlatformInternalAlbTargetGroup} from 'lib/constructs/elb/platform-internal-alb-target-group'
 import {PlatformEcsTaskExecutionRole} from 'lib/constructs/ecs/platform-ecs-task-execution-role'
+import {NetworkImports} from 'lib/config/dependency/network/network-imports'
+import {ObservabilityImports} from 'lib/config/dependency/core/observability-imports'
+import * as ecr from 'aws-cdk-lib/aws-ecr'
 
 export class InternalAlbServiceStack extends BaseStack {
 
@@ -19,13 +22,33 @@ export class InternalAlbServiceStack extends BaseStack {
         super(scope, id, props)
 
         const { envConfig, serviceName } = props
+        const { platformVpcLink } = props.runtime
 
         const imageTag = this.node.tryGetContext('ImageTag')
         if (typeof imageTag !== 'string' || imageTag.trim() === '') {
             throw new Error(`${props.stackName}: ImageTag context is required`)
         }
 
-        // 1. Create  VPC, solve SG dependencies
+        if (platformVpcLink === undefined) {
+            throw new Error(`${props.stackName}: missing VpcLink`)
+        }
+
+        const vpc = NetworkImports.vpc(this, envConfig)
+        const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
+
+        const taskDefCfg = defaultTaskDefConfig({
+            serviceName,
+            envConfig,
+            apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig)
+        })
+
+        // 1. Create  ALB, TG, solve SG dependencies
+
+        const tg = new PlatformInternalAlbTargetGroup(this, 'PlatformInternalAlbTargetGroup', {
+            ...props,
+            vpc,
+            containerPort: taskDefCfg.app.containerPort,
+        }).tg
 
         const albHttpListenerPort = 80
         const platformInternalAlb = new PlatformInternalAlb(this, 'PlatformInternalAlb', {
@@ -33,7 +56,9 @@ export class InternalAlbServiceStack extends BaseStack {
             upstreamSg: platformVpcLink.securityGroup,
             serviceName,
             vpc,
-            albHttpListenerPort: albHttpListenerPort
+            albHttpListenerPort: albHttpListenerPort,
+            privateIsolatedSubnets,
+            tg
         })
 
         platformVpcLink.securityGroup.addEgressRule(
@@ -43,12 +68,7 @@ export class InternalAlbServiceStack extends BaseStack {
             true //sg from different stack, rule is owned by this stack.
         )
 
-        // 2. create ECS Service SG and solve deps, TODO: can create map and pass configs in with key serviceName
-        const taskDefCfg = defaultTaskDefConfig({
-            serviceName,
-            envConfig,
-            apsRemoteWriteEndpoint: props.runtime.apsRemoteWriteEndpoint
-        })
+        // 2. create ECS Service SG and solve deps, optional: can create map and pass configs in with key serviceName
 
         const appContainerPort = taskDefCfg.app.containerPort
 
@@ -69,7 +89,7 @@ export class InternalAlbServiceStack extends BaseStack {
         // 3. create task def, related roles, then ECS Service
         const taskRole = new PlatformEcsTaskRole(this, 'PlatformEcsTaskRole', {
             ...props,
-            apsWorkspaceArn: props.runtime.apsWorkspaceArn
+            apsWorkspaceArn: ObservabilityImports.apsWorkspaceArn(envConfig)
         }).taskRole
 
         const taskExecutionRole = new PlatformEcsTaskExecutionRole(
@@ -78,12 +98,18 @@ export class InternalAlbServiceStack extends BaseStack {
             props
         ).taskExecutionRole
 
+        const serviceRepo = ecr.Repository.fromRepositoryName(
+            this,
+            'ServiceRepo',
+            `${envConfig.projectName}/services/${serviceName}`
+        )
+
         const fargateTaskDef = new PlatformEcsTaskDef(this, 'PlatformEcsTaskDef', {
             ...props,
             taskDefCfg,
             taskRole,
             taskExecutionRole,
-            appImage: ecs.ContainerImage.fromEcrRepository(props.serviceRepo, imageTag)
+            appImage: ecs.ContainerImage.fromEcrRepository(serviceRepo, imageTag)
         }).fargateTaskDef
 
         // 4. create ecs service, target groups, attach to TG
@@ -92,14 +118,11 @@ export class InternalAlbServiceStack extends BaseStack {
             fargateTaskDef,
             desiredCount: 1,
             securityGroups: [ecsTaskSg],
-            healthCheckGracePeriodSeconds: 90
+            healthCheckGracePeriodSeconds: 90,
+            privateIsolatedSubnets
         }).fargateService
 
-        new PlatformInternalAlbTargetGroup(this, 'PlatformInternalAlbTargetGroup', {
-            ...props,
-            listener: platformInternalAlb.listener,
-            fargateService,
-            containerPort: taskDefCfg.app.containerPort
-        })
+        fargateService.attachToApplicationTargetGroup(tg)
+
     }
 }

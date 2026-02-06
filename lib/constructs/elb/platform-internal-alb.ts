@@ -3,22 +3,22 @@ import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 
 import {Construct} from 'constructs'
 
-import type {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
 import {PlatformServiceName} from 'lib/config/service/platform-service-name'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 
 export interface PlatformInternalAlbProps extends BaseStackProps {
     serviceName: PlatformServiceName
     vpc: ec2.IVpc
+    privateIsolatedSubnets: ec2.ISubnet[]
     upstreamSg: ec2.ISecurityGroup
     albHttpListenerPort?: number
+    tg: elbv2.ApplicationTargetGroup
 }
 
 export class PlatformInternalAlb extends Construct {
 
     public readonly alb: elbv2.ApplicationLoadBalancer
     public readonly securityGroup: ec2.ISecurityGroup
-    public readonly listener: elbv2.ApplicationListener
 
     constructor(scope: Construct, id: string, props: PlatformInternalAlbProps) {
         super(scope, id);
@@ -43,15 +43,21 @@ export class PlatformInternalAlb extends Construct {
             loadBalancerName: `${serviceName}-alb-${envConfig.envName}`,
             vpc,
             internetFacing: false,
-            vpcSubnets: {subnetType: ec2.SubnetType.PRIVATE_ISOLATED},
+            vpcSubnets: {
+                subnets: props.privateIsolatedSubnets
+            },
             securityGroup: this.securityGroup
         })
 
-        this.listener = this.alb.addListener('HttpListener', {
+        const listener = this.alb.addListener('HttpListener', {
             port: props.albHttpListenerPort ?? defaultHttpListenerPort,
             open: false
         })
 
+        // tell listener to forward to TG
+        listener.addTargetGroups('ForwardToDownstream', {
+            targetGroups: [props.tg]
+        })
         // optional: enable access logs: this.alb.logAccessLogs()
     }
 
