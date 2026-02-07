@@ -9,7 +9,6 @@ import {resolveStackName} from 'lib/config/naming/stacks'
 import type {PlatformServiceRuntime} from 'lib/stacks/services/props/platform-service-props'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service-name'
-import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/platform-service-ecr-repos-stack'
 import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 
 export class PlatformServicesApp {
@@ -28,36 +27,28 @@ export class PlatformServicesApp {
         const serviceRuntimeStack =
             this.createServiceRuntimeStack(stackProps, envConfig)
 
-        //TODO: Update adot repo to actual stack and export repo arn
-        const adotRepo = ecr.Repository.fromRepositoryName(
-            serviceRuntimeStack,
-            'AdotRepo',
-            `${envConfig.projectName}/adot-collector`
-        )
-
         const platformServiceRuntime: PlatformServiceRuntime = {
             cluster: serviceRuntimeStack.ecsCluster,
+            internalServicesSgId: serviceRuntimeStack.internalServicesSg.securityGroupId,
             serviceConnectNamespace: serviceRuntimeStack.httpNamespace,
-            adotImage: ecs.ContainerImage.fromEcrRepository(adotRepo, 'stable')
-        }
 
-
-
-        /**
-         * TODO: currently using deploy=<PlatformService> to stop synth when deploying
-         *  other apps as correct context keys like imageTag arent always passed in.
-         *
-         */
-        const deployTarget = String(app.node.tryGetContext('deploy') ?? '')
-
-        if (deployTarget === PlatformServiceName.edgeService) {
-            this.createEdgeServiceStack(
-                stackProps,
-                envConfig,
-                {...platformServiceRuntime, platformVpcLink: serviceRuntimeStack.platformVpcLink},
-                PlatformServiceName.edgeService
+            //TODO: Update adot repo to actual stack, use arn
+            adotImage: ecs.ContainerImage.fromEcrRepository(
+                ecr.Repository.fromRepositoryName(
+                    serviceRuntimeStack,
+                    'AdotRepo',
+                    `${envConfig.projectName}/adot-collector`
+                ),
+                'stable'
             )
         }
+
+        this.createEdgeServiceStack(
+            stackProps,
+            envConfig,
+            platformServiceRuntime,
+            PlatformServiceName.edgeService
+        )
     }
 
     //ecs cluster + shared runtime glue
@@ -83,7 +74,6 @@ export class PlatformServicesApp {
         stackProps: cdk.StackProps,
         envConfig: EnvConfig,
         runtime: PlatformServiceRuntime,
-
         serviceName: PlatformServiceName
     ) {
         const stackDomain = StackDomain.edgeService
@@ -98,7 +88,6 @@ export class PlatformServicesApp {
                 stackDomain,
                 serviceName,
                 runtime
-
             }
         )
     }

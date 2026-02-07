@@ -5,6 +5,7 @@ import { BaseStack, type BaseStackProps } from 'lib/stacks/base-stack'
 import {resolveExportName} from 'lib/config/naming'
 import { StackDomain } from 'lib/config/domain/stack-domain'
 import {NetworkExports} from 'lib/config/dependency/network/network-exports'
+import {PlatformVpcLink} from 'lib/constructs/vpc/platform-vpc-link'
 
 export class NetworkStack extends BaseStack {
     public readonly vpc: ec2.Vpc
@@ -79,6 +80,12 @@ export class NetworkStack extends BaseStack {
             })
         })
 
+        const platformVpcLink = new PlatformVpcLink(this, 'PlatformVpcLink', {
+            ...props,
+            vpc: this.vpc,
+            privateIsolatedSubnets: this.vpc.isolatedSubnets
+        })
+
         //Outputs
         new cdk.CfnOutput(this, 'CfnOutputVpcId', {
             value: this.vpc.vpcId,
@@ -90,5 +97,16 @@ export class NetworkStack extends BaseStack {
             exportName: resolveExportName(envConfig, StackDomain.network, NetworkExports.vpcCidr),
         })
 
+        new cdk.CfnOutput(this, 'CfnOutputVpcLinkId', {
+            description: 'Shared Vpc Link Id',
+            value: platformVpcLink.vpcLink.vpcLinkId,
+            exportName: resolveExportName(envConfig, StackDomain.network, NetworkExports.vpcLinkSgId)
+        })
+
+        new cdk.CfnOutput(this, 'CfnOutputVpcLinkSgId', {
+            description: 'Shared Vpc Link SG Id',
+            value: platformVpcLink.securityGroup.securityGroupId,
+            exportName: resolveExportName(envConfig, StackDomain.network, NetworkExports.vpcLinkSgId)
+        })
     }
 }

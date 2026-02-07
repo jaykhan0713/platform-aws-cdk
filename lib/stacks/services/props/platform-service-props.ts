@@ -1,10 +1,8 @@
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
-import * as ecr from 'aws-cdk-lib/aws-ecr'
 
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import * as servicediscovery from 'aws-cdk-lib/aws-servicediscovery'
-import { PlatformVpcLink } from 'lib/constructs/vpc/platform-vpc-link'
 import {PlatformServiceName} from 'lib/config/service/platform-service-name'
 
 export interface PlatformServiceProps extends BaseStackProps {
@@ -14,7 +12,7 @@ export interface PlatformServiceProps extends BaseStackProps {
 
 export interface PlatformServiceRuntime {
     readonly cluster: ecs.ICluster
-    readonly platformVpcLink?: PlatformVpcLink
+    readonly internalServicesSgId: string
     readonly serviceConnectNamespace: servicediscovery.IHttpNamespace
     readonly adotImage: ecs.ContainerImage
 }

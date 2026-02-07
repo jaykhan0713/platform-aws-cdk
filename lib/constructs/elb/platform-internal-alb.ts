@@ -10,7 +10,7 @@ export interface PlatformInternalAlbProps extends BaseStackProps {
     serviceName: PlatformServiceName
     vpc: ec2.IVpc
     privateIsolatedSubnets: ec2.ISubnet[]
-    upstreamSg: ec2.ISecurityGroup
+    upstreamSgs: ec2.ISecurityGroup[]
     albHttpListenerPort?: number
     tg: elbv2.ApplicationTargetGroup
 }
@@ -33,11 +33,15 @@ export class PlatformInternalAlb extends Construct {
             allowAllOutbound: false //tighten to service via addEgressRule
         })
 
-        this.securityGroup.addIngressRule(
-            props.upstreamSg,
-            ec2.Port.tcp(props.albHttpListenerPort ?? defaultHttpListenerPort),
-            'Allow upstream Sg to port 80'
-        )
+        const listenerPort = props.albHttpListenerPort ?? defaultHttpListenerPort
+
+        for (const upstreamSg of props.upstreamSgs) {
+            this.securityGroup.addIngressRule(
+                upstreamSg,
+                ec2.Port.tcp(listenerPort),
+                `Allow upstream Sg to port ${listenerPort}`
+            )
+        }
 
         this.alb = new elbv2.ApplicationLoadBalancer(this, 'ApplicationLoadBalancer', {
             loadBalancerName: `${serviceName}-alb-${envConfig.envName}`,

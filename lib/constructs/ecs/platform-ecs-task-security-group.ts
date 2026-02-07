@@ -6,7 +6,7 @@ import {BaseStackProps} from 'lib/stacks/base-stack'
 
 export interface PlatformEcsTaskSgProps extends BaseStackProps {
     vpc: ec2.IVpc
-    upstreamSg?: ec2.ISecurityGroup
+    upstreamSgs: ec2.ISecurityGroup[]
     appContainerPort: number
     serviceName: PlatformServiceName
 }
@@ -26,13 +26,18 @@ export class PlatformEcsTaskSecurityGroup extends Construct {
         this.securityGroup = new ec2.SecurityGroup(this, 'EcsTaskSecurityGroup', {
             securityGroupName: `${envConfig.projectName}-${serviceName}-task-sg-${envConfig.envName}`,
             vpc,
-            description: `Platform service task SG (allow on ${props.appContainerPort} only from upstream SG)`,
-            allowAllOutbound: true
+            description: `Unique service task SG`,
+            allowAllOutbound: true //add this sg to ingress of any resource's sg.
         })
 
-        this.securityGroup.addIngressRule(
-            props.upstreamSg ?? ec2.Peer.ipv4(vpc.vpcCidrBlock),
-            ec2.Port.tcp(props.appContainerPort)
-        )
+        for (const upstreamSg of props.upstreamSgs) {
+            this.securityGroup.addIngressRule(
+                upstreamSg,
+                ec2.Port.tcp(props.appContainerPort),
+                `Allow upstreamSg to ingress on port ${props.appContainerPort}`
+            )
+        }
+
+
     }
 }

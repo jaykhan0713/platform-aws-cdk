@@ -55,6 +55,12 @@ export class NetworkImports {
         })
     }
 
+    public static vpcLinkSgId(scope: Construct, envConfig: EnvConfig) {
+        return cdk.Fn.importValue(
+            resolveExportName(envConfig, this.stackDomain, NetworkExports.vpcLinkSgId)
+        )
+    }
+
     //note that anything outside the network boundary should not need route table associations
     public static vpc(scope: Construct, envConfig: EnvConfig) {
 

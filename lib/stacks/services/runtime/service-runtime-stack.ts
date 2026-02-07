@@ -1,21 +1,22 @@
 import * as cdk from 'aws-cdk-lib'
+import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import * as servicediscovery from 'aws-cdk-lib/aws-servicediscovery'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
-import {PlatformVpcLink} from 'lib/constructs/vpc/platform-vpc-link'
 
 export class ServiceRuntimeStack extends BaseStack {
+
     public readonly ecsCluster: ecs.Cluster
+    public readonly internalServicesSg: ec2.ISecurityGroup
     public readonly httpNamespace: servicediscovery.IHttpNamespace
-    public readonly platformVpcLink: PlatformVpcLink
+
 
     constructor(scope: cdk.App, id: string, props: BaseStackProps) {
         super(scope,  id,  props)
 
         const vpc = NetworkImports.vpc(this, props.envConfig)
-        const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, props.envConfig)
         const { projectName, envName} = props.envConfig
 
         this.ecsCluster = new ecs.Cluster(this, 'EcsCluster', {
@@ -24,10 +25,18 @@ export class ServiceRuntimeStack extends BaseStack {
             containerInsightsV2: ecs.ContainerInsights.DISABLED
         })
 
-        this.platformVpcLink = new PlatformVpcLink(this, 'PlatformVpcLink', {
-            ...props,
+
+
+        /* alb backed services consume this SG, internal services will consume this SG AND
+         * do their unique ecsTaskSg.addIngress(internalServices.sg) so any service registered
+         * with internalServices sg can talk to the unique service. This is an internal service subscription
+         * pattern.
+         */
+        this.internalServicesSg =  new ec2.SecurityGroup(this, 'EcsTaskSecurityGroup', {
+            securityGroupName: `${projectName}-internal-services-task-sg-${envName}`,
             vpc,
-            privateIsolatedSubnets
+            description: `SG for internal services to communicate`,
+            allowAllOutbound: true
         })
 
         //Service Connect namespace (Cloud Map Http namespace)
@@ -45,11 +54,6 @@ export class ServiceRuntimeStack extends BaseStack {
         new cdk.CfnOutput(this, 'CfnOutputHttpNamespaceArn', {
             description: 'Service Discovery Http Namespace Arn',
             value: this.httpNamespace.namespaceArn
-        })
-
-        new cdk.CfnOutput(this, 'CfnOutputVpcLinkId', {
-            description: 'Shared Vpc Link Id',
-            value: this.platformVpcLink.vpcLink.vpcLinkId
         })
     }
 }

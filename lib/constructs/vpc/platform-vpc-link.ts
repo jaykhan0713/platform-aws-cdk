@@ -26,7 +26,11 @@ export class PlatformVpcLink extends Construct {
         this.securityGroup = new ec2.SecurityGroup(this, 'VpcLinkSg', {
             securityGroupName: `${envConfig.projectName}-vpc-link-sg-${envConfig.envName}`,
             vpc,
-            allowAllOutbound: false //tighten to service via addEgressRule
+
+            /* TODO: figure a way to handle dependency errors with sg.addEgress on other stacks
+             *  when this is false
+             */
+            allowAllOutbound: false
         })
 
         this.vpcLink = new apigwv2.VpcLink(this, 'VpcLink', {

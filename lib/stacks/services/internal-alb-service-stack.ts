@@ -15,23 +15,26 @@ import {PlatformEcsTaskExecutionRole} from 'lib/constructs/ecs/platform-ecs-task
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import {ObservabilityImports} from 'lib/config/dependency/core/observability-imports'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
+import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
+import {ISecurityGroup} from 'aws-cdk-lib/aws-ec2'
+
+export interface InternalAlbServiceStackProps extends PlatformServiceProps {
+    upstreamSgs?: ec2.ISecurityGroup[] //sg's to alb.addIngress(),
+    vpcLinkEnabled ?: boolean
+}
 
 export class InternalAlbServiceStack extends BaseStack {
 
-    constructor(scope: cdk.App, id: string, props: PlatformServiceProps) {
+    constructor(scope: cdk.App, id: string, props: InternalAlbServiceStackProps) {
         super(scope, id, props)
 
-        const { envConfig, serviceName } = props
-        const { platformVpcLink } = props.runtime
+        const { envConfig, serviceName, upstreamSgs } = props
 
-        const imageTag = this.node.tryGetContext('ImageTag')
-        if (typeof imageTag !== 'string' || imageTag.trim() === '') {
-            throw new Error(`${props.stackName}: ImageTag context is required`)
-        }
-
-        if (platformVpcLink === undefined) {
-            throw new Error(`${props.stackName}: missing VpcLink`)
-        }
+        //pin the image tag as a parameter so this stack can always synth.
+        const imageTag = new cdk.CfnParameter(this, 'ImageTag', {
+            type: 'String',
+            description: 'Immutable ECR image tag to deploy'
+        })
 
         const vpc = NetworkImports.vpc(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
@@ -50,22 +53,38 @@ export class InternalAlbServiceStack extends BaseStack {
             containerPort: taskDefCfg.app.containerPort,
         }).tg
 
+        const vpcLinkSgId = props.vpcLinkEnabled
+            ? NetworkImports.vpcLinkSgId(this, envConfig)
+            : undefined
+        const vpcLinkSg = vpcLinkSgId
+            ? ec2.SecurityGroup.fromSecurityGroupId(
+                this,
+                'ImportedVpcLinkSg',
+                vpcLinkSgId,
+                { mutable: true }
+            )
+            : undefined
+
+        const combinedUpstreamSgs: ISecurityGroup[] = [
+            ...(vpcLinkSg ? [vpcLinkSg] : []),
+            ...(upstreamSgs ?? [])
+        ]
+
         const albHttpListenerPort = 80
         const platformInternalAlb = new PlatformInternalAlb(this, 'PlatformInternalAlb', {
             ...props,
-            upstreamSg: platformVpcLink.securityGroup,
+            upstreamSgs: combinedUpstreamSgs, //for albsg.addIngress(), if non vpc link -> alb, pass in internalServices sg here
             serviceName,
             vpc,
-            albHttpListenerPort: albHttpListenerPort,
+            albHttpListenerPort,
             privateIsolatedSubnets,
             tg
         })
 
-        platformVpcLink.securityGroup.addEgressRule(
+        vpcLinkSg?.addEgressRule(
             platformInternalAlb.securityGroup,
             ec2.Port.tcp(albHttpListenerPort),
-            `VpcLink Egress to Alb on port ${albHttpListenerPort}`,
-            true //sg from different stack, rule is owned by this stack.
+            `allow Vpc Link egress to Alb sg ingress on port: ${albHttpListenerPort}`
         )
 
         // 2. create ECS Service SG and solve deps, optional: can create map and pass configs in with key serviceName
@@ -76,7 +95,7 @@ export class InternalAlbServiceStack extends BaseStack {
             ...props,
             vpc,
             serviceName,
-            upstreamSg: platformInternalAlb.securityGroup,
+            upstreamSgs: [platformInternalAlb.securityGroup],
             appContainerPort
         }).securityGroup
 
@@ -98,26 +117,36 @@ export class InternalAlbServiceStack extends BaseStack {
             props
         ).taskExecutionRole
 
-        const serviceRepo = ecr.Repository.fromRepositoryName(
-            this,
-            'ServiceRepo',
-            `${envConfig.projectName}/services/${serviceName}`
-        )
-
         const fargateTaskDef = new PlatformEcsTaskDef(this, 'PlatformEcsTaskDef', {
             ...props,
             taskDefCfg,
             taskRole,
             taskExecutionRole,
-            appImage: ecs.ContainerImage.fromEcrRepository(serviceRepo, imageTag)
+            appImage: ecs.ContainerImage.fromEcrRepository(
+                //Can use ECR promotion for multi-account.
+                ecr.Repository.fromRepositoryName(
+                    this,
+                    'ServiceRepo',
+                    `${resolvePlatformServiceRepoName(envConfig, serviceName)}`
+                ),
+                imageTag.valueAsString
+            )
         }).fargateTaskDef
 
         // 4. create ecs service, target groups, attach to TG
+        const internalServicesSg = ec2.SecurityGroup.fromSecurityGroupId(
+            this,
+            'InternalServicesSgImported',
+            props.runtime.internalServicesSgId,
+            { mutable: false }
+        )
+
+
         const fargateService = new PlatformEcsRollingService(this, 'PlatformEcsRollingService', {
             ...props,
             fargateTaskDef,
             desiredCount: 1,
-            securityGroups: [ecsTaskSg],
+            securityGroups: [ecsTaskSg, internalServicesSg],
             healthCheckGracePeriodSeconds: 90,
             privateIsolatedSubnets
         }).fargateService

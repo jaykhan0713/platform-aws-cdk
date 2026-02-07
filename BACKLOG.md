@@ -1,6 +1,7 @@
 - apigw and cognito migrated to cdk
 - to simulate ownership boundaries, separate network, cicd, shared (ecr, ecs), services and use exports+imports
-- Update non network app.ts like ecs resources to use subnet imports instead of PRIVATE_ISOLATED
 - Adot repo and base-images, otel-config.yaml to cdk (research best standard)
 - use SSM for 'tools' account (app in this case on same account) exporting resource uri's like service + other images
-- vpc link moved from network to edge
+- Non ALB internal services need to do their unique ecsTaskSg.addIngress(internalServicesSg) as well as register
+  their fargate service with [ecsTaskSg, internalServicesSg]
+- update alb to listen on 443, dont terminate TLS on API gw, instead terminate at ALB. Can keep service to service http.
