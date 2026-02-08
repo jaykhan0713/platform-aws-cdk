@@ -115,7 +115,7 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                             // fail early if empty
                             `test -n "$IMAGE_TAG"`,
 
-                            'npx cdk deploy $SERVICE_STACK_NAME --require-approval never ' +
+                            'npm run cdk:services -- deploy $SERVICE_STACK_NAME --require-approval never ' +
                             `-c deploy=${props.serviceName} ` +
                             `-c imageTag=$IMAGE_TAG`
                         ]
