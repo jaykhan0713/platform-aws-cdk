@@ -10,7 +10,7 @@ export interface PlatformInternalAlbProps extends BaseStackProps {
     serviceName: PlatformServiceName
     vpc: ec2.IVpc
     privateIsolatedSubnets: ec2.ISubnet[]
-    upstreamSgs: ec2.ISecurityGroup[]
+    upstreamSgs?: ec2.ISecurityGroup[]
     albHttpListenerPort?: number
     tg: elbv2.ApplicationTargetGroup
 }
@@ -19,6 +19,7 @@ export class PlatformInternalAlb extends Construct {
 
     public readonly alb: elbv2.ApplicationLoadBalancer
     public readonly securityGroup: ec2.ISecurityGroup
+    public readonly listener: elbv2.IApplicationListener
 
     constructor(scope: Construct, id: string, props: PlatformInternalAlbProps) {
         super(scope, id);
@@ -35,7 +36,7 @@ export class PlatformInternalAlb extends Construct {
 
         const listenerPort = props.albHttpListenerPort ?? defaultHttpListenerPort
 
-        for (const upstreamSg of props.upstreamSgs) {
+        for (const upstreamSg of props.upstreamSgs ?? []) {
             this.securityGroup.addIngressRule(
                 upstreamSg,
                 ec2.Port.tcp(listenerPort),
@@ -53,13 +54,13 @@ export class PlatformInternalAlb extends Construct {
             securityGroup: this.securityGroup
         })
 
-        const listener = this.alb.addListener('HttpListener', {
+        this.listener = this.alb.addListener('HttpListener', {
             port: props.albHttpListenerPort ?? defaultHttpListenerPort,
             open: false
         })
 
         // tell listener to forward to TG
-        listener.addTargetGroups('ForwardToDownstream', {
+        this.listener.addTargetGroups('ForwardToDownstream', {
             targetGroups: [props.tg]
         })
         // optional: enable access logs: this.alb.logAccessLogs()

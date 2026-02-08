@@ -75,9 +75,9 @@ export class NetworkImports {
         })
     }
 
-    public static vpcLinkSgId(envConfig: EnvConfig) {
+    public static vpcLinkSubSgId(envConfig: EnvConfig) {
         return cdk.Fn.importValue(
-            resolveExportName(envConfig, this.stackDomain, NetworkExports.vpcLinkSgId)
+            resolveExportName(envConfig, this.stackDomain, NetworkExports.vpcLinkSubSgId)
         )
     }
 

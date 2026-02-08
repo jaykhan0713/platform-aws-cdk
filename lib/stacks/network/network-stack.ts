@@ -114,9 +114,15 @@ export class NetworkStack extends BaseStack {
         })
 
         new cdk.CfnOutput(this, 'CfnOutputVpcLinkSgId', {
-            description: 'Shared Vpc Link SG Id',
+            description: 'Vpc Link SG Id',
             value: platformVpcLink.securityGroup.securityGroupId,
             exportName: resolveExportName(envConfig, StackDomain.network, NetworkExports.vpcLinkSgId)
+        })
+
+        new cdk.CfnOutput(this, 'CfnOutputVpcLinkSubSgId', {
+            description: 'Shared Vpc Link SG Id for ALB subscription',
+            value: platformVpcLink.subSg.securityGroupId,
+            exportName: resolveExportName(envConfig, StackDomain.network, NetworkExports.vpcLinkSubSgId)
         })
     }
 }

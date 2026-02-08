@@ -9,16 +9,23 @@ export type GithubConfig = {
 const SERVICE_GITHUB_CONFIG: Record<PlatformServiceName, GithubConfig> = {
     'edge-service': {
         githubOwner: 'jaykhan0713',
-        githubRepo: 'edge-service',
+        githubRepo: PlatformServiceName.edgeService,
         githubBranch: 'main'
     }
-}
+} as const
+
+// const SERVICE_GITHUB_CONFIG: GithubConfig[] = Object.values(PlatformServiceName).map(serviceName => {
+//     return {
+//         githubOwner: 'jaykhan0713',
+//         githubRepo:
+//     }
+// })
 
 const PLATFORM_CDK_GITHUB_CONFIG: GithubConfig = {
     githubOwner: 'jaykhan0713',
     githubRepo: 'platform-aws-cdk',
     githubBranch: 'main'
-}
+} as const
 
 export function getServiceGithubConfig(serviceName: PlatformServiceName): GithubConfig {
     const config = SERVICE_GITHUB_CONFIG[serviceName]

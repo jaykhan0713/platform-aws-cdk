@@ -92,7 +92,8 @@ export class PlatformServicesApp {
                 envConfig,
                 stackDomain,
                 serviceName,
-                runtime
+                runtime,
+                vpcLinkEnabled: true
             }
         )
     }

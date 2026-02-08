@@ -16,10 +16,9 @@ import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import {ObservabilityImports} from 'lib/config/dependency/core/observability-imports'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
-import {ISecurityGroup} from 'aws-cdk-lib/aws-ec2'
 
 export interface InternalAlbServiceStackProps extends PlatformServiceProps {
-    upstreamSgs?: ec2.ISecurityGroup[] //sg's to alb.addIngress(),
+    upstreamToAlbSgs?: ec2.ISecurityGroup[] //sg's to alb.addIngress(),
     vpcLinkEnabled ?: boolean
 }
 
@@ -28,7 +27,7 @@ export class InternalAlbServiceStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: InternalAlbServiceStackProps) {
         super(scope, id, props)
 
-        const { envConfig, serviceName, upstreamSgs } = props
+        const { envConfig, serviceName, upstreamToAlbSgs } = props
 
         //pin the image tag as a parameter so this stack can always synth.
         const imageTag = this.node.tryGetContext('imageTag')
@@ -54,27 +53,22 @@ export class InternalAlbServiceStack extends BaseStack {
             containerPort: taskDefCfg.app.containerPort,
         }).tg
 
-        const vpcLinkSgId = props.vpcLinkEnabled
-            ? NetworkImports.vpcLinkSgId(envConfig)
+        const vpcLinkSubSgId = props.vpcLinkEnabled
+            ? NetworkImports.vpcLinkSubSgId(envConfig)
             : undefined
-        const vpcLinkSg = vpcLinkSgId
+        const vpcLinkSubSg = vpcLinkSubSgId
             ? ec2.SecurityGroup.fromSecurityGroupId(
                 this,
                 'ImportedVpcLinkSg',
-                vpcLinkSgId,
+                vpcLinkSubSgId,
                 { mutable: true }
             )
             : undefined
 
-        const combinedUpstreamSgs: ISecurityGroup[] = [
-            ...(vpcLinkSg ? [vpcLinkSg] : []),
-            ...(upstreamSgs ?? [])
-        ]
-
         const albHttpListenerPort = 80
         const platformInternalAlb = new PlatformInternalAlb(this, 'PlatformInternalAlb', {
             ...props,
-            upstreamSgs: combinedUpstreamSgs, //for albsg.addIngress(), if non vpc link -> alb, pass in internalServices sg here
+            upstreamSgs: upstreamToAlbSgs, //for albsg.addIngress(), if non vpc link -> alb, pass in internalServices sg here
             serviceName,
             vpc,
             albHttpListenerPort,
@@ -82,11 +76,9 @@ export class InternalAlbServiceStack extends BaseStack {
             tg
         })
 
-        vpcLinkSg?.addEgressRule(
-            platformInternalAlb.securityGroup,
-            ec2.Port.tcp(albHttpListenerPort),
-            `allow Vpc Link egress to Alb sg ingress on port: ${albHttpListenerPort}`
-        )
+        if (vpcLinkSubSg) {
+            platformInternalAlb.alb.addSecurityGroup(vpcLinkSubSg)
+        }
 
         // 2. create ECS Service SG and solve deps, optional: can create map and pass configs in with key serviceName
 
@@ -152,7 +144,21 @@ export class InternalAlbServiceStack extends BaseStack {
             privateIsolatedSubnets
         }).fargateService
 
-        fargateService.attachToApplicationTargetGroup(tg)
+        //use L1 as attachToApplicationTargetGroup helper mutates SG's ingress and egress
+        const cfnService = fargateService.node.defaultChild as ecs.CfnService
+
+        cfnService.loadBalancers = [
+            {
+                containerName: taskDefCfg.app.containerName,
+                containerPort: appContainerPort,
+                targetGroupArn: tg.targetGroupArn
+            }
+        ]
+
+        //make sure the service depends on the listener so registration order is clean
+        cfnService.addDependency(platformInternalAlb.listener.node.defaultChild as any)
+
+        ///fargateService.attachToApplicationTargetGroup(tg)
 
     }
 }

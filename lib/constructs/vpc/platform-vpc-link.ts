@@ -13,6 +13,7 @@ export class PlatformVpcLink extends Construct {
 
     public readonly vpcLink: apigwv2.IVpcLink
     public readonly securityGroup: ec2.ISecurityGroup
+    public readonly subSg: ec2.ISecurityGroup
 
     public constructor(
         scope: Construct,
@@ -26,12 +27,29 @@ export class PlatformVpcLink extends Construct {
         this.securityGroup = new ec2.SecurityGroup(this, 'VpcLinkSg', {
             securityGroupName: `${envConfig.projectName}-vpc-link-sg-${envConfig.envName}`,
             vpc,
-
-            /* TODO: figure a way to handle dependency errors with sg.addEgress on other stacks
-             *  when this is false
-             */
             allowAllOutbound: false
         })
+
+        const albListenerPort = 80 //TODO customize for when switching to 443 etc
+
+        //subscriber sg, ALBs subscribe to this via alb.addSecurityGroup() so vpc link can talk to them
+        this.subSg = new ec2.SecurityGroup(this, 'VpcLinkSubSg', {
+            securityGroupName: `${envConfig.projectName}-vpc-link-sub-sg-${envConfig.envName}`,
+            vpc,
+            allowAllOutbound: false
+        })
+
+        this.subSg.addIngressRule(
+            this.securityGroup,
+            ec2.Port.tcp(albListenerPort),
+            `Ingress on ALB listener port: ${albListenerPort}`
+        )
+
+        this.securityGroup.addEgressRule(
+            this.subSg,
+            ec2.Port.tcp(albListenerPort),
+            `Vpc Link Egress to ALB listener port: ${albListenerPort}`
+        )
 
         this.vpcLink = new apigwv2.VpcLink(this, 'VpcLink', {
             vpcLinkName: `${envConfig.projectName}-vpc-link-${envConfig.envName}`,
