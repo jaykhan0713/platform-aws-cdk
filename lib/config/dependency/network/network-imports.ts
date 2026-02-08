@@ -28,6 +28,14 @@ export class NetworkImports {
         })
     }
 
+    public static privateIsolatedSubnetRts(envConfig: EnvConfig) {
+        return Array.from({ length: this.maxAzs(envConfig) }, (_, index) => {
+            return cdk.Fn.importValue(
+                resolveExportName(envConfig, this.stackDomain, NetworkExports.privateIsolatedSubnetRt(index))
+            )
+        })
+    }
+
     public static privateIsolatedSubnetIds(envConfig: EnvConfig) {
         return Array.from({ length: this.maxAzs(envConfig) }, (_, index) => {
             return cdk.Fn.importValue(
@@ -36,9 +44,11 @@ export class NetworkImports {
         })
     }
 
+    //1 private isolated subnet per AZ, 1 RT per private isolated subnet
     public static privateIsolatedSubnets(scope: Construct, envConfig: EnvConfig) {
         const subnetIds = this.privateIsolatedSubnetIds(envConfig)
         const availabilityZones = this.privateIsolatedSubnetAzs(envConfig)
+        const routeTableIds = this.privateIsolatedSubnetRts(envConfig)
 
         if (subnetIds.length !== availabilityZones.length) {
             throw new Error(
@@ -46,16 +56,26 @@ export class NetworkImports {
             )
         }
 
+        if (subnetIds.length !== routeTableIds.length) {
+            throw new Error(
+                `Network import mismatch: subnetIds=${subnetIds.length} rt=${routeTableIds.length}`
+            )
+        }
+
         return subnetIds.map((subnetId, index) => {
             return ec2.Subnet.fromSubnetAttributes(
                 scope,
                 `ImportedPrivateIsolatedSubnet${index}`,
-                { subnetId, availabilityZone: availabilityZones[index] }
+                {
+                    subnetId,
+                    availabilityZone: availabilityZones[index],
+                    routeTableId: routeTableIds[index]
+                }
             )
         })
     }
 
-    public static vpcLinkSgId(scope: Construct, envConfig: EnvConfig) {
+    public static vpcLinkSgId(envConfig: EnvConfig) {
         return cdk.Fn.importValue(
             resolveExportName(envConfig, this.stackDomain, NetworkExports.vpcLinkSgId)
         )
@@ -67,6 +87,7 @@ export class NetworkImports {
         const vpcId = this.vpcId(envConfig)
         const vpcCidrBlock = this.vpcCidr(envConfig)
         const privateIsolatedSubnetAzs = this.privateIsolatedSubnetAzs(envConfig)
+        const privateIsolatedSubnetRts = this.privateIsolatedSubnetRts(envConfig)
         const privateIsolatedSubnetIds = this.privateIsolatedSubnetIds(envConfig)
 
 
@@ -74,7 +95,8 @@ export class NetworkImports {
             vpcId,
             vpcCidrBlock,
             availabilityZones: privateIsolatedSubnetAzs,
-            privateSubnetIds: privateIsolatedSubnetIds
+            privateSubnetIds: privateIsolatedSubnetIds,
+            privateSubnetRouteTableIds: privateIsolatedSubnetRts
         })
     }
 

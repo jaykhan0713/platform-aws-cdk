@@ -22,9 +22,6 @@ export interface PlatformCodeBuildCdkDeployProjectProps extends BaseStackProps {
     // What to deploy
     serviceStackName: string
 
-    // CFN parameter name in the stack
-    imageTagParameterName?: string // default: ImageTag
-
     // CDK bootstrap qualifier (default is stable, not random)
     bootstrapQualifier?: string // default: hnb659fds
 }
@@ -120,7 +117,7 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
 
                             'npx cdk deploy $SERVICE_STACK_NAME --require-approval never ' +
                             `-c deploy=${props.serviceName} ` +
-                            `-c ImageTag=$IMAGE_TAG`
+                            `-c imageTag=$IMAGE_TAG`
                         ]
                     }
                 }

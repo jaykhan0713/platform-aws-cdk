@@ -9,7 +9,7 @@ export const StackDomain = {
     serviceEcrRepos: 'service-ecr-repos',
 
     //platform's service stacks
-    edgeService: PlatformServiceName.edgeService,
+    ...PlatformServiceName,
 
     //tools env
     cicdInfra: 'cicd-infra',

@@ -29,8 +29,12 @@ export class PlatformInternalAlbTargetGroup extends Construct {
             port: props.containerPort,
             protocol: elbv2.ApplicationProtocol.HTTP,
             targetType: elbv2.TargetType.IP,
-            healthCheck: {
-                path: '/actuator/health/readiness'
+            healthCheck: { //TODO: can pass this in as custom config
+                path: '/actuator/health/readiness',
+                healthyThresholdCount: 2,
+                unhealthyThresholdCount: 5,
+                timeout: cdk.Duration.seconds(10),
+                interval: cdk.Duration.seconds(30)
             },
             //allow existing connections to continue for Duration after ALB stops sending new requests
             deregistrationDelay: cdk.Duration.seconds(60)

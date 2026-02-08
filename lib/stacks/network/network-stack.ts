@@ -55,19 +55,13 @@ export class NetworkStack extends BaseStack {
             cdk.Tags.of(subnet).add('Name', `private-isolated-subnet-${index}-${envName}`)
             cdk.Tags.of(subnet).add('Az', subnet.availabilityZone)
 
-            const routeTable = subnet.node.tryFindChild('RouteTable')
-            if (routeTable) {
-                 // future CDK version or shared RT; silently skip
-                cdk.Tags.of(routeTable).add('Name', `rtb-private-isolated-${index}-${envName}`)
-            }
-
             new cdk.CfnOutput(this, `CfnOutputPrivateIsolatedSubnet${index}Id`, {
                 value: subnet.subnetId,
                 exportName: resolveExportName(
                     envConfig,
                     StackDomain.network,
                     NetworkExports.privateIsolatedSubnetId(index)
-                ),
+                )
             })
 
             new cdk.CfnOutput(this, `CfnOutputPrivateIsolatedSubnet${index}Az`, {
@@ -76,7 +70,23 @@ export class NetworkStack extends BaseStack {
                     envConfig,
                     StackDomain.network,
                     NetworkExports.privateIsolatedSubnetAz(index)
-                ),
+                )
+            })
+
+            const routeTable = subnet.node.tryFindChild('RouteTable')
+            if (routeTable) {
+                // future CDK version or shared RT; silently skip
+                cdk.Tags.of(routeTable).add('Name', `rtb-private-isolated-${index}-${envName}`)
+
+            }
+
+            new cdk.CfnOutput(this,  `CfnOutputPrivateIsolatedSubnet${index}Rt`, {
+                value: subnet.routeTable.routeTableId,
+                exportName: resolveExportName(
+                    envConfig,
+                    StackDomain.network,
+                    NetworkExports.privateIsolatedSubnetRt(index)
+                )
             })
         })
 
@@ -100,7 +110,7 @@ export class NetworkStack extends BaseStack {
         new cdk.CfnOutput(this, 'CfnOutputVpcLinkId', {
             description: 'Shared Vpc Link Id',
             value: platformVpcLink.vpcLink.vpcLinkId,
-            exportName: resolveExportName(envConfig, StackDomain.network, NetworkExports.vpcLinkSgId)
+            exportName: resolveExportName(envConfig, StackDomain.network, NetworkExports.vpcLinkId)
         })
 
         new cdk.CfnOutput(this, 'CfnOutputVpcLinkSgId', {

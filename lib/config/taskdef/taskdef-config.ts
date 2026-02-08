@@ -85,7 +85,6 @@ export const defaultTaskDefConfig = (args: {
             ports: { grpc: 4317, http: 4318 },
             env: {
                 SERVICE_NAME: args.serviceName,
-                AWS_REGION: envConfig.region,
                 APP_PORT: String(port),
                 APS_REMOTE_WRITE_ENDPOINT: args.apsRemoteWriteEndpoint
             },

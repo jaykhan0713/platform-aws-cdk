@@ -43,12 +43,17 @@ export class PlatformServicesApp {
             )
         }
 
-        this.createEdgeServiceStack(
-            stackProps,
-            envConfig,
-            platformServiceRuntime,
-            PlatformServiceName.edgeService
-        )
+        const deployService = app.node.tryGetContext('deploy')
+
+        if (deployService === PlatformServiceName.edgeService) {
+            this.createEdgeServiceStack(
+                stackProps,
+                envConfig,
+                platformServiceRuntime,
+                PlatformServiceName.edgeService
+            )
+        }
+
     }
 
     //ecs cluster + shared runtime glue
@@ -76,7 +81,7 @@ export class PlatformServicesApp {
         runtime: PlatformServiceRuntime,
         serviceName: PlatformServiceName
     ) {
-        const stackDomain = StackDomain.edgeService
+        const stackDomain = PlatformServiceName.edgeService
 
         new InternalAlbServiceStack(
             this.app,

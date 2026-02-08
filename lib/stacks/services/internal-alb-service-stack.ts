@@ -31,10 +31,11 @@ export class InternalAlbServiceStack extends BaseStack {
         const { envConfig, serviceName, upstreamSgs } = props
 
         //pin the image tag as a parameter so this stack can always synth.
-        const imageTag = new cdk.CfnParameter(this, 'ImageTag', {
-            type: 'String',
-            description: 'Immutable ECR image tag to deploy'
-        })
+        const imageTag = this.node.tryGetContext('imageTag')
+
+        if (imageTag === undefined) {
+            throw new Error(`-c imageTag is empty`)
+        }
 
         const vpc = NetworkImports.vpc(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
@@ -54,7 +55,7 @@ export class InternalAlbServiceStack extends BaseStack {
         }).tg
 
         const vpcLinkSgId = props.vpcLinkEnabled
-            ? NetworkImports.vpcLinkSgId(this, envConfig)
+            ? NetworkImports.vpcLinkSgId(envConfig)
             : undefined
         const vpcLinkSg = vpcLinkSgId
             ? ec2.SecurityGroup.fromSecurityGroupId(
@@ -129,7 +130,7 @@ export class InternalAlbServiceStack extends BaseStack {
                     'ServiceRepo',
                     `${resolvePlatformServiceRepoName(envConfig, serviceName)}`
                 ),
-                imageTag.valueAsString
+                imageTag
             )
         }).fargateTaskDef
 

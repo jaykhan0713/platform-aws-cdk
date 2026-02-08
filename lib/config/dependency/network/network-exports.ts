@@ -6,5 +6,6 @@ export const NetworkExports = {
     vpcLinkSgId: 'vpc-link-sg-id',
 
     privateIsolatedSubnetId: (index: number) => `private-isolated-subnet-${index}-id`,
-    privateIsolatedSubnetAz: (index: number) => `private-isolated-subnet-${index}-az`
+    privateIsolatedSubnetAz: (index: number) => `private-isolated-subnet-${index}-az`,
+    privateIsolatedSubnetRt: (index: number) => `private-isolated-subnet-${index}-rt`
 } as const

@@ -5,6 +5,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 import {Construct} from 'constructs'
 
 import type {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
+import * as logs from 'aws-cdk-lib/aws-logs'
 
 interface PlatformEcsRollingServiceProps extends PlatformServiceProps {
     fargateTaskDef: ecs.FargateTaskDefinition
@@ -31,7 +32,18 @@ export class PlatformEcsRollingService extends Construct {
     ) {
         super(scope, id);
 
+        const { projectName, envName } = props.envConfig
         const serviceName = props.serviceName
+
+        //TODO add access logs to check per request
+        const scLogDriver = ecs.LogDrivers.awsLogs({
+            streamPrefix: 'ecs',
+            logGroup: new logs.LogGroup(this, 'ServiceConnectLogGroup', {
+                logGroupName: `/ecs/${projectName}/${envName}/${serviceName}-service-connect`,
+                retention: logs.RetentionDays.ONE_DAY,
+                removalPolicy: cdk.RemovalPolicy.DESTROY,
+            })
+        })
 
         const scConfig: ecs.ServiceConnectProps = props.serviceConnectServerMode
             ? { //server + client mode
@@ -43,6 +55,7 @@ export class PlatformEcsRollingService extends Construct {
                         dnsName: serviceName, //clients can use http://<serviceName>:8080
                     },
                 ],
+                logDriver: scLogDriver
             }
             : { //client mode only
                 namespace: props.runtime.serviceConnectNamespace.namespaceName
@@ -66,7 +79,7 @@ export class PlatformEcsRollingService extends Construct {
             serviceConnectConfiguration: scConfig,
             circuitBreaker: {
                 enable: true,
-                rollback: true
+                rollback: false //TODO: switch this to true when stable
             },
             enableExecuteCommand: true, //enable ecs exec
             minHealthyPercent: 100,

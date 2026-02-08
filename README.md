@@ -29,11 +29,7 @@ $env:AWS_PROFILE="jay-prod"
 jay-prod is example profile, AWS SDK must be told which profile to use
 
 ```
-$env:AWS_PROFILE="jay-prod"
-```
-
-```
-npx cdk deploy jay-platform-observability-prod       
+npx cdk deploy Network
 ```
 
 ```
@@ -55,20 +51,3 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `npx cdk synth`   emits the synthesized CloudFormation template
 
 ---
-
-```
-lib/
-  stacks/
-    global/
-      observability-stack.ts
-      network-stack.ts
-    services/
-      internal-alb-service-stack.ts
-      wallet-service-stack.ts
-  constructs/
-    adot-sidecar-construct.ts
-    ecs-service-construct.ts
-  config/
-    ssm/
-    naming/
-``` Sane model
