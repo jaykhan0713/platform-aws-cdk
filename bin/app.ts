@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib'
 
-import {PlatformApp} from 'lib/app/platform-app'
+import {PlatformNetworkApp} from 'lib/app/platform-network-app'
 
 const app = new cdk.App()
 
-new PlatformApp(app)
+new PlatformNetworkApp(app)

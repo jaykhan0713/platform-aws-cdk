@@ -1,4 +1,4 @@
-import {PlatformServiceName} from 'lib/config/service/platform-service-name'
+import {PlatformServiceName} from 'lib/config/service/platform-service'
 
 export const StackDomain = {
     //runtime envs

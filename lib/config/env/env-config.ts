@@ -14,6 +14,7 @@ export type EnvConfig = {
 
     // stack-specific options grouped //TODO separate per ownership boundaries
 
+    /*** network ***/
     vpcConfig?: {
         cidrBlock: string
         maxAzs: number
@@ -29,17 +30,23 @@ export type EnvConfig = {
         }
     }
 
+    /*** services ***/
+
     ecsClusterConfig?: {
         enableContainerInsights: boolean
     }
 }
 
+const defaultProject = {
+    account: '454842419646',
+    region: 'us-west-2',
+    projectName: 'jay-platform',
+    tags: { managedBy: 'cdk' },
+}
+
 const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
     prod: {
-        account: '454842419646',
-        region: 'us-west-2',
-        projectName: 'jay-platform',
-        tags: { managedBy: 'cdk' },
+        ...defaultProject,
 
         vpcConfig: {
             cidrBlock: '10.0.0.0/16',
@@ -60,10 +67,7 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
     },
 
     tools: {
-        account: '454842419646',
-        region: 'us-west-2',
-        projectName: 'jay-platform',
-        tags: { managedBy: 'cdk' }
+        ...defaultProject
     }
 }
 

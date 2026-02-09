@@ -7,7 +7,7 @@ import type { EnvName } from 'lib/config/domain/env-name'
 import { StackDomain } from 'lib/config/domain/stack-domain'
 import { NetworkStack } from 'lib/stacks/network/network-stack'
 
-export class PlatformApp {
+export class PlatformNetworkApp {
 
     constructor(private readonly app: cdk.App) {
         // i.e cdk diff -c env=prod (for explicit but defaults to prod)

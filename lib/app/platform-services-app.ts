@@ -8,7 +8,7 @@ import {ServiceRuntimeStack} from 'lib/stacks/services/runtime/service-runtime-s
 import {resolveStackName} from 'lib/config/naming/stacks'
 import type {PlatformServiceRuntime} from 'lib/stacks/services/props/platform-service-props'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
-import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service-name'
+import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service'
 import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 
 export class PlatformServicesApp {

@@ -1,4 +1,4 @@
-import {PlatformServiceName} from 'lib/config/service/platform-service-name'
+import {PlatformServiceName} from 'lib/config/service/platform-service'
 
 export type GithubConfig = {
     githubOwner: string
@@ -6,20 +6,15 @@ export type GithubConfig = {
     githubBranch: string
 }
 
-const SERVICE_GITHUB_CONFIG: Record<PlatformServiceName, GithubConfig> = {
-    'edge-service': {
-        githubOwner: 'jaykhan0713',
-        githubRepo: PlatformServiceName.edgeService,
-        githubBranch: 'main'
-    }
-} as const
-
-// const SERVICE_GITHUB_CONFIG: GithubConfig[] = Object.values(PlatformServiceName).map(serviceName => {
-//     return {
-//         githubOwner: 'jaykhan0713',
-//         githubRepo:
-//     }
-// })
+const SERVICE_GITHUB_CONFIG: Record<PlatformServiceName, GithubConfig> =
+    Object.values(PlatformServiceName).reduce((acc, serviceName) => {
+        acc[serviceName] = {
+            githubOwner: 'jaykhan0713',
+            githubRepo: serviceName,
+            githubBranch: 'main'
+        }
+        return acc
+    }, {} as Record<PlatformServiceName, GithubConfig>)
 
 const PLATFORM_CDK_GITHUB_CONFIG: GithubConfig = {
     githubOwner: 'jaykhan0713',
