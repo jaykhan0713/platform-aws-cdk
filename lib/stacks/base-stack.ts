@@ -12,8 +12,6 @@ export interface BaseStackProps extends cdk.StackProps {
 }
 
 export abstract class BaseStack extends cdk.Stack {
-    public readonly envConfig: EnvConfig
-    public readonly stackDomain: StackDomain
 
     protected constructor(scope: cdk.App, id: string, props: BaseStackProps) {
         super(scope, id, props)

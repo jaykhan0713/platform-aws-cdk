@@ -58,7 +58,8 @@ export class PlatformEcsRollingService extends Construct {
                 logDriver: scLogDriver
             }
             : { //client mode only
-                namespace: props.runtime.serviceConnectNamespace.namespaceName
+                namespace: props.runtime.serviceConnectNamespace.namespaceName,
+                logDriver: scLogDriver
             }
 
         const healthCheckGp =  props.healthCheckGracePeriodSeconds

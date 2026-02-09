@@ -18,7 +18,7 @@ import * as ecr from 'aws-cdk-lib/aws-ecr'
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 
 export interface InternalAlbServiceStackProps extends PlatformServiceProps {
-    upstreamToAlbSgs?: ec2.ISecurityGroup[] //sg's to alb.addIngress(),
+    upstreamToAlbSgs?: ec2.ISecurityGroup[] //sg's to albSg.addIngress(),
     vpcLinkEnabled ?: boolean
 }
 
@@ -29,7 +29,6 @@ export class InternalAlbServiceStack extends BaseStack {
 
         const { envConfig, serviceName, upstreamToAlbSgs } = props
 
-        //pin the image tag as a parameter so this stack can always synth.
         const imageTag = this.node.tryGetContext('imageTag')
 
         if (imageTag === undefined) {
@@ -65,10 +64,24 @@ export class InternalAlbServiceStack extends BaseStack {
             )
             : undefined
 
+        const internalServicesSg = ec2.SecurityGroup.fromSecurityGroupId(
+            this,
+            'InternalServicesSgImported',
+            props.runtime.internalServicesSgId,
+            { mutable: false }
+        )
+
+        //if non vpc link path, must be reachable from other internal services
+        const combinedToAlbSgs =
+            [
+                ...(upstreamToAlbSgs ?? []),
+                ...(vpcLinkSubSg ? [] : [internalServicesSg])
+            ]
+
         const albHttpListenerPort = 80
         const platformInternalAlb = new PlatformInternalAlb(this, 'PlatformInternalAlb', {
             ...props,
-            upstreamSgs: upstreamToAlbSgs, //for albsg.addIngress(), if non vpc link -> alb, pass in internalServices sg here
+            upstreamSgs: combinedToAlbSgs, //for albsg.addIngress(), if non vpc link -> alb, pass in internalServices sg here
             serviceName,
             vpc,
             albHttpListenerPort,
@@ -98,7 +111,7 @@ export class InternalAlbServiceStack extends BaseStack {
             `Internal Alb SG Egress to ${serviceName}, app container port: ${appContainerPort}`
         )
 
-        // 3. create task def, related roles, then ECS Service
+        // 3. create task def, related roles
         const taskRole = new PlatformEcsTaskRole(this, 'PlatformEcsTaskRole', {
             ...props,
             apsWorkspaceArn: ObservabilityImports.apsWorkspaceArn(envConfig)
@@ -127,14 +140,6 @@ export class InternalAlbServiceStack extends BaseStack {
         }).fargateTaskDef
 
         // 4. create ecs service, target groups, attach to TG
-        const internalServicesSg = ec2.SecurityGroup.fromSecurityGroupId(
-            this,
-            'InternalServicesSgImported',
-            props.runtime.internalServicesSgId,
-            { mutable: false }
-        )
-
-
         const fargateService = new PlatformEcsRollingService(this, 'PlatformEcsRollingService', {
             ...props,
             fargateTaskDef,
