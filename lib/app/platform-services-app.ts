@@ -66,6 +66,8 @@ export class PlatformServicesApp {
 
             if (deployService === PlatformServiceName.edgeService) {
                 serviceStackFactory.createInternalAlbServiceStack(deployService, true)
+            } else {
+                serviceStackFactory.createInternalServiceStack(deployService)
             }
         }
     }

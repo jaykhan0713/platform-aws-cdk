@@ -1,9 +1,13 @@
 //note that adding another service here will automatically create an ECR repo for it.
+import {StackDomain} from 'lib/config/domain'
+
 export const PlatformServiceName = {
     edgeService: 'edge-service',
+    voyagerService: 'voyager-service'
 } as const
 
 export type PlatformServiceName = typeof PlatformServiceName[keyof typeof PlatformServiceName]
+type PlatformServiceKey = keyof typeof PlatformServiceName
 
 //i.e edge-service stack id is 'EdgeService'
 const kebabToPascal = (value: string): string =>
@@ -22,6 +26,18 @@ export const getStackId = (serviceName: PlatformServiceName) => {
     return STACK_ID_MAP[serviceName]
 }
 
-export class PlatformServiceRegistry {
+//pipeline related
+type PipelineKey = `${PlatformServiceKey}Pipeline`
+export const servicePipelineDomains = Object.fromEntries(
+    (Object.keys(PlatformServiceName) as PlatformServiceKey[]).map(k => [
+        `${k}Pipeline`,
+        `${PlatformServiceName[k]}-pipeline`
+    ])
+) as Record<PipelineKey, `${PlatformServiceName}-pipeline`>
 
-}
+const serviceKeyByValue = Object.fromEntries(
+    Object.entries(PlatformServiceName).map(([k, v]) => [v, k])
+) as Record<PlatformServiceName, PlatformServiceKey>
+
+export const getPipelineStackDomainFromValue = (serviceName: PlatformServiceName) =>
+    StackDomain[`${serviceKeyByValue[serviceName]}Pipeline` as PipelineKey]

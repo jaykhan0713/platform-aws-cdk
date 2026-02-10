@@ -5,5 +5,5 @@
 - Non ALB internal services need to do their unique ecsTaskSg.addIngress(internalServicesSg) as well as register
   their fargate service with [ecsTaskSg, internalServicesSg]
 - update alb to listen on 443, dont terminate TLS on API gw, instead terminate at ALB. Can keep service to service http.
-- enable circuitbreaker rollback: true
-- move service runtime stack objects to exports/ssm so service conditional synths dont depend on auto generated exports.
+- enable circuitbreaker rollback: true when ready
+- pass in overrideable taskcfgs and settings to service stack while using defaults when empty.

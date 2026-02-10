@@ -1,4 +1,4 @@
-import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {PlatformServiceName, servicePipelineDomains} from 'lib/config/service/platform-service-registry'
 
 export const StackDomain = {
     //runtime envs
@@ -14,8 +14,8 @@ export const StackDomain = {
     //tools env
     cicdInfra: 'cicd-infra',
 
-    //tools env pipeline stacks
-    edgeServicePipeline: `${PlatformServiceName.edgeService}-pipeline`
+    // auto-generated pipeline stacks i.e edge-service-pipeline
+    ...servicePipelineDomains
 } as const
 
 export type StackDomain = typeof StackDomain[keyof typeof StackDomain]

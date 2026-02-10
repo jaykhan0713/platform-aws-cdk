@@ -7,7 +7,11 @@ import { EnvName } from 'lib/config/domain/env-name'
 import { StackDomain } from 'lib/config/domain/stack-domain'
 import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/platform-service-ecr-repos-stack'
 import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/platform-service-pipeline-stack'
-import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {
+    getPipelineStackDomainFromValue,
+    getStackId,
+    PlatformServiceName
+} from 'lib/config/service/platform-service-registry'
 
 export class PlatformCicdApp {
 
@@ -28,12 +32,19 @@ export class PlatformCicdApp {
 
         const cicdInfraStack = this.createCicdInfraStack(toolsStackProps, toolsConfig)
         const platformServiceEcrReposStack = this.createPlatformServiceEcrReposStack(toolsStackProps, toolsConfig)
-        this.createEdgeServicePipeline(
-            toolsStackProps,
-            toolsConfig,
-            cicdInfraStack,
-            platformServiceEcrReposStack
-        )
+
+
+        for (const serviceName of Object.values(PlatformServiceName)) {
+            this.createPlatformServicePipeline(
+                serviceName,
+                toolsStackProps,
+                toolsConfig,
+                cicdInfraStack,
+                platformServiceEcrReposStack
+            )
+        }
+
+
     }
 
     //shared cicd for 'tools' env
@@ -67,18 +78,18 @@ export class PlatformCicdApp {
         )
     }
 
-    private createEdgeServicePipeline(
+    private createPlatformServicePipeline(
+        serviceName: PlatformServiceName,
         toolsStackProps: cdk.StackProps,
         toolsEnvConfig: EnvConfig,
         cicdInfraStack: CicdInfraStack,
         platformServiceEcrReposStack: PlatformServiceEcrReposStack
     ) {
-        const stackDomain = StackDomain.edgeServicePipeline
-        const serviceName = PlatformServiceName.edgeService
+        const stackDomain = getPipelineStackDomainFromValue(serviceName)
 
         new PlatformServicePipelineStack(
             this.app,
-            'EdgeServicePipeline',
+            getStackId(serviceName) + 'Pipeline', //i.e EdgeServicePipeline
             {
                 stackName: resolveStackName(toolsEnvConfig, stackDomain),
                 ...toolsStackProps,

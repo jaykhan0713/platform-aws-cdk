@@ -2,11 +2,9 @@ import * as cdk from 'aws-cdk-lib'
 
 import * as aps from 'aws-cdk-lib/aws-aps'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
-import * as ssm from 'aws-cdk-lib/aws-ssm'
 
-import {TagKeys, resolveSsmParamPath, resolveExportName} from 'lib/config/naming';
+import {TagKeys, resolveExportName} from 'lib/config/naming';
 import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
-import { ParamNamespace } from 'lib/config/domain'
 import {ObservabilityExports} from 'lib/config/dependency/core/observability-exports'
 
 
@@ -14,7 +12,6 @@ export class ObservabilityStack extends BaseStack {
 
     public readonly apsRemoteWriteEndpoint: string
     public readonly apsWorkspaceArn: string
-    private readonly adotRepo: ecr.IRepository
 
     public constructor(
         scope: cdk.App,
