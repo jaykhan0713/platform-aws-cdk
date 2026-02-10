@@ -27,17 +27,21 @@ export const getStackId = (serviceName: PlatformServiceName) => {
 }
 
 //pipeline related
-type PipelineKey = `${PlatformServiceKey}Pipeline`
+type ServicePipelineDomains = {
+    [K in PlatformServiceKey as `${K}Pipeline`]:
+    `${typeof PlatformServiceName[K]}-pipeline`
+}
+
 export const servicePipelineDomains = Object.fromEntries(
     (Object.keys(PlatformServiceName) as PlatformServiceKey[]).map(k => [
         `${k}Pipeline`,
         `${PlatformServiceName[k]}-pipeline`
     ])
-) as Record<PipelineKey, `${PlatformServiceName}-pipeline`>
+) as ServicePipelineDomains
 
 const serviceKeyByValue = Object.fromEntries(
     Object.entries(PlatformServiceName).map(([k, v]) => [v, k])
 ) as Record<PlatformServiceName, PlatformServiceKey>
 
 export const getPipelineStackDomainFromValue = (serviceName: PlatformServiceName) =>
-    StackDomain[`${serviceKeyByValue[serviceName]}Pipeline` as PipelineKey]
+    StackDomain[`${serviceKeyByValue[serviceName]}Pipeline` as keyof ServicePipelineDomains]
