@@ -10,6 +10,7 @@ import { resolveIamRoleName } from 'lib/config/naming'
 import { IamConstants } from 'lib/config/domain/iam-constants'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-code-artifact'
 
 export interface  PlatformCodeBuildDockerProjectProps extends BaseStackProps {
 
@@ -17,6 +18,7 @@ export interface  PlatformCodeBuildDockerProjectProps extends BaseStackProps {
 
     artifactsBucket: s3.IBucket
     repo: ecr.IRepository //service repo
+    platformCodeArtifact: PlatformCodeArtifact
 
     buildspecPath?: string
 
@@ -36,8 +38,7 @@ export class PlatformCodeBuildDocker extends Construct {
         super(scope, id)
 
         const envConfig = props.envConfig
-        const account = envConfig.account
-        const region = envConfig.region
+        const { account, region } = envConfig
 
         this.role = new iam.Role(this, 'CodeBuildServiceRole', {
             roleName: resolveIamRoleName(envConfig, props.serviceName, IamConstants.roleArea.codebuildDocker),
@@ -63,6 +64,7 @@ export class PlatformCodeBuildDocker extends Construct {
                 resources: ['*']
             })
         )
+        props.platformCodeArtifact.grantReadWriteTo(this.role, envConfig)
 
         // Source and artifact I/O (broad but fine for now, TODO: tighten later to pipeline prefix)
         props.artifactsBucket.grantReadWrite(this.role)
@@ -101,7 +103,7 @@ export class PlatformCodeBuildDocker extends Construct {
             buildSpec: codebuild.BuildSpec.fromSourceFilename(props.buildspecPath ?? 'buildspec.yml')
         })
 
-        // Optional: CodeBuild report groups if you end up using them
+        // Optional: CodeBuild report groups when needed
         if (props.enableReports) {
             this.role.addToPolicy(
                 new iam.PolicyStatement({

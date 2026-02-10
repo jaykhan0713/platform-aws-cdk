@@ -101,6 +101,7 @@ export class PlatformCicdApp {
 
                 artifactsBucket: cicdInfraStack.artifactsBucket,
                 githubConnectionArn: cicdInfraStack.githubConnectionArn,
+                platformCodeArtifact: cicdInfraStack.platformCodeArtifact,
 
                 ecrRepo: platformServiceEcrReposStack.repos[serviceName]
             }

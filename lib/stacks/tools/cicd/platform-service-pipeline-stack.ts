@@ -9,6 +9,7 @@ import { PlatformServiceName } from 'lib/config/service/platform-service-registr
 import { PlatformCodeBuildDocker } from 'lib/constructs/cicd/platform-codebuild-docker'
 import {getPlatformCdkGithubConfig, getServiceGithubConfig} from 'lib/config/github/github-config'
 import {PlatformCodeBuildCdkDeploy} from 'lib/constructs/cicd/platform-codebuild-cdk-deploy'
+import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-code-artifact'
 
 export interface PlatformServicePipelineStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -16,6 +17,7 @@ export interface PlatformServicePipelineStackProps extends BaseStackProps {
 
     artifactsBucket: s3.IBucket
     githubConnectionArn: string
+    platformCodeArtifact: PlatformCodeArtifact
 
     ecrRepo: ecr.IRepository
 
