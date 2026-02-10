@@ -8,8 +8,10 @@ import {ServiceRuntimeStack} from 'lib/stacks/services/runtime/service-runtime-s
 import {resolveStackName} from 'lib/config/naming/stacks'
 import type {PlatformServiceRuntime} from 'lib/stacks/services/props/platform-service-props'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
-import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service'
+import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
+import {InternalServiceStack} from 'lib/stacks/services/internal-service-stack'
+import {PlatformServiceStackFactory} from 'lib/config/service/platform-service-stack-factory'
 
 export class PlatformServicesApp {
 
@@ -43,17 +45,29 @@ export class PlatformServicesApp {
             )
         }
 
-        const deployService = app.node.tryGetContext('deploy')
+        const serviceStackFactory = new PlatformServiceStackFactory(
+            app,
+            stackProps,
+            envConfig,
+            platformServiceRuntime
+        )
 
-        if (deployService === PlatformServiceName.edgeService) {
-            this.createEdgeServiceStack(
-                stackProps,
-                envConfig,
-                platformServiceRuntime,
-                PlatformServiceName.edgeService
-            )
+        const deployServiceRaw = app.node.tryGetContext('deploy')
+
+
+        if (deployServiceRaw !== undefined) {
+            if (
+                !Object.values(PlatformServiceName).includes(deployServiceRaw as PlatformServiceName)
+            ) {
+                throw new Error(`Invalid -c deploy=${deployServiceRaw}`)
+            }
+
+            const deployService: PlatformServiceName = deployServiceRaw
+
+            if (deployService === PlatformServiceName.edgeService) {
+                serviceStackFactory.createInternalAlbServiceStack(deployService, true)
+            }
         }
-
     }
 
     //ecs cluster + shared runtime glue
@@ -71,29 +85,6 @@ export class PlatformServicesApp {
                 ...stackProps,
                 envConfig,
                 stackDomain
-            }
-        )
-    }
-
-    private createEdgeServiceStack(
-        stackProps: cdk.StackProps,
-        envConfig: EnvConfig,
-        runtime: PlatformServiceRuntime,
-        serviceName: PlatformServiceName
-    ) {
-        const stackDomain = PlatformServiceName.edgeService
-
-        new InternalAlbServiceStack(
-            this.app,
-            getStackId(serviceName),
-            {
-                stackName: resolveStackName(envConfig, stackDomain),
-                ...stackProps,
-                envConfig,
-                stackDomain,
-                serviceName,
-                runtime,
-                vpcLinkEnabled: true
             }
         )
     }

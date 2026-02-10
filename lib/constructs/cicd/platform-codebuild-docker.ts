@@ -9,7 +9,7 @@ import { Construct } from 'constructs'
 import { resolveIamRoleName } from 'lib/config/naming'
 import { IamConstants } from 'lib/config/domain/iam-constants'
 import {BaseStackProps} from 'lib/stacks/base-stack'
-import {PlatformServiceName} from 'lib/config/service/platform-service'
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
 export interface  PlatformCodeBuildDockerProjectProps extends BaseStackProps {
 

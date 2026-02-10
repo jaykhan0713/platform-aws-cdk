@@ -1,5 +1,5 @@
 import type { EnvConfig } from 'lib/config/env/env-config'
-import {PlatformServiceName} from 'lib/config/service/platform-service'
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
 export type EnvMap = Readonly<Record<string, string>>
 export type SecretMap = Readonly<Record<string, string>> // name -> ssm param path

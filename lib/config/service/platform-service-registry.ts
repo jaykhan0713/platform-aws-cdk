@@ -1,6 +1,6 @@
 //note that adding another service here will automatically create an ECR repo for it.
 export const PlatformServiceName = {
-    edgeService: 'edge-service'
+    edgeService: 'edge-service',
 } as const
 
 export type PlatformServiceName = typeof PlatformServiceName[keyof typeof PlatformServiceName]
@@ -20,4 +20,8 @@ const STACK_ID_MAP: Record<PlatformServiceName, string> =
 
 export const getStackId = (serviceName: PlatformServiceName) => {
     return STACK_ID_MAP[serviceName]
+}
+
+export class PlatformServiceRegistry {
+
 }

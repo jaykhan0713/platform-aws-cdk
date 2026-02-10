@@ -18,6 +18,7 @@ import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling
 export interface InternalServiceStackProps extends PlatformServiceProps {
     upstreamSgs?: ec2.ISecurityGroup[] //sg's to ecsTaskSg.addIngress()
 }
+
 export class InternalServiceStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: InternalServiceStackProps) {
         super(scope, id, props)

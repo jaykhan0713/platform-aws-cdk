@@ -1,4 +1,4 @@
-import {PlatformServiceName} from 'lib/config/service/platform-service'
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
 export type GithubConfig = {
     githubOwner: string

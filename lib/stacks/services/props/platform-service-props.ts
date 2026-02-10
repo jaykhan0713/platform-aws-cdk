@@ -3,7 +3,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2'
 
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import * as servicediscovery from 'aws-cdk-lib/aws-servicediscovery'
-import {PlatformServiceName} from 'lib/config/service/platform-service'
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
 export interface PlatformServiceProps extends BaseStackProps {
     readonly runtime: PlatformServiceRuntime

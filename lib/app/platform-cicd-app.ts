@@ -7,7 +7,7 @@ import { EnvName } from 'lib/config/domain/env-name'
 import { StackDomain } from 'lib/config/domain/stack-domain'
 import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/platform-service-ecr-repos-stack'
 import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/platform-service-pipeline-stack'
-import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service'
+import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
 export class PlatformCicdApp {
 
