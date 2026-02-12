@@ -28,10 +28,15 @@
     "baseUrl": ".",
     "paths": {
       "lib/*": ["lib/*"]
-    }
+    },
+
+    "outDir": "dist",
+    "rootDir": "."
   },
+  "include": ["bin/**/*.ts", "lib/**/*.ts"],
   "exclude": [
     "node_modules",
-    "cdk.out"
+    "cdk.out",
+    "dist"
   ]
 }
