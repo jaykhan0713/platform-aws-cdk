@@ -1,18 +1,31 @@
 # platform-aws-cdk
 CDK For jay.platform AWS architecture
 
-#TODO: add auto scaling linked role.
-
 ---
 
+first installation- do NOT use npm install or it mutates package-lock.json
+```
+npm ci
+```
+
 aws sso login example:
+
+```
+aws sso configure
+```
 
 ```
 aws sso login --profile jay-prod 
 ```
 
+windows
 ```
 $env:AWS_PROFILE="jay-prod"
+```
+
+unix
+```
+
 ```
 
 for running different ownership boundaries (scripts in package.json) ex:
