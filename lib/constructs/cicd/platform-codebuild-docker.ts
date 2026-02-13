@@ -37,6 +37,7 @@ export class PlatformCodeBuildDocker extends Construct {
     public constructor(scope: Construct, id: string, props: PlatformCodeBuildDockerProjectProps) {
         super(scope, id)
 
+        const { platformCodeArtifact } = props
         const envConfig = props.envConfig
         const { account, region } = envConfig
 
@@ -64,6 +65,8 @@ export class PlatformCodeBuildDocker extends Construct {
                 resources: ['*']
             })
         )
+
+        //publish and read from codeartifact
         props.platformCodeArtifact.grantReadWriteTo(this.role, envConfig)
 
         // Source and artifact I/O (broad but fine for now, TODO: tighten later to pipeline prefix)
@@ -98,7 +101,10 @@ export class PlatformCodeBuildDocker extends Construct {
                 ECR_REGISTRY: {value: ecrRegistry},
                 ECR_REPO_URI: { value: props.repo.repositoryUri },
                 BASE_IMAGES_REPO_URI: { value: baseImagesRepo.repositoryUri },
-                BOOTSTRAP_TAG: { value: props.bootstrapTagName ?? '' }
+                BOOTSTRAP_TAG: { value: props.bootstrapTagName ?? '' },
+                CODEARTIFACT_DOMAIN_OWNER: { value: account },
+                CODEARTIFACT_DOMAIN: { value: platformCodeArtifact.domain.domainName },
+                CODEARTIFACT_REPO: { value: platformCodeArtifact.repo.repositoryName }
             },
             buildSpec: codebuild.BuildSpec.fromSourceFilename(props.buildspecPath ?? 'buildspec.yml')
         })
