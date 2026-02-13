@@ -106,7 +106,13 @@ export class PlatformCodeBuildDocker extends Construct {
                 CODEARTIFACT_DOMAIN: { value: platformCodeArtifact.domain.domainName },
                 CODEARTIFACT_REPO: { value: platformCodeArtifact.repo.repositoryName }
             },
-            buildSpec: codebuild.BuildSpec.fromSourceFilename(props.buildspecPath ?? 'buildspec.yml')
+            buildSpec: codebuild.BuildSpec.fromSourceFilename(props.buildspecPath ?? 'buildspec.yml'),
+
+            //caching between builds, privilaged must be enabled
+            cache: codebuild.Cache.local(
+                codebuild.LocalCacheMode.DOCKER_LAYER,
+                codebuild.LocalCacheMode.CUSTOM
+            )
         })
 
         // Optional: CodeBuild report groups when needed

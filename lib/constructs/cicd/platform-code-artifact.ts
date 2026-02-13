@@ -26,7 +26,7 @@ export class PlatformCodeArtifact extends Construct {
 
         this.repo = new codeartifact.CfnRepository(this, 'CodeArtifactRepo', {
             domainName: this.domain.domainName,
-            repositoryName: 'maven-internal'
+            repositoryName: 'maven-internal',
         })
 
         //TODO optional: can add packagegroup to refine protection
@@ -51,8 +51,11 @@ export class PlatformCodeArtifact extends Construct {
         const domainArn = `arn:aws:codeartifact:${region}:${account}:domain/${domainName}`
         const repoArn = `arn:aws:codeartifact:${region}:${account}:repository/${domainName}/${repoName}`
 
+        // Allow publish to any Maven package in this repo
+        const packageArnAllMaven = `arn:aws:codeartifact:${region}:${account}:package/${domainName}/${repoName}/maven/*/*`
+
         return [
-            new iam.PolicyStatement({ //need bearer token to prove this is an IAM principal
+            new iam.PolicyStatement({
                 sid: 'CodeArtifactServiceBearerToken',
                 actions: ['sts:GetServiceBearerToken'],
                 resources: ['*'],
@@ -62,7 +65,7 @@ export class PlatformCodeArtifact extends Construct {
                     }
                 }
             }),
-            new iam.PolicyStatement({ // get temp auth token to access code artifact
+            new iam.PolicyStatement({
                 sid: 'CodeArtifactAuthToken',
                 actions: [
                     'codeartifact:GetAuthorizationToken',
@@ -70,14 +73,13 @@ export class PlatformCodeArtifact extends Construct {
                 ],
                 resources: [domainArn]
             }),
+
+            // Repo-scoped actions (repo ARN)
             new iam.PolicyStatement({
-                sid: 'CodeArtifactRepoReadWrite',
+                sid: 'CodeArtifactRepoAccess',
                 actions: [
                     'codeartifact:GetRepositoryEndpoint',
                     'codeartifact:ReadFromRepository',
-                    'codeartifact:PublishPackageVersion',
-                    'codeartifact:PutPackageMetadata',
-                    'codeartifact:UpdatePackageVersionsStatus',
                     'codeartifact:DescribeRepository',
                     'codeartifact:ListPackages',
                     'codeartifact:ListPackageVersions',
@@ -87,7 +89,19 @@ export class PlatformCodeArtifact extends Construct {
                     'codeartifact:ListPackageVersionAssets'
                 ],
                 resources: [repoArn]
+            }),
+
+            // Package-scoped actions (package ARN)
+            new iam.PolicyStatement({
+                sid: 'CodeArtifactPackagePublish',
+                actions: [
+                    'codeartifact:PublishPackageVersion',
+                    'codeartifact:PutPackageMetadata',
+                    'codeartifact:UpdatePackageVersionsStatus'
+                ],
+                resources: [packageArnAllMaven]
             })
         ]
     }
+
 }
