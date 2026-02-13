@@ -7,3 +7,4 @@
 - Automate deletion of CodeArtifact packages (lambda eventbridge)
 - Move away from SNAPSHOT republishing logic in services
 - sleepmode every night (turn down ecs services to 0, vpce's torn down etc)
+- seamless way to pull on local from codeartifact without running script first
