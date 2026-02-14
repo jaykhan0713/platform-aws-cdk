@@ -13,8 +13,6 @@ import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 export interface PlatformCodeBuildCdkDeployProjectProps extends BaseStackProps {
     serviceName: PlatformServiceName
 
-    artifactsBucket: s3.IBucket
-
     // CodePipeline artifact names (these become CODEBUILD_SRC_DIR_<name>)
     cdkSourceArtifactName?: string // default: CdkSrc
     buildOutputArtifactName?: string //default: BuildOuput
@@ -42,15 +40,12 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
         const cdkSrcName = props.cdkSourceArtifactName ?? 'CdkSrc'
         const buildOutputName = props.buildOutputArtifactName ?? 'BuildOutput'
 
-        const deployProjectName = `${envConfig.projectName}-${props.serviceName}-deploy`
+        const deployProjectName = `${envConfig.projectName}-${props.serviceName}-codebuild-deploy`
 
-        this.role = new iam.Role(this, 'CodeBuildDeployServiceRole', {
+        this.role = new iam.Role(this, 'CodeBuildCdkDeployRole', {
             roleName: resolveIamRoleName(envConfig, props.serviceName, IamConstants.roleArea.codebuildDeploy),
             assumedBy: new iam.ServicePrincipal(IamConstants.principal.codeBuild)
         })
-
-        // Let the deploy step read pipeline artifacts (cdk repo + imagetag.txt)
-        props.artifactsBucket.grantRead(this.role)
 
         // Logs
         this.logGroup = new logs.LogGroup(this, 'DeployLogGroup', {
@@ -85,7 +80,6 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                 cloudWatch: { logGroup: this.logGroup }
             },
             environmentVariables: {
-                AWS_DEFAULT_REGION: {value: region},
                 CDK_SOURCE_ARTIFACT_NAME: {value: cdkSrcName},
                 SERVICE_STACK_NAME: {value: props.serviceStackName}
             },

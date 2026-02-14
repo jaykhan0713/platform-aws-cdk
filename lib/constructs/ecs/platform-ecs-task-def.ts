@@ -15,7 +15,7 @@ interface PlatformEcsTaskDefProps extends PlatformServiceProps {
     taskRole: iam.IRole
     taskExecutionRole: iam.IRole
 
-    appImage: ecs.ContainerImage //const image = ecs.ContainerImage.fromEcrRepository(repo, 'bootstrap')
+    appImage: ecs.ContainerImage
 }
 
 export class PlatformEcsTaskDef extends Construct {

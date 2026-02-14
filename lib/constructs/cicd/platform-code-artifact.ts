@@ -30,7 +30,16 @@ export class PlatformCodeArtifact extends Construct {
         })
 
         //TODO optional: can add packagegroup to refine protection
+    }
 
+    public grantReadTo(
+        principal: iam.IGrantable,
+        envConfig: EnvConfig
+    ) {
+        const statements = this.readPolicyStatements(envConfig)
+        for (const s of statements) {
+            principal.grantPrincipal.addToPrincipalPolicy(s)
+        }
     }
 
     public grantReadWriteTo(
@@ -43,16 +52,13 @@ export class PlatformCodeArtifact extends Construct {
         }
     }
 
-    public readWritePolicyStatements(envConfig: EnvConfig): iam.PolicyStatement[] {
+    public readPolicyStatements(envConfig: EnvConfig): iam.PolicyStatement[] {
         const { account, region } = envConfig
         const domainName = this.domain.domainName
         const repoName = this.repo.repositoryName
 
         const domainArn = `arn:aws:codeartifact:${region}:${account}:domain/${domainName}`
         const repoArn = `arn:aws:codeartifact:${region}:${account}:repository/${domainName}/${repoName}`
-
-        // Allow publish to any Maven package in this repo
-        const packageArnAllMaven = `arn:aws:codeartifact:${region}:${account}:package/${domainName}/${repoName}/maven/*/*`
 
         return [
             new iam.PolicyStatement({
@@ -89,7 +95,22 @@ export class PlatformCodeArtifact extends Construct {
                     'codeartifact:ListPackageVersionAssets'
                 ],
                 resources: [repoArn]
-            }),
+            })
+        ]
+    }
+
+    public readWritePolicyStatements(
+        envConfig: EnvConfig
+    ) {
+        const { account, region } = envConfig
+        const domainName = this.domain.domainName
+        const repoName = this.repo.repositoryName
+
+        // Allow publish to any Maven package in this repo
+        const packageArnAllMaven = `arn:aws:codeartifact:${region}:${account}:package/${domainName}/${repoName}/maven/*/*`
+
+        return [
+            ...this.readPolicyStatements(envConfig),
 
             // Package-scoped actions (package ARN)
             new iam.PolicyStatement({
