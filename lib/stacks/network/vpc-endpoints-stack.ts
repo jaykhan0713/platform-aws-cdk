@@ -89,8 +89,9 @@ export class VpcEndpointsStack extends BaseStack {
         )
 
         // vpc interface endpoints
+        const sleepMode = this.node.tryGetContext('sleepMode') === 'true'
 
-        if (interfaceOptions?.enableEndpoints) {
+        if (!sleepMode) {
 
             let subnets: ec2.SubnetSelection
 

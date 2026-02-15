@@ -89,7 +89,9 @@ export class PlatformEcsRollingService extends Construct {
 
         //auto scaling
         const scaling = this.fargateService.autoScaleTaskCount({
-            minCapacity: 0, //ECS will never actually scale to 0 on CPU
+            // minCapacity is 0 to allow manual scale-to-zero in dev environments.
+            // Target tracking on CPU will not automatically scale to zero.
+            minCapacity: 0,
             maxCapacity: 6
         })
 

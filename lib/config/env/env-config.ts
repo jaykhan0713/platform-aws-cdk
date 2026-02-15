@@ -22,7 +22,6 @@ export type EnvConfig = {
 
     vpceConfig?: {
         interfaceOptions: {
-            enableEndpoints: boolean
             enableEcsExec: boolean
 
             // single AZ per interface endpoint by default to save cost. For real traffic, can toggle
@@ -55,7 +54,6 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
 
         vpceConfig: {
             interfaceOptions: {
-                enableEndpoints: false,
                 enableEcsExec: false,
                 enableInterfaceMultiAz: false
             }
