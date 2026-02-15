@@ -98,12 +98,6 @@ export class PlatformCodebuildImage extends Construct {
                 CODEARTIFACT_REPO: { value: platformCodeArtifact.repo.repositoryName }
             },
             buildSpec: codebuild.BuildSpec.fromSourceFilename(props.buildSpecPath ?? 'buildspec.yml'),
-
-            //caching between builds, privilaged must be enabled
-            cache: codebuild.Cache.local(
-                codebuild.LocalCacheMode.DOCKER_LAYER,
-                codebuild.LocalCacheMode.CUSTOM
-            )
         })
 
         // Optional: CodeBuild report groups when needed
