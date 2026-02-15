@@ -35,6 +35,10 @@ export type EnvConfig = {
     ecsClusterConfig?: {
         enableContainerInsights: boolean
     }
+
+    ecsServiceConfig?: {
+        sleepMode: boolean
+    }
 }
 
 const defaultProject = {
@@ -55,7 +59,7 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
 
         vpceConfig: {
             interfaceOptions: {
-                enableEndpoints: true,
+                enableEndpoints: false,
                 enableEcsExec: false,
                 enableInterfaceMultiAz: false
             }
@@ -63,6 +67,10 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
 
         ecsClusterConfig: {
             enableContainerInsights: false
+        },
+
+        ecsServiceConfig: {
+            sleepMode: true
         }
     },
 
