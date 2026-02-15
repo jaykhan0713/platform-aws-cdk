@@ -92,7 +92,7 @@ export class InternalServiceStack extends BaseStack {
         const fargateService = new PlatformEcsRollingService(this, 'PlatformEcsRollingService', {
             ...props,
             fargateTaskDef,
-            desiredCount: envConfig.ecsServiceConfig?.sleepMode ? 0 : 1,
+            desiredCount: 1,
             securityGroups: [ecsTaskSg, internalServicesSg],
             privateIsolatedSubnets,
             serviceConnectServerMode: {

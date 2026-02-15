@@ -35,10 +35,6 @@ export type EnvConfig = {
     ecsClusterConfig?: {
         enableContainerInsights: boolean
     }
-
-    ecsServiceConfig?: {
-        sleepMode: boolean
-    }
 }
 
 const defaultProject = {
@@ -67,10 +63,6 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
 
         ecsClusterConfig: {
             enableContainerInsights: false
-        },
-
-        ecsServiceConfig: {
-            sleepMode: true
         }
     },
 

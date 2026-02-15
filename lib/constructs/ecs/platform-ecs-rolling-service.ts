@@ -89,7 +89,7 @@ export class PlatformEcsRollingService extends Construct {
 
         //auto scaling
         const scaling = this.fargateService.autoScaleTaskCount({
-            minCapacity: props.envConfig.ecsServiceConfig?.sleepMode ? 0 : 1,
+            minCapacity: 0, //ECS will never actually scale to 0 on CPU
             maxCapacity: 6
         })
 
