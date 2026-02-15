@@ -4,18 +4,22 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 
 import { BaseStack } from 'lib/stacks/base-stack'
 import {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
-import {PlatformInternalAlb} from 'lib/constructs/elb/platform-internal-alb'
+import {PlatformInternalAlb} from 'lib/constructs/alb/platform-internal-alb'
 import {PlatformEcsTaskSecurityGroup} from 'lib/constructs/ecs/platform-ecs-task-security-group'
 import {defaultTaskDefConfig} from 'lib/config/taskdef/taskdef-config'
 import {PlatformEcsTaskRole} from 'lib/constructs/ecs/platform-ecs-task-role'
 import {PlatformEcsTaskDef} from 'lib/constructs/ecs/platform-ecs-task-def'
 import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling-service'
-import {PlatformInternalAlbTargetGroup} from 'lib/constructs/elb/platform-internal-alb-target-group'
+import {PlatformInternalAlbTargetGroup} from 'lib/constructs/alb/platform-internal-alb-target-group'
 import {PlatformEcsTaskExecutionRole} from 'lib/constructs/ecs/platform-ecs-task-execution-role'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import {ObservabilityImports} from 'lib/config/dependency/core/observability-imports'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
+import {resolveExportName} from "lib/config/naming";
+import {StackDomain} from "lib/config/domain";
+import {NetworkExports} from "lib/config/dependency/network/network-exports";
+import {AlbExports} from "lib/config/dependency/alb/alb-exports";
 
 export interface InternalAlbServiceStackProps extends PlatformServiceProps {
     upstreamToAlbSgs?: ec2.ISecurityGroup[] //sg's to albSg.addIngress(),
@@ -163,7 +167,11 @@ export class InternalAlbServiceStack extends BaseStack {
         //make sure the service depends on the listener so registration order is clean
         cfnService.addDependency(platformInternalAlb.listener.node.defaultChild as any)
 
-        ///fargateService.attachToApplicationTargetGroup(tg)
+        new cdk.CfnOutput(this, 'CfnOutputAlbListenerArn', {
+            description: 'Alb Listener ARN',
+            value: platformInternalAlb.listener.listenerArn,
+            exportName: resolveExportName(envConfig, props.stackDomain, AlbExports.albListenerArn)
+        })
 
     }
 }

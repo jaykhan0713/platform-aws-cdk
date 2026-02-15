@@ -30,9 +30,9 @@ export class PlatformVpcLink extends Construct {
             allowAllOutbound: false
         })
 
-        const albListenerPort = 80 //TODO customize for when switching to 443 etc
+        const albListenerPort = 80
 
-        //subscriber sg, ALBs subscribe to this via alb.addSecurityGroup() so vpc link can talk to them
+        //subscriber membership sg, ALBs subscribe to this via alb.addSecurityGroup() so vpc link can talk to them
         this.subSg = new ec2.SecurityGroup(this, 'VpcLinkSubSg', {
             securityGroupName: `${envConfig.projectName}-vpc-link-sub-sg-${envConfig.envName}`,
             vpc,

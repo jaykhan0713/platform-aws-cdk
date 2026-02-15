@@ -90,6 +90,13 @@ export class NetworkStack extends BaseStack {
             })
         })
 
+        /**
+         * NOTE: VPC Link is owned by Network Stack and not Gateway Stack
+         * to ensure portability and no circular dependencies. ALB depends on VPC Link SG,
+         * GW depends on VPC Link as well as ALB Listener. Portable Creation needs to be
+         * Network -> Services -> GW, leaving transport primitives (VPC Link) on network stack ensures
+         * GW and ALB don't have a circular dep.
+         */
         const platformVpcLink = new PlatformVpcLink(this, 'PlatformVpcLink', {
             ...props,
             vpc: this.vpc,
