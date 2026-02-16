@@ -8,6 +8,7 @@ import {AlbImports} from "lib/config/dependency/alb/alb-imports";
 import {PlatformServiceName} from "lib/config/service/platform-service-registry";
 import {NetworkImports} from "lib/config/dependency/network/network-imports";
 import {PlatformHttpApi} from "lib/constructs/api/platform-http-api";
+import {PlatformCognito} from "lib/constructs/api/platform-cognito";
 
 
 //TODO: currently single ALB listener, future account for multiple ALB+service
@@ -45,10 +46,16 @@ export class GatewayStack extends BaseStack {
             }
         )
 
+        const platformCognito = new PlatformCognito(this, "PlatformCognito", {
+            ...props
+        })
+
         const platformHttpApi = new PlatformHttpApi(this, "PlatformHttpApi", {
             ...props,
             vpcLink,
-            listener
+            listener,
+            userPool: platformCognito.userPool,
+            userPoolClient: platformCognito.userPoolClient
         })
     }
 
