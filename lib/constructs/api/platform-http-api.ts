@@ -13,6 +13,7 @@ export interface PlatformHttpApiGatewayProps extends BaseStackProps {
 }
 
 export class PlatformHttpApi extends Construct {
+
     constructor(scope: Construct, id: string, props: PlatformHttpApiGatewayProps) {
         super(scope, id);
 
@@ -21,10 +22,58 @@ export class PlatformHttpApi extends Construct {
 
         const api = new apigwv2.HttpApi(this, "HttpApi", {
             apiName: `${projectName}-api-${envName}`,
-            createDefaultStage: true,
+            createDefaultStage: true
+        })
+
+        const integration = new integrations.HttpAlbIntegration(
+            'ApiIntegration',
+            props.listener,
+            {
+                vpcLink: props.vpcLink,
+                parameterMapping: new apigwv2.ParameterMapping()
+                    .appendHeader(
+                        'x-gateway-request-id',
+                        apigwv2.MappingValue.contextVariable('requestId')
+                    )
+                    .appendHeader(
+                        'x-user-id',
+                        apigwv2.MappingValue.contextVariable('authorizer.claims.sub')
+                    )
+            }
+        )
+
+        const internalIntegration = new integrations.HttpAlbIntegration(
+            'InternalIntegration',
+            props.listener,
+            {
+                vpcLink: props.vpcLink,
+                parameterMapping: new apigwv2.ParameterMapping()
+                    .overwritePath( //strips 'internal' in internal/{proxy+} transforms to /{proxy+}
+                        apigwv2.MappingValue.custom('/$request.path.proxy')
+                    )
+                    .appendHeader(
+                        'x-gateway-request-id',
+                        apigwv2.MappingValue.contextVariable('requestId')
+                    )
+                    .appendHeader(
+                        'x-user-id',
+                        apigwv2.MappingValue.contextVariable('authorizer.claims.sub')
+                    )
+            }
+        )
+
+        api.addRoutes({
+            path: '/api/v1/{proxy+}',
+            methods: [apigwv2.HttpMethod.ANY],
+            integration
         })
 
 
+        api.addRoutes({
+            path: '/internal/{proxy+}',
+            methods: [apigwv2.HttpMethod.ANY],
+            integration: internalIntegration
+        })
 
     }
 

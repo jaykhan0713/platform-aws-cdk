@@ -7,6 +7,7 @@ export const StackDomain = {
     observability: 'observability',
     serviceRuntime: 'service-runtime',
     serviceEcrRepos: 'service-ecr-repos',
+    gateway: 'gateway',
 
     //platform's service stacks
     ...PlatformServiceName,
