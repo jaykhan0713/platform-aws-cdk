@@ -52,6 +52,8 @@ export class PlatformCognito extends Construct {
             }
         })
 
+        //Creates https://<projectName>-<envName>-auth.auth.us-west-2.amazoncognito.com Oauth endpoint
+        //https://<projectName>-<envName>-auth.auth.us-west-2.amazoncognito.com/oauth2/{authorize,token,logout,jwks.json.. etc}
         this.userPool.addDomain('CognitoDomain', {
             cognitoDomain: {
                 domainPrefix: `${projectName}-${envName}-auth`,
