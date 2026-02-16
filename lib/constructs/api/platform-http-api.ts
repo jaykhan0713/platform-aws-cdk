@@ -70,7 +70,7 @@ export class PlatformHttpApi extends Construct {
                         apigwv2.MappingValue.contextVariable('authorizer.claims.sub')
                     )
             }
-        ) //test1
+        )
 
         let authorizer: apigwv2.IHttpRouteAuthorizer | undefined
 
