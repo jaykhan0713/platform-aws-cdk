@@ -38,16 +38,15 @@ export class PlatformCognito extends Construct {
                     authorizationCodeGrant: true,
                 },
                 scopes: [
-                    cognito.OAuthScope.OPENID,
-                    cognito.OAuthScope.PROFILE,
-                    cognito.OAuthScope.EMAIL,
+                    cognito.OAuthScope.OPENID, //only use sub currently
+                    // cognito.OAuthScope.PROFILE,
+                    // cognito.OAuthScope.EMAIL,
                 ],
                 callbackUrls: [
                     'postman://app/oauth2/callback',
-                    'https://oauth.pstmn.io/v1/callback',
+                    // 'https://oauth.pstmn.io/v1/callback',
                 ],
                 logoutUrls: [
-                    'postman://app/oauth2/callback',
                     'https://oauth.pstmn.io/v1/callback',
                 ],
             }
