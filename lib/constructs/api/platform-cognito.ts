@@ -44,7 +44,7 @@ export class PlatformCognito extends Construct {
                 ],
                 callbackUrls: [
                     'postman://app/oauth2/callback',
-                    // 'https://oauth.pstmn.io/v1/callback',
+                    'https://oauth.pstmn.io/v1/callback',
                 ],
                 logoutUrls: [
                     'https://oauth.pstmn.io/v1/callback',
