@@ -11,8 +11,9 @@ import {BaseStackProps} from "lib/stacks/base-stack";
 export interface PlatformHttpApiGatewayProps extends BaseStackProps {
     vpcLink: apigwv2.IVpcLink
     listener: elbv2.IApplicationListener
-    userPool?: cognito.IUserPool
-    userPoolClient?: cognito.IUserPoolClient
+    userPool: cognito.IUserPool
+    userPoolClient: cognito.IUserPoolClient
+    synthPoolClient: cognito.IUserPoolClient
 }
 
 export class PlatformHttpApi extends Construct {
@@ -30,10 +31,14 @@ export class PlatformHttpApi extends Construct {
                 allowOrigins: ['*'], // tighten later with real domain
                 allowMethods: [apigwv2.CorsHttpMethod.ANY],
                 allowHeaders: ['*'],
-                exposeHeaders: ['apigw-requestid'], //browser JS can access only these
+                exposeHeaders: ['apigw-requestid'], //browser JS can access only these, returned by apigw
                 maxAge: cdk.Duration.days(1),
             }
         })
+
+        //note that CDK does not delete parameter mappings if removed here.
+        const userIdHeader = 'x-user-id'
+        const requestIdHeader = 'x-request-id'
 
         const integration = new integrations.HttpAlbIntegration(
             'ApiIntegration',
@@ -41,13 +46,10 @@ export class PlatformHttpApi extends Construct {
             {
                 vpcLink: props.vpcLink,
                 parameterMapping: new apigwv2.ParameterMapping()
-                    .appendHeader(
-                        'x-request-id',
+                    .removeHeader(userIdHeader) //anon/unauth'd has no user-id from sub
+                    .overwriteHeader(
+                        requestIdHeader,
                         apigwv2.MappingValue.contextVariable('requestId')
-                    )
-                    .appendHeader(
-                        'x-user-id',
-                        apigwv2.MappingValue.contextVariable('authorizer.claims.sub')
                     )
             }
         )
@@ -61,32 +63,49 @@ export class PlatformHttpApi extends Construct {
                     .overwritePath( //strips 'internal' in internal/{proxy+} transforms to /{proxy+}
                         apigwv2.MappingValue.custom('/$request.path.proxy')
                     )
-                    .appendHeader(
-                        'x-request-id',
+                    .overwriteHeader(
+                        userIdHeader,
+                        apigwv2.MappingValue.contextVariable('authorizer.claims.sub')
+                    )
+                    .overwriteHeader(
+                        requestIdHeader,
                         apigwv2.MappingValue.contextVariable('requestId')
                     )
-                    .appendHeader(
-                        'x-user-id',
-                        apigwv2.MappingValue.contextVariable('authorizer.claims.sub')
+            }
+        )
+
+        const synthIntegration = new integrations.HttpAlbIntegration(
+            'SynthIntegration',
+            props.listener,
+            {
+                vpcLink: props.vpcLink,
+                parameterMapping: new apigwv2.ParameterMapping()
+                    .overwritePath(
+                        apigwv2.MappingValue.custom('/api/v1/$request.path.proxy')
+                    )
+                    .overwriteHeader(
+                        requestIdHeader,
+                        apigwv2.MappingValue.contextVariable('requestId')
                     )
             }
         )
 
         let authorizer: apigwv2.IHttpRouteAuthorizer | undefined
 
-        if (props.userPool && props.userPoolClient) {
-            authorizer = new authorizers.HttpJwtAuthorizer(
-                'HttpJwtAuthorizer',
-                `https://cognito-idp.${envConfig.region}.amazonaws.com/${props.userPool.userPoolId}`, //issuer
-                {
-                    jwtAudience: [props.userPoolClient.userPoolClientId]
-                }
-            )
-        }
+        authorizer = new authorizers.HttpJwtAuthorizer(
+            'HttpJwtAuthorizer',
+            `https://cognito-idp.${envConfig.region}.amazonaws.com/${props.userPool.userPoolId}`, //issuer
+            {
+                jwtAudience: [
+                    props.userPoolClient.userPoolClientId,
+                    props.synthPoolClient.userPoolClientId
+                ]
+            }
+        )
 
         api.addRoutes({
             path: '/api/v1/{proxy+}', //{proxy+} takes anything
-            methods: [apigwv2.HttpMethod.ANY],
+            methods: [apigwv2.HttpMethod.GET],
             integration
         })
 
@@ -95,9 +114,19 @@ export class PlatformHttpApi extends Construct {
             path: '/internal/{proxy+}',
             methods: [apigwv2.HttpMethod.ANY],
             integration: internalIntegration,
-            authorizer
+            authorizer,
+            authorizationScopes: ['openid']
         })
 
+        api.addRoutes({
+            path: '/synth/api/v1/{proxy+}',
+            methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST, apigwv2.HttpMethod.PUT],
+            integration: synthIntegration,
+            authorizer,
+            authorizationScopes: ['synth/invoke']
+        })
+
+        //TODO: optional: rate limit public API (L1 construct)
     }
 
 }

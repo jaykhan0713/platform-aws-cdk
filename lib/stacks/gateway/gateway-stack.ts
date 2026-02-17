@@ -55,7 +55,8 @@ export class GatewayStack extends BaseStack {
             vpcLink,
             listener,
             userPool: platformCognito.userPool,
-            userPoolClient: platformCognito.userPoolClient
+            userPoolClient: platformCognito.userPoolClient,
+            synthPoolClient: platformCognito.synthClient
         })
     }
 

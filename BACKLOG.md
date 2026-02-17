@@ -6,5 +6,5 @@
 - pass in overrideable taskcfgs and settings to service stack while using defaults when empty.
 - Automate deletion of CodeArtifact packages (lambda eventbridge)
 - Move away from SNAPSHOT republishing logic in services
-- sleepmode every night (turn down ecs services to 0, vpce's torn down etc)
-- seamless way to pull on local from codeartifact without running script first
+- create true admin mode on cognito with groups + lambda authorizer
+- ratelimiting at gw, api tokens at edge

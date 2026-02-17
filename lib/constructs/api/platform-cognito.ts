@@ -9,6 +9,7 @@ export interface PlatformCognitoProps extends BaseStackProps {}
 export class PlatformCognito extends Construct {
     public readonly userPool: cognito.UserPool
     public readonly userPoolClient: cognito.UserPoolClient
+    public readonly synthClient: cognito.UserPoolClient;
 
     constructor(scope: Construct, id: string, props: PlatformCognitoProps) {
         super(scope, id)
@@ -23,11 +24,19 @@ export class PlatformCognito extends Construct {
             removalPolicy: cdk.RemovalPolicy.DESTROY, // for showcase
         })
 
+        //Creates https://<projectName>-<envName>-auth.auth.us-west-2.amazoncognito.com Oauth endpoint
+        //https://<projectName>-<envName>-auth.auth.us-west-2.amazoncognito.com/oauth2/{authorize,token,logout,jwks.json.. etc}
+        this.userPool.addDomain('CognitoDomain', {
+            cognitoDomain: {
+                domainPrefix: `${projectName}-${envName}-auth`,
+            },
+        })
+
         //application registration, tokens are requested through client
         this.userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
             userPool: this.userPool,
 
-            generateSecret: false, // required for PKCE
+            generateSecret: false, // requires false for PKCE
 
             authFlows: {
                 userSrp: true, // good to keep
@@ -52,12 +61,35 @@ export class PlatformCognito extends Construct {
             }
         })
 
-        //Creates https://<projectName>-<envName>-auth.auth.us-west-2.amazoncognito.com Oauth endpoint
-        //https://<projectName>-<envName>-auth.auth.us-west-2.amazoncognito.com/oauth2/{authorize,token,logout,jwks.json.. etc}
-        this.userPool.addDomain('CognitoDomain', {
-            cognitoDomain: {
-                domainPrefix: `${projectName}-${envName}-auth`,
-            },
+        // 1) Resource server + scope used for client_credentials
+        const synthScope = {
+            scopeName: 'invoke',
+            scopeDescription: 'Invoke synth routes'
+        }
+
+        const synthResourceServer = this.userPool.addResourceServer('SynthResourceServer', {
+            identifier: 'synth',
+            scopes: [
+                synthScope
+            ]
         })
+
+        // 2) New app client for ECS load generator (client_credentials)
+        this.synthClient = new cognito.UserPoolClient(this, 'SynthUserPoolClient', {
+            userPool: this.userPool,
+
+            generateSecret: true,
+
+            oAuth: {
+                flows: {
+                    clientCredentials: true
+                },
+                scopes: [
+                    cognito.OAuthScope.resourceServer(synthResourceServer, synthScope)
+                    // resolves to scope string like 'synth/invoke'
+                ]
+            }
+        })
+
     }
 }
