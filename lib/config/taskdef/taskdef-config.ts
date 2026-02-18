@@ -68,7 +68,7 @@ export const defaultTaskDefConfig = (args: {
             stopTimeoutSeconds: 30,
             env: {
                 SPRING_PROFILES_ACTIVE: envName,
-                JAVA_TOOL_OPTIONS: '-Xms128m -Xmx448m',
+                JAVA_TOOL_OPTIONS: '-Xms128m -Xmx352m',
                 SERVICE_NAME: args.serviceName
             },
             logging: {

@@ -3,8 +3,8 @@
 set -euo pipefail
 
 COGNITO_DOMAIN='https://jay-platform-prod-auth.auth.us-west-2.amazoncognito.com'
-CLIENT_ID='4j375k0e7ju0pf4qa6ndr78687'
-CLIENT_SECRET='175hhabetgdsh2r3n8tvajq7vvaaoed9fi0trg22n5f8h1j5sivh'
+CLIENT_ID='CLIENT_ID'
+CLIENT_SECRET='CLIENT_SECRET'
 SCOPE='synth/invoke'
 
 echo "Requesting access token..."
