@@ -8,3 +8,6 @@
 - Move away from SNAPSHOT republishing logic in services
 - create true admin mode on cognito with groups + lambda authorizer
 - ratelimiting at gw, api tokens at edge
+- API token for public path
+- Load tests image (k6) ecs spot, adot-collector image, base images etc need portability and automation in cdk
+- grafana workspace needs to be made portable.

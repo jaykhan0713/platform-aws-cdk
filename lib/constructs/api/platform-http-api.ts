@@ -106,7 +106,8 @@ export class PlatformHttpApi extends Construct {
         api.addRoutes({
             path: '/api/v1/{proxy+}', //{proxy+} takes anything
             methods: [apigwv2.HttpMethod.GET],
-            integration
+            integration,
+            authorizer
         })
 
 

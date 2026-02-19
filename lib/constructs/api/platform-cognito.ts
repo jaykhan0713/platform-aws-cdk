@@ -28,7 +28,7 @@ export class PlatformCognito extends Construct {
         //https://<projectName>-<envName>-auth.auth.us-west-2.amazoncognito.com/oauth2/{authorize,token,logout,jwks.json.. etc}
         this.userPool.addDomain('CognitoDomain', {
             cognitoDomain: {
-                domainPrefix: `${projectName}-${envName}-auth`,
+                domainPrefix: `${projectName}-auth-${envName}`,
             },
         })
 
@@ -75,7 +75,7 @@ export class PlatformCognito extends Construct {
         })
 
         // 2) New app client for ECS load generator (client_credentials)
-        this.synthClient = new cognito.UserPoolClient(this, 'SynthUserPoolClient', {
+        this.synthClient = new cognito.UserPoolClient(this, 'SynthClient', { //update id to change secret
             userPool: this.userPool,
 
             generateSecret: true,
