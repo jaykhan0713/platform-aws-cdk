@@ -80,7 +80,7 @@ export class PlatformEcsRollingService extends Construct {
             serviceConnectConfiguration: scConfig,
             circuitBreaker: {
                 enable: true,
-                rollback: false //TODO: switch this to true when stable
+                rollback: true
             },
             enableExecuteCommand: true, //enable ecs exec
             minHealthyPercent: 100,

@@ -5,31 +5,28 @@ import * as logs from 'aws-cdk-lib/aws-logs'
 import * as s3 from 'aws-cdk-lib/aws-s3'
 import {Construct} from 'constructs'
 
-import {resolveIamRoleName} from 'lib/config/naming/index'
+import {resolveIamRoleName} from 'lib/config/naming'
 import {IamConstants} from 'lib/config/domain/iam-constants'
 import {BaseStackProps} from 'lib/stacks/base-stack'
-import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
-export interface PlatformCodeBuildCdkDeployProjectProps extends BaseStackProps {
+export interface PlatformServiceCodeBuildDeployProps extends BaseStackProps {
     serviceName: PlatformServiceName
 
     // CodePipeline artifact names (these become CODEBUILD_SRC_DIR_<name>)
     cdkSourceArtifactName?: string // default: CdkSrc
     buildOutputArtifactName?: string //default: BuildOuput
 
-    // What to deploy
-    serviceStackName: string
-
     // CDK bootstrap qualifier (default is stable, not random)
     bootstrapQualifier?: string // default: hnb659fds
 }
 
-export class PlatformCodeBuildCdkDeploy extends Construct {
+export class PlatformServiceCodebuildDeploy extends Construct {
     public readonly role: iam.Role
     public readonly project: codebuild.Project
     public readonly logGroup: logs.LogGroup
 
-    public constructor(scope: Construct, id: string, props: PlatformCodeBuildCdkDeployProjectProps) {
+    public constructor(scope: Construct, id: string, props: PlatformServiceCodeBuildDeployProps) {
         super(scope, id)
 
         const envConfig = props.envConfig
@@ -79,10 +76,6 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
             logging: {
                 cloudWatch: { logGroup: this.logGroup }
             },
-            environmentVariables: {
-                CDK_SOURCE_ARTIFACT_NAME: {value: cdkSrcName},
-                SERVICE_STACK_NAME: {value: props.serviceStackName}
-            },
             buildSpec: codebuild.BuildSpec.fromObject({
                 version: '0.2',
                 phases: {
@@ -109,8 +102,7 @@ export class PlatformCodeBuildCdkDeploy extends Construct {
                             // fail early if empty
                             `test -n "$IMAGE_TAG"`,
 
-                            'npm run cdk:services -- deploy $SERVICE_STACK_NAME --require-approval never ' +
-                            `-c deploy=${props.serviceName} ` +
+                            `npm run cdk:services -- deploy ${getStackId(props.serviceName)} --require-approval never ` +
                             `-c imageTag=$IMAGE_TAG`
                         ]
                     }

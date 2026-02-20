@@ -6,7 +6,7 @@ import {BaseStack} from 'lib/stacks/base-stack'
 import {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import {defaultTaskDefConfig} from 'lib/config/taskdef/taskdef-config'
-import {ObservabilityImports} from 'lib/config/dependency/core/observability-imports'
+import {ObservabilityImports} from 'lib/config/dependency/observability/observability-imports'
 import {PlatformEcsTaskSecurityGroup} from 'lib/constructs/ecs/platform-ecs-task-security-group'
 import {PlatformEcsTaskRole} from 'lib/constructs/ecs/platform-ecs-task-role'
 import {PlatformEcsTaskExecutionRole} from 'lib/constructs/ecs/platform-ecs-task-execution-role'
@@ -26,9 +26,6 @@ export class InternalServiceStack extends BaseStack {
         // 1. Initialize dependencies
         const imageTag = this.node.tryGetContext('imageTag')
 
-        if (imageTag === undefined) {
-            throw new Error(`-c imageTag is empty`)
-        }
         const { envConfig, serviceName, upstreamSgs } = props
 
         const vpc = NetworkImports.vpc(this, envConfig)

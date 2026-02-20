@@ -97,7 +97,6 @@ export class PlatformCicdApp {
                 stackDomain,
 
                 serviceName, //TODO when adding more envs, handle gracefully for steps
-                serviceStackName: getStackId(serviceName),
 
                 artifactsBucket: cicdInfraStack.artifactsBucket,
                 githubConnectionArn: cicdInfraStack.githubConnectionArn,

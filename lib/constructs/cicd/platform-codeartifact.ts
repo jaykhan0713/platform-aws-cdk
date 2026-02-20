@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib'
 import * as iam from 'aws-cdk-lib/aws-iam'
 import * as codeartifact from 'aws-cdk-lib/aws-codeartifact'
 
-import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
+import {BaseStackProps} from 'lib/stacks/base-stack'
 import {Construct} from 'constructs'
 import {EnvConfig} from 'lib/config/env/env-config'
 

@@ -6,10 +6,12 @@ export type GithubConfig = {
     githubBranch: string
 }
 
+const GITHUB_OWNER = 'jaykhan0713'
+
 const SERVICE_GITHUB_CONFIG: Record<PlatformServiceName, GithubConfig> =
     Object.values(PlatformServiceName).reduce((acc, serviceName) => {
         acc[serviceName] = {
-            githubOwner: 'jaykhan0713',
+            githubOwner: GITHUB_OWNER,
             githubRepo: serviceName,
             githubBranch: 'main'
         }
@@ -17,8 +19,14 @@ const SERVICE_GITHUB_CONFIG: Record<PlatformServiceName, GithubConfig> =
     }, {} as Record<PlatformServiceName, GithubConfig>)
 
 const PLATFORM_CDK_GITHUB_CONFIG: GithubConfig = {
-    githubOwner: 'jaykhan0713',
+    githubOwner: GITHUB_OWNER,
     githubRepo: 'platform-aws-cdk',
+    githubBranch: 'main'
+} as const
+
+const PLATFORM_IMAGES_GITHUB_CONFIG: GithubConfig = {
+    githubOwner: GITHUB_OWNER,
+    githubRepo: 'platform-images',
     githubBranch: 'main'
 } as const
 
@@ -34,4 +42,8 @@ export function getServiceGithubConfig(serviceName: PlatformServiceName): Github
 
 export function getPlatformCdkGithubConfig(): GithubConfig {
     return PLATFORM_CDK_GITHUB_CONFIG
+}
+
+export function getPlatformImagesGithubConfig(): GithubConfig {
+    return PLATFORM_IMAGES_GITHUB_CONFIG
 }

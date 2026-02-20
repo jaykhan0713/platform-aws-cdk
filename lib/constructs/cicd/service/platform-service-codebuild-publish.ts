@@ -10,9 +10,9 @@ import { resolveIamRoleName } from 'lib/config/naming'
 import { IamConstants } from 'lib/config/domain/iam-constants'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
-import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-code-artifact'
+import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-codeartifact'
 
-export interface PlatformCodeBuildPublishProps extends BaseStackProps {
+export interface PlatformServiceCodeBuildPublishProps extends BaseStackProps {
 
     serviceName: PlatformServiceName
 
@@ -25,12 +25,12 @@ export interface PlatformCodeBuildPublishProps extends BaseStackProps {
     enableReports?: boolean
 }
 
-export class PlatformCodebuildPublish extends Construct {
+export class PlatformServiceCodebuildPublish extends Construct {
     public readonly role: iam.Role
     public readonly project: codebuild.Project
     public readonly logGroup: logs.LogGroup
 
-    public constructor(scope: Construct, id: string, props: PlatformCodeBuildPublishProps) {
+    public constructor(scope: Construct, id: string, props: PlatformServiceCodeBuildPublishProps) {
         super(scope, id)
 
         const { platformCodeArtifact } = props

@@ -31,7 +31,6 @@ export class PlatformEcsTaskDef extends Construct {
         const {envConfig, taskDefCfg, serviceName} = props
         const {projectName, envName} = envConfig
 
-
         this.fargateTaskDef = new ecs.FargateTaskDefinition(this,  "ServiceFargateTaskDefinition", {
             family: `${projectName}-${serviceName}-${envName}`,
             taskRole: props.taskRole,

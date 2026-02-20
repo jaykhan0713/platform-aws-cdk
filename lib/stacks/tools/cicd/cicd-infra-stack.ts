@@ -4,7 +4,7 @@ import * as codestarconnections from 'aws-cdk-lib/aws-codestarconnections'
 import * as codeartifact from 'aws-cdk-lib/aws-codeartifact'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
-import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-code-artifact'
+import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-codeartifact'
 
 export class CicdInfraStack extends BaseStack {
 

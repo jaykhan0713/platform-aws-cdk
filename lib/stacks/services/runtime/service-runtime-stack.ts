@@ -5,6 +5,8 @@ import * as servicediscovery from 'aws-cdk-lib/aws-servicediscovery'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
+import {resolveExportName} from "lib/config/naming";
+import {getEnvConfig} from "lib/config/env/env-config";
 
 export class ServiceRuntimeStack extends BaseStack {
 
@@ -16,16 +18,16 @@ export class ServiceRuntimeStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: BaseStackProps) {
         super(scope,  id,  props)
 
-        const vpc = NetworkImports.vpc(this, props.envConfig)
-        const { projectName, envName} = props.envConfig
+        const { envConfig, stackDomain } = props
+        const { projectName, envName} = envConfig
+
+        const vpc = NetworkImports.vpc(this, envConfig)
 
         this.ecsCluster = new ecs.Cluster(this, 'EcsCluster', {
             vpc,
             clusterName: `${projectName}-cluster-${envName}`,
             containerInsightsV2: ecs.ContainerInsights.DISABLED
         })
-
-
 
         /* alb backed services consume this SG, internal services will consume this SG AND
          * do their unique ecsTaskSg.addIngress(internalServices.sg) so any service registered
@@ -48,7 +50,8 @@ export class ServiceRuntimeStack extends BaseStack {
         //outputs
         new cdk.CfnOutput(this, 'CfnOutputEcsClusterArn', {
             description: 'ECS Cluster Arn',
-            value: this.ecsCluster.clusterArn
+            value: this.ecsCluster.clusterArn,
+            exportName: resolveExportName(envConfig, stackDomain, 'ecs-cluster-arn')
         })
 
         new cdk.CfnOutput(this, 'CfnOutputHttpNamespaceArn', {

@@ -17,6 +17,7 @@ export interface PlatformHttpApiGatewayProps extends BaseStackProps {
 }
 
 export class PlatformHttpApi extends Construct {
+    public readonly apiUrl: string
 
     constructor(scope: Construct, id: string, props: PlatformHttpApiGatewayProps) {
         super(scope, id);
@@ -35,6 +36,8 @@ export class PlatformHttpApi extends Construct {
                 maxAge: cdk.Duration.days(1),
             }
         })
+
+        this.apiUrl = api.url ?? ''
 
         //note that CDK does not delete parameter mappings if removed here.
         const userIdHeader = 'x-user-id'

@@ -2,7 +2,7 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import { Construct } from 'constructs'
 
 import { resolveIamRoleName } from 'lib/config/naming'
-import {resolveSsmParamPathArnWildcard} from 'lib/config/naming/ssm-param-paths'
+import {resolveSsmParamPathArnWildcard} from 'lib/config/naming/ssm-paths'
 import {ParamNamespace} from 'lib/config/domain/param-namespace'
 import {IamConstants} from 'lib/config/domain/iam-constants'
 import {BaseStackProps} from 'lib/stacks/base-stack'

@@ -3,7 +3,11 @@ import * as cdk from 'aws-cdk-lib'
 import {type EnvConfig} from 'lib/config/env/env-config'
 import {resolveStackName} from 'lib/config/naming/stacks'
 import type {PlatformServiceRuntime} from 'lib/stacks/services/props/platform-service-props'
-import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {
+    getStackId, PlatformServiceExposure,
+    PlatformServiceName,
+    platformServiceOverridesMap
+} from 'lib/config/service/platform-service-registry'
 import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 import {InternalServiceStack} from 'lib/stacks/services/internal-service-stack'
 
@@ -12,10 +16,6 @@ export class PlatformServiceStackFactory {
     private readonly stackProps: cdk.StackProps
     private readonly envConfig: EnvConfig
     private readonly runtime: PlatformServiceRuntime
-
-    private readonly registry: {
-        s: string
-    }
 
     constructor(
         scope: cdk.App,
@@ -27,6 +27,16 @@ export class PlatformServiceStackFactory {
         this.stackProps = stackProps
         this.envConfig = envConfig
         this.runtime = runtime
+    }
+
+    public createServiceStack(serviceName: PlatformServiceName) {
+        const overrides = platformServiceOverridesMap.get(serviceName)
+
+        if (overrides?.exposure === PlatformServiceExposure.alb) {
+            this.createInternalAlbServiceStack(serviceName, true)
+        } else {
+            this.createInternalServiceStack(serviceName)
+        }
     }
 
     public createInternalAlbServiceStack(

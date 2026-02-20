@@ -9,6 +9,33 @@ export const PlatformServiceName = {
 export type PlatformServiceName = typeof PlatformServiceName[keyof typeof PlatformServiceName]
 type PlatformServiceKey = keyof typeof PlatformServiceName
 
+export const PlatformServiceExposure = {
+    internal: 'internal',
+    alb: 'alb'
+} as const
+
+export type PlatformServiceExposure = typeof PlatformServiceExposure[keyof typeof PlatformServiceExposure]
+
+/*
+ * internal for SC client + serv
+ */
+export type PlatformServiceOverrides = {
+    readonly exposure?: PlatformServiceExposure
+    //task def overrides
+}
+
+export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, PlatformServiceOverrides> = new Map<
+    PlatformServiceName,
+    PlatformServiceOverrides
+>([
+    [
+        PlatformServiceName.edgeService,
+        {
+            exposure: 'alb'
+        }
+    ]
+])
+
 //i.e edge-service stack id is 'EdgeService'
 const kebabToPascal = (value: string): string =>
     value

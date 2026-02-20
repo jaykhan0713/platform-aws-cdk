@@ -4,9 +4,9 @@ import type {EnvName} from 'lib/config/domain/env-name'
 import {type EnvConfig, getEnvConfig, toCdkStackProps} from 'lib/config/env/env-config'
 import {StackDomain} from 'lib/config/domain/stack-domain'
 import {resolveStackName} from 'lib/config/naming/stacks'
-import {ObservabilityStack} from 'lib/stacks/core/observability-stack'
+import {ObservabilityStack} from 'lib/stacks/observability/observability-stack'
 
-export class PlatformCoreApp {
+export class PlatformObservabilityApp {
 
     constructor(private readonly app: cdk.App) {
         // i.e cdk diff -c env=prod (for explicit but defaults to prod)

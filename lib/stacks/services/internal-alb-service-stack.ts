@@ -13,7 +13,7 @@ import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling
 import {PlatformInternalAlbTargetGroup} from 'lib/constructs/alb/platform-internal-alb-target-group'
 import {PlatformEcsTaskExecutionRole} from 'lib/constructs/ecs/platform-ecs-task-execution-role'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
-import {ObservabilityImports} from 'lib/config/dependency/core/observability-imports'
+import {ObservabilityImports} from 'lib/config/dependency/observability/observability-imports'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 import {resolveExportName} from "lib/config/naming";
@@ -34,10 +34,6 @@ export class InternalAlbServiceStack extends BaseStack {
         const { envConfig, serviceName, upstreamToAlbSgs } = props
 
         const imageTag = this.node.tryGetContext('imageTag')
-
-        if (imageTag === undefined) {
-            throw new Error(`-c imageTag is empty`)
-        }
 
         const vpc = NetworkImports.vpc(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)

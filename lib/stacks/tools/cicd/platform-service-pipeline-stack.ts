@@ -6,15 +6,14 @@ import * as s3 from 'aws-cdk-lib/aws-s3'
 
 import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
 import { PlatformServiceName } from 'lib/config/service/platform-service-registry'
-import { PlatformCodebuildImage } from 'lib/constructs/cicd/platform-codebuild-image'
+import { PlatformServiceCodebuildImage } from 'lib/constructs/cicd/service/platform-service-codebuild-image'
 import {getPlatformCdkGithubConfig, getServiceGithubConfig} from 'lib/config/github/github-config'
-import {PlatformCodeBuildCdkDeploy} from 'lib/constructs/cicd/platform-codebuild-cdk-deploy'
-import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-code-artifact'
-import {PlatformCodebuildPublish} from "lib/constructs/cicd/platform-codebuild-publish";
+import {PlatformServiceCodebuildDeploy} from 'lib/constructs/cicd/service/platform-service-codebuild-deploy'
+import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-codeartifact'
+import {PlatformServiceCodebuildPublish} from "lib/constructs/cicd/service/platform-service-codebuild-publish";
 
 export interface PlatformServicePipelineStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
-    serviceStackName: string
 
     artifactsBucket: s3.IBucket
     githubConnectionArn: string
@@ -37,7 +36,7 @@ export class PlatformServicePipelineStack extends BaseStack {
 
         //TODO if buildspec ever needs to read or write to s3, have to grant perms
 
-        const publishBuild = new PlatformCodebuildPublish(this, 'PlatformCodebuildPublish', {
+        const publishBuild = new PlatformServiceCodebuildPublish(this, 'PlatformServiceCodebuildPublish', {
             ...props,
             repo: props.ecrRepo,
             buildSpecPath: "buildspecs/buildspec-publish.yml",
@@ -45,14 +44,14 @@ export class PlatformServicePipelineStack extends BaseStack {
         })
 
         // CodeBuild project created inside pipeline stack
-        const imageBuild = new PlatformCodebuildImage(this, 'PlatformCodebuildImage', {
+        const imageBuild = new PlatformServiceCodebuildImage(this, 'PlatformServiceCodebuildImage', {
             ...props,
             repo: props.ecrRepo,
             buildSpecPath: "buildspecs/buildspec-image.yml",
             enableReports: false
         })
 
-        const deployBuild = new PlatformCodeBuildCdkDeploy(this, 'PlatformCodeBuildCdkDeploy', {
+        const deployBuild = new PlatformServiceCodebuildDeploy(this, 'PlatformServiceCodebuildDeploy', {
             ...props
         })
 
