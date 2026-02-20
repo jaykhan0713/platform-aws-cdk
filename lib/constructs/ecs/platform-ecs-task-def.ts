@@ -7,15 +7,19 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import {Construct} from 'constructs'
 
 import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
-import {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
+import {BaseStackProps} from 'lib/stacks/base-stack'
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
-interface PlatformEcsTaskDefProps extends PlatformServiceProps {
+interface PlatformEcsTaskDefProps extends BaseStackProps {
+    serviceName: PlatformServiceName
+
     taskDefCfg: TaskDefinitionConfig
 
     taskRole: iam.IRole
     taskExecutionRole: iam.IRole
 
     appImage: ecs.ContainerImage
+    adotImage: ecs.ContainerImage
 }
 
 export class PlatformEcsTaskDef extends Construct {
@@ -86,7 +90,7 @@ export class PlatformEcsTaskDef extends Construct {
 
         this.fargateTaskDef.addContainer('AdotContainer', {
             containerName: adot.containerName,
-            image: props.runtime.adotImage,
+            image: props.adotImage,
             cpu: adot.cpuUnits,
             memoryLimitMiB: adot.memoryMiB,
             essential: adot.essential,

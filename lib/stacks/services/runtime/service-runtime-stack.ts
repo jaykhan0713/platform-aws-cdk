@@ -7,11 +7,12 @@ import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import {resolveExportName} from "lib/config/naming";
 import {getEnvConfig} from "lib/config/env/env-config";
+import {ServiceRuntimeExports} from 'lib/config/dependency/service-runtime/service-runtime-exports'
 
 export class ServiceRuntimeStack extends BaseStack {
 
     public readonly ecsCluster: ecs.Cluster
-    public readonly internalServicesSg: ec2.ISecurityGroup
+    public readonly internalServicesTaskSg: ec2.ISecurityGroup
     public readonly httpNamespace: servicediscovery.IHttpNamespace
 
 
@@ -34,7 +35,7 @@ export class ServiceRuntimeStack extends BaseStack {
          * with internalServices sg can talk to the unique service. This is an internal service subscription
          * pattern.
          */
-        this.internalServicesSg =  new ec2.SecurityGroup(this, 'EcsTaskSecurityGroup', {
+        this.internalServicesTaskSg =  new ec2.SecurityGroup(this, 'EcsTaskSecurityGroup', {
             securityGroupName: `${projectName}-internal-services-task-sg-${envName}`,
             vpc,
             description: `SG for internal services to communicate`,
@@ -51,12 +52,25 @@ export class ServiceRuntimeStack extends BaseStack {
         new cdk.CfnOutput(this, 'CfnOutputEcsClusterArn', {
             description: 'ECS Cluster Arn',
             value: this.ecsCluster.clusterArn,
-            exportName: resolveExportName(envConfig, stackDomain, 'ecs-cluster-arn')
+            exportName: resolveExportName(envConfig, stackDomain, ServiceRuntimeExports.ecsClusterArn)
         })
 
-        new cdk.CfnOutput(this, 'CfnOutputHttpNamespaceArn', {
-            description: 'Service Discovery Http Namespace Arn',
-            value: this.httpNamespace.namespaceArn
+        new cdk.CfnOutput(this, 'CfnOutputEcsClusterName', {
+            description: 'ECS Cluster Name',
+            value: this.ecsCluster.clusterName,
+            exportName: resolveExportName(envConfig, stackDomain, ServiceRuntimeExports.ecsClusterName)
+        })
+
+        new cdk.CfnOutput(this, 'CfnOutputInternalServicesTaskSgId', {
+            description: 'Internal Services Task SG Membership',
+            value: this.internalServicesTaskSg.securityGroupId,
+            exportName: resolveExportName(envConfig, stackDomain, ServiceRuntimeExports.internalServicesTaskSgId)
+        })
+
+        new cdk.CfnOutput(this, 'CfnOutputHttpNamespaceName', {
+            description: 'Service Discovery Http Namespace Name',
+            value: this.httpNamespace.namespaceName,
+            exportName: resolveExportName(envConfig, stackDomain, ServiceRuntimeExports.httpNamespaceName)
         })
     }
 }

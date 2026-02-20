@@ -2,8 +2,7 @@ import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 
-import {BaseStack} from 'lib/stacks/base-stack'
-import {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
+import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import {defaultTaskDefConfig} from 'lib/config/taskdef/taskdef-config'
 import {ObservabilityImports} from 'lib/config/dependency/observability/observability-imports'
@@ -14,8 +13,11 @@ import {PlatformEcsTaskDef} from 'lib/constructs/ecs/platform-ecs-task-def'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling-service'
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 
-export interface InternalServiceStackProps extends PlatformServiceProps {
+export interface InternalServiceStackProps extends BaseStackProps {
+    serviceName: PlatformServiceName
     upstreamSgs?: ec2.ISecurityGroup[] //sg's to ecsTaskSg.addIngress()
 }
 
@@ -41,7 +43,7 @@ export class InternalServiceStack extends BaseStack {
         const internalServicesSg = ec2.SecurityGroup.fromSecurityGroupId(
             this,
             'InternalServicesSgImported',
-            props.runtime.internalServicesSgId,
+            ServiceRuntimeImports.internalServicesTaskSgId(envConfig),
             { mutable: false }
         )
 
@@ -71,6 +73,7 @@ export class InternalServiceStack extends BaseStack {
 
         const fargateTaskDef = new PlatformEcsTaskDef(this, 'PlatformEcsTaskDef', {
             ...props,
+            serviceName,
             taskDefCfg,
             taskRole,
             taskExecutionRole,
@@ -82,10 +85,24 @@ export class InternalServiceStack extends BaseStack {
                     `${resolvePlatformServiceRepoName(envConfig, serviceName)}`
                 ),
                 imageTag
+            ),
+            adotImage: ecs.ContainerImage.fromEcrRepository( //TODO import repo ARN from ssm
+                ecr.Repository.fromRepositoryName(
+                    this,
+                    'AdotRepo',
+                    `${envConfig.projectName}/adot-collector`
+                ),
+                'stable'
             )
         }).fargateTaskDef
 
         // 4. create ecs service
+        const cluster = ecs.Cluster.fromClusterAttributes(this, 'EcsCluster', {
+            clusterArn: ServiceRuntimeImports.ecsClusterArn(envConfig),
+            clusterName: ServiceRuntimeImports.ecsClusterName(envConfig),
+            vpc
+        })
+
         const fargateService = new PlatformEcsRollingService(this, 'PlatformEcsRollingService', {
             ...props,
             fargateTaskDef,
@@ -94,7 +111,10 @@ export class InternalServiceStack extends BaseStack {
             privateIsolatedSubnets,
             serviceConnectServerMode: {
                 appPortName: taskDefCfg.app.containerPortName
-            }
+            },
+            serviceName,
+            cluster,
+            httpNamespaceName: ServiceRuntimeImports.httpNamespaceName(envConfig)
         }).fargateService
     }
 }

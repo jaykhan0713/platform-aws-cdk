@@ -2,7 +2,6 @@ import * as cdk from 'aws-cdk-lib'
 
 import {type EnvConfig} from 'lib/config/env/env-config'
 import {resolveStackName} from 'lib/config/naming/stacks'
-import type {PlatformServiceRuntime} from 'lib/stacks/services/props/platform-service-props'
 import {
     getStackId, PlatformServiceExposure,
     PlatformServiceName,
@@ -15,18 +14,15 @@ export class PlatformServiceStackFactory {
     private readonly scope: cdk.App
     private readonly stackProps: cdk.StackProps
     private readonly envConfig: EnvConfig
-    private readonly runtime: PlatformServiceRuntime
 
     constructor(
         scope: cdk.App,
         stackProps: cdk.StackProps,
-        envConfig: EnvConfig,
-        runtime: PlatformServiceRuntime
+        envConfig: EnvConfig
     ) {
         this.scope = scope
         this.stackProps = stackProps
         this.envConfig = envConfig
-        this.runtime = runtime
     }
 
     public createServiceStack(serviceName: PlatformServiceName) {
@@ -45,7 +41,7 @@ export class PlatformServiceStackFactory {
     ) {
         const stackDomain = serviceName
 
-        const {scope, stackProps, envConfig, runtime} = this
+        const {scope, stackProps, envConfig } = this
 
         return new InternalAlbServiceStack(
             scope,
@@ -56,7 +52,6 @@ export class PlatformServiceStackFactory {
                 envConfig,
                 stackDomain,
                 serviceName,
-                runtime,
                 vpcLinkEnabled
             }
         )
@@ -67,7 +62,7 @@ export class PlatformServiceStackFactory {
     ) {
         const stackDomain = serviceName
 
-        const {scope, stackProps, envConfig, runtime} = this
+        const {scope, stackProps, envConfig } = this
 
         return new InternalServiceStack(
             scope,
@@ -77,8 +72,7 @@ export class PlatformServiceStackFactory {
                 ...stackProps,
                 envConfig,
                 stackDomain,
-                serviceName,
-                runtime,
+                serviceName
             }
         )
     }

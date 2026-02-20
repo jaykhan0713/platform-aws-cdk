@@ -2,8 +2,7 @@ import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 
-import { BaseStack } from 'lib/stacks/base-stack'
-import {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
+import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformInternalAlb} from 'lib/constructs/alb/platform-internal-alb'
 import {PlatformEcsTaskSecurityGroup} from 'lib/constructs/ecs/platform-ecs-task-security-group'
 import {defaultTaskDefConfig} from 'lib/config/taskdef/taskdef-config'
@@ -17,11 +16,12 @@ import {ObservabilityImports} from 'lib/config/dependency/observability/observab
 import * as ecr from 'aws-cdk-lib/aws-ecr'
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 import {resolveExportName} from "lib/config/naming";
-import {StackDomain} from "lib/config/domain";
-import {NetworkExports} from "lib/config/dependency/network/network-exports";
 import {AlbExports} from "lib/config/dependency/alb/alb-exports";
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 
-export interface InternalAlbServiceStackProps extends PlatformServiceProps {
+export interface InternalAlbServiceStackProps extends BaseStackProps {
+    serviceName: PlatformServiceName
     upstreamToAlbSgs?: ec2.ISecurityGroup[] //sg's to albSg.addIngress(),
     vpcLinkEnabled ?: boolean
 }
@@ -67,7 +67,7 @@ export class InternalAlbServiceStack extends BaseStack {
         const internalServicesSg = ec2.SecurityGroup.fromSecurityGroupId(
             this,
             'InternalServicesSgImported',
-            props.runtime.internalServicesSgId,
+            ServiceRuntimeImports.internalServicesTaskSgId(envConfig),
             { mutable: false }
         )
 
@@ -136,17 +136,34 @@ export class InternalAlbServiceStack extends BaseStack {
                     `${resolvePlatformServiceRepoName(envConfig, serviceName)}`
                 ),
                 imageTag
+            ),
+            adotImage: ecs.ContainerImage.fromEcrRepository( //TODO import repo ARN from ssm
+                ecr.Repository.fromRepositoryName(
+                    this,
+                    'AdotRepo',
+                    `${envConfig.projectName}/adot-collector`
+                ),
+                'stable'
             )
         }).fargateTaskDef
 
         // 4. create ecs service, target groups, attach to TG
+        const cluster = ecs.Cluster.fromClusterAttributes(this, 'EcsCluster', {
+            clusterArn: ServiceRuntimeImports.ecsClusterArn(envConfig),
+            clusterName: ServiceRuntimeImports.ecsClusterName(envConfig),
+            vpc
+        })
+
         const fargateService = new PlatformEcsRollingService(this, 'PlatformEcsRollingService', {
             ...props,
             fargateTaskDef,
             desiredCount: 1,
             securityGroups: [ecsTaskSg, internalServicesSg],
             healthCheckGracePeriodSeconds: 90,
-            privateIsolatedSubnets
+            privateIsolatedSubnets,
+            serviceName,
+            cluster,
+            httpNamespaceName: ServiceRuntimeImports.httpNamespaceName(envConfig)
         }).fargateService
 
         //use L1 as attachToApplicationTargetGroup helper mutates SG's ingress and egress

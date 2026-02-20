@@ -1,13 +1,13 @@
 import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
-
 import {Construct} from 'constructs'
 
-import type {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
 import * as logs from 'aws-cdk-lib/aws-logs'
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {BaseStackProps} from 'lib/stacks/base-stack'
 
-interface PlatformEcsRollingServiceProps extends PlatformServiceProps {
+interface PlatformEcsRollingServiceProps extends BaseStackProps {
     fargateTaskDef: ecs.FargateTaskDefinition
     desiredCount?: number,
     securityGroups: ec2.ISecurityGroup[] //sg's for task
@@ -20,6 +20,11 @@ interface PlatformEcsRollingServiceProps extends PlatformServiceProps {
 
     //network
     privateIsolatedSubnets: ec2.ISubnet[]
+
+    //service runtime
+    serviceName: PlatformServiceName
+    cluster: ecs.ICluster
+    httpNamespaceName: string
 }
 
 export class PlatformEcsRollingService extends Construct {
@@ -32,8 +37,8 @@ export class PlatformEcsRollingService extends Construct {
     ) {
         super(scope, id);
 
+        const { cluster, httpNamespaceName, serviceName } = props
         const { projectName, envName } = props.envConfig
-        const serviceName = props.serviceName
 
         //TODO add access logs to check per request
         const scLogDriver = ecs.LogDrivers.awsLogs({
@@ -47,7 +52,7 @@ export class PlatformEcsRollingService extends Construct {
 
         const scConfig: ecs.ServiceConnectProps = props.serviceConnectServerMode
             ? { //server + client mode
-                namespace: props.runtime.serviceConnectNamespace.namespaceName,
+                namespace: httpNamespaceName,
                 services: [
                     {
                         portMappingName: props.serviceConnectServerMode.appPortName,
@@ -58,7 +63,7 @@ export class PlatformEcsRollingService extends Construct {
                 logDriver: scLogDriver
             }
             : { //client mode only
-                namespace: props.runtime.serviceConnectNamespace.namespaceName,
+                namespace: httpNamespaceName,
                 logDriver: scLogDriver
             }
 
@@ -69,7 +74,7 @@ export class PlatformEcsRollingService extends Construct {
         this.fargateService = new ecs.FargateService(this, 'FargateService', {
             serviceName,
             taskDefinition: props.fargateTaskDef,
-            cluster: props.runtime.cluster,
+            cluster,
             desiredCount: props.desiredCount ?? 1,
             assignPublicIp: false,
             vpcSubnets: {

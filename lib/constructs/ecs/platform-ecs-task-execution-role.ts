@@ -5,8 +5,8 @@ import {
     resolveIamRoleName, resolveSsmParamPathArnWildcard
 } from 'lib/config/naming'
 import {IamConstants} from 'lib/config/domain/iam-constants'
-import {PlatformServiceProps} from 'lib/stacks/services/props/platform-service-props'
 import {ParamNamespace} from 'lib/config/domain/param-namespace'
+import {BaseStackProps} from 'lib/stacks/base-stack'
 
 export class PlatformEcsTaskExecutionRole extends Construct {
 
@@ -15,7 +15,7 @@ export class PlatformEcsTaskExecutionRole extends Construct {
     public constructor(
         scope: Construct,
         id: string,
-        props: PlatformServiceProps
+        props: BaseStackProps
     ) {
         super(scope, id)
 

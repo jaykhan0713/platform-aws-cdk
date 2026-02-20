@@ -12,6 +12,7 @@
 
     "cdk:network": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/network.ts\"",
     "cdk:services": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/services.ts\"",
+    "cdk:service-runtime": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/service-runtime.ts\"",
     "cdk:observability": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/observability.ts\"",
     "cdk:cicd": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/cicd.ts\"",
     "cdk:gateway": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/gateway.ts\""

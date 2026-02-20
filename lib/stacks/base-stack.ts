@@ -8,7 +8,7 @@ import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
 export interface BaseStackProps extends cdk.StackProps {
     readonly envConfig: EnvConfig
-    readonly stackDomain: StackDomain | PlatformServiceName
+    readonly stackDomain: StackDomain
 }
 
 export abstract class BaseStack extends cdk.Stack {

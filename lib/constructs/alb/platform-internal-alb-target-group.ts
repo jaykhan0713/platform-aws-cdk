@@ -3,10 +3,12 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
 import { Construct } from 'constructs'
 
-import { PlatformServiceProps } from 'lib/stacks/services/props/platform-service-props'
+import {BaseStackProps} from 'lib/stacks/base-stack'
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
 
-export interface PlatformInternalAlbTargetGroupProps extends PlatformServiceProps {
+export interface PlatformInternalAlbTargetGroupProps extends BaseStackProps {
+    serviceName: PlatformServiceName
     vpc: ec2.IVpc
     containerPort: number
 }
