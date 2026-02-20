@@ -21,7 +21,6 @@ export class GatewayStack extends BaseStack {
         super(scope, id, props);
 
         const {envConfig, stackDomain} = props
-        const {projectName, envName} = envConfig
 
         const vpc = NetworkImports.vpc(this, envConfig)
         const vpcLinkId = NetworkImports.vpcLinkId(envConfig)

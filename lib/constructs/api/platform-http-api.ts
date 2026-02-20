@@ -110,7 +110,8 @@ export class PlatformHttpApi extends Construct {
             path: '/api/v1/{proxy+}', //{proxy+} takes anything
             methods: [apigwv2.HttpMethod.GET],
             integration,
-            authorizer
+            authorizer,
+            authorizationScopes: ['openid']
         })
 
 
