@@ -93,17 +93,20 @@ export class PlatformServiceCodebuildDeploy extends Construct {
 
                             `echo "BuildOutput dir: $CODEBUILD_SRC_DIR_${buildOutputName}"`,
                             `ls -la "$CODEBUILD_SRC_DIR_${buildOutputName}" || true`,
-                            `echo "imagetag.txt contents:"`,
+                            'echo "imagetag.txt contents:"',
                             `cat "$CODEBUILD_SRC_DIR_${buildOutputName}/imagetag.txt" || true`,
 
                             `export IMAGE_TAG="$(cat "$CODEBUILD_SRC_DIR_${buildOutputName}/imagetag.txt")"`,
-                            `echo "IMAGE_TAG=[$IMAGE_TAG]"`,
+                            'echo "IMAGE_TAG=[$IMAGE_TAG]"',
 
                             // fail early if empty
-                            `test -n "$IMAGE_TAG"`,
+                            '[ -n "$IMAGE_TAG" ] || { echo "IMAGE_TAG is empty"; exit 1; }',
 
-                            `npm run cdk:services -- deploy ${getStackId(props.serviceName)} --require-approval never ` +
-                            `-c imageTag=$IMAGE_TAG`
+                            [
+                                `npm run cdk:services -- deploy ${getStackId(props.serviceName)}`,
+                                '--require-approval never',
+                                '-c imageTag=$IMAGE_TAG'
+                            ].join(' ')
                         ]
                     }
                 }
