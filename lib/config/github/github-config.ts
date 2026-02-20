@@ -24,9 +24,9 @@ const PLATFORM_CDK_GITHUB_CONFIG: GithubConfig = {
     githubBranch: 'main'
 } as const
 
-const PLATFORM_IMAGES_GITHUB_CONFIG: GithubConfig = {
+const PLATFORM_FOUNDATION_GITHUB_CONFIG: GithubConfig = {
     githubOwner: GITHUB_OWNER,
-    githubRepo: 'platform-images',
+    githubRepo: 'platform-foundation',
     githubBranch: 'main'
 } as const
 
@@ -44,6 +44,6 @@ export function getPlatformCdkGithubConfig(): GithubConfig {
     return PLATFORM_CDK_GITHUB_CONFIG
 }
 
-export function getPlatformImagesGithubConfig(): GithubConfig {
-    return PLATFORM_IMAGES_GITHUB_CONFIG
+export function getPlatformFoundationGithubConfig(): GithubConfig {
+    return PLATFORM_FOUNDATION_GITHUB_CONFIG
 }
