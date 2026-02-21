@@ -2,7 +2,6 @@ import * as cdk from 'aws-cdk-lib'
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2'
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
-import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack';
@@ -12,15 +11,18 @@ import {NetworkImports} from 'lib/config/dependency/network/network-imports';
 import {PlatformHttpApi} from 'lib/constructs/api/platform-http-api';
 import {PlatformCognito} from 'lib/constructs/api/platform-cognito';
 import {ParamNamespace} from "lib/config/domain";
-import {resolveSsmParamPath, resolveSsmSecretPath} from "lib/config/naming";
+import { resolveSsmParamPath } from "lib/config/naming";
 
+export interface ApiGatewayProps extends BaseStackProps {
+    platformCognito: PlatformCognito
+}
 
 //TODO: currently single ALB listener, future account for multiple ALB+service
-export class GatewayStack extends BaseStack {
-    constructor(scope: cdk.App, id: string, props: BaseStackProps) {
+export class ApiStack extends BaseStack {
+    constructor(scope: cdk.App, id: string, props: ApiGatewayProps) {
         super(scope, id, props);
 
-        const {envConfig, stackDomain} = props
+        const { envConfig, stackDomain, platformCognito } = props
 
         const vpc = NetworkImports.vpc(this, envConfig)
         const vpcLinkId = NetworkImports.vpcLinkId(envConfig)
@@ -33,7 +35,7 @@ export class GatewayStack extends BaseStack {
         const subSgId = NetworkImports.vpcLinkSubSgId(envConfig)
         const subSg = ec2.SecurityGroup.fromSecurityGroupId(
             this,
-            'ImportedAlbSubSg',
+            'ImportedVpcLinkSubSg',
             subSgId,
             { mutable: false }
         )
@@ -50,27 +52,16 @@ export class GatewayStack extends BaseStack {
             }
         )
 
-        const platformCognito = new PlatformCognito(this, 'PlatformCognito', {
-            ...props
-        })
-
         const platformHttpApi = new PlatformHttpApi(this, 'PlatformHttpApi', {
             ...props,
             vpcLink,
             listener,
             userPool: platformCognito.userPool,
-            userPoolClient: platformCognito.userPoolClient,
-            synthPoolClient: platformCognito.synthClient
+            userAuthClient: platformCognito.userAuthClient,
+            synthAuthClient: platformCognito.synthAuthClient
         })
 
-        const synthClient = platformCognito.synthClient
-        const paramNamespace = ParamNamespace.core
-
-        //secrets
-        new secretsmanager.Secret(this, 'SecretSynthUserPoolClientId', {
-            secretName: `${resolveSsmSecretPath(envConfig, paramNamespace, stackDomain, 'cognito/synth-client-secret')}`,
-            secretStringValue: synthClient.userPoolClientSecret
-        })
+        const paramNamespace = ParamNamespace.gateway
 
         //parameter store
         new ssm.StringParameter(this, 'ParameterApiUrl', {
@@ -78,20 +69,9 @@ export class GatewayStack extends BaseStack {
             stringValue: platformHttpApi.apiUrl
         })
 
-        new ssm.StringParameter(this, 'ParameterCognitoDomainUrl', {
-            parameterName: resolveSsmParamPath(envConfig, paramNamespace, stackDomain, 'cognito/domain-url'),
-            stringValue: platformCognito.cognitoDomainUrl
-        })
-
-        new ssm.StringParameter(this, 'ParameterSynthClientId', {
-            //parameterName: `/${projectName}/${envName}/core/cognito/synth-client-id`,
-            parameterName: resolveSsmParamPath(envConfig, paramNamespace, stackDomain, 'cognito/synth-client-id'),
-            stringValue: synthClient.userPoolClientId
-        })
-
-        new ssm.StringParameter(this, 'ParameterSynthInvokeScope', {
-            parameterName: `${resolveSsmParamPath(envConfig, paramNamespace, stackDomain, 'cognito/synth-invoke-scope')}`,
-            stringValue: platformCognito.synthInvokeFullScope
+        //outputs
+        new cdk.CfnOutput(this, 'CfnOutputApiUrl', {
+            value: platformHttpApi.apiUrl
         })
     }
 }

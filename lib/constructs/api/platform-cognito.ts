@@ -9,8 +9,8 @@ export interface PlatformCognitoProps extends BaseStackProps {}
 export class PlatformCognito extends Construct {
 
     public readonly userPool: cognito.UserPool
-    public readonly userPoolClient: cognito.UserPoolClient
-    public readonly synthClient: cognito.UserPoolClient
+    public readonly userAuthClient: cognito.UserPoolClient
+    public readonly synthAuthClient: cognito.UserPoolClient
 
     public readonly cognitoDomainUrl: string
     public readonly synthInvokeFullScope: string
@@ -41,7 +41,7 @@ export class PlatformCognito extends Construct {
         this.cognitoDomainUrl = `https://${domainPrefix}.auth.${region}.amazoncognito.com`
 
         //application registration, tokens are requested through client
-        this.userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {
+        this.userAuthClient = new cognito.UserPoolClient(this, 'UserAuthClient', {
             userPool: this.userPool,
 
             generateSecret: false, // requires false for PKCE
@@ -68,13 +68,14 @@ export class PlatformCognito extends Construct {
                 ],
             }
         })
-        const synthResourceServerIdentifier = 'synth'
 
         // 1) Resource server + scope used for client_credentials
         const synthInvokeScope = {
             scopeName: 'invoke',
             scopeDescription: 'Invoke synth routes'
         }
+
+        const synthResourceServerIdentifier = 'synth'
 
         const synthResourceServer = this.userPool.addResourceServer('SynthResourceServer', {
             identifier: synthResourceServerIdentifier,
@@ -86,7 +87,7 @@ export class PlatformCognito extends Construct {
         this.synthInvokeFullScope = `${synthResourceServerIdentifier}/${synthInvokeScope.scopeName}`
 
         // 2) New app client for ECS load generator (client_credentials)
-        this.synthClient = new cognito.UserPoolClient(this, 'SynthClient', { //update id to change secret
+        this.synthAuthClient = new cognito.UserPoolClient(this, 'SynthAuthClient', {
             userPool: this.userPool,
 
             generateSecret: true,

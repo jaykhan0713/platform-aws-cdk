@@ -12,8 +12,8 @@ export interface PlatformHttpApiGatewayProps extends BaseStackProps {
     vpcLink: apigwv2.IVpcLink
     listener: elbv2.IApplicationListener
     userPool: cognito.IUserPool
-    userPoolClient: cognito.IUserPoolClient
-    synthPoolClient: cognito.IUserPoolClient
+    userAuthClient: cognito.IUserPoolClient
+    synthAuthClient: cognito.IUserPoolClient
 }
 
 export class PlatformHttpApi extends Construct {
@@ -42,6 +42,7 @@ export class PlatformHttpApi extends Construct {
         //note that CDK does not delete parameter mappings if removed here.
         const userIdHeader = 'x-user-id'
         const requestIdHeader = 'x-request-id'
+        const apiPrefix = "api/v1"
 
         const integration = new integrations.HttpAlbIntegration(
             'ApiIntegration',
@@ -84,7 +85,7 @@ export class PlatformHttpApi extends Construct {
                 vpcLink: props.vpcLink,
                 parameterMapping: new apigwv2.ParameterMapping()
                     .overwritePath(
-                        apigwv2.MappingValue.custom('/api/v1/$request.path.proxy')
+                        apigwv2.MappingValue.custom(`/${apiPrefix}/$request.path.proxy`)
                     )
                     .overwriteHeader(
                         requestIdHeader,
@@ -100,8 +101,8 @@ export class PlatformHttpApi extends Construct {
             `https://cognito-idp.${envConfig.region}.amazonaws.com/${props.userPool.userPoolId}`, //issuer
             {
                 jwtAudience: [
-                    props.userPoolClient.userPoolClientId,
-                    props.synthPoolClient.userPoolClientId
+                    props.userAuthClient.userPoolClientId,
+                    props.synthAuthClient.userPoolClientId
                 ]
             }
         )

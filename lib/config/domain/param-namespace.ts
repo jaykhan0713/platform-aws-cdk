@@ -1,5 +1,6 @@
 export const ParamNamespace = {
     core: 'core',
+    gateway: 'gateway',
     services: 'services'
 } as const
 

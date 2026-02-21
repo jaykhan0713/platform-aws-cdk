@@ -89,7 +89,7 @@ export class PlatformCicdApp {
 
         new PlatformServicePipelineStack(
             this.app,
-            getStackId(serviceName) + 'Pipeline', //i.e EdgeServicePipeline
+            `${getStackId(serviceName)}Pipeline`, //i.e EdgeServicePipeline
             {
                 stackName: resolveStackName(toolsEnvConfig, stackDomain),
                 ...toolsStackProps,

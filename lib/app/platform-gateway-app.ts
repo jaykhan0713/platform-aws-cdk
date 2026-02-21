@@ -1,8 +1,11 @@
 import * as cdk from 'aws-cdk-lib'
-import {GatewayStack} from "lib/stacks/gateway/gateway-stack";
+import {ApiStack} from "lib/stacks/gateway/api-stack";
 import {EnvName, StackDomain} from "lib/config/domain";
 import {EnvConfig, getEnvConfig, toCdkStackProps} from "lib/config/env/env-config";
 import {StackProps} from "aws-cdk-lib";
+import {resolveStackName} from 'lib/config/naming'
+import {PlatformCognito} from 'lib/constructs/api/platform-cognito'
+import {CognitoStack} from 'lib/stacks/gateway/cognito-stack'
 
 
 export class PlatformGatewayApp {
@@ -18,19 +21,41 @@ export class PlatformGatewayApp {
         const envConfig = getEnvConfig(envName)
         const stackProps = toCdkStackProps(envConfig)
 
-        this.createGatewayStack(stackProps, envConfig)
+        const cognitoStack = this.createCognitoStack(stackProps, envConfig)
+        this.createApiStack(stackProps, envConfig, cognitoStack.platformCognito)
     }
 
-    private createGatewayStack(stackProps: StackProps, envConfig: EnvConfig) {
-        const stackDomain = StackDomain.gateway
+    private createCognitoStack(stackProps: StackProps, envConfig: EnvConfig) {
+        const stackDomain = StackDomain.cognito
 
-        return new GatewayStack(
+        return new CognitoStack(
             this.app,
-            'Gateway',
+            'Cognito',
             {
-               ...stackProps,
+                ...stackProps,
+                stackName: resolveStackName(envConfig, stackDomain),
                 envConfig,
                 stackDomain
+            }
+        )
+    }
+
+    private createApiStack(
+        stackProps: StackProps,
+        envConfig: EnvConfig,
+        platformCognito: PlatformCognito
+    ) {
+        const stackDomain = StackDomain.api
+
+        return new ApiStack(
+            this.app,
+            'Api',
+            {
+               ...stackProps,
+                stackName: resolveStackName(envConfig, stackDomain),
+                envConfig,
+                stackDomain,
+                platformCognito
             }
         )
     }
