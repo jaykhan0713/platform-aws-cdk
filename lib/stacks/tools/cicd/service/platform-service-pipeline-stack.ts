@@ -34,7 +34,7 @@ export class PlatformServicePipelineStack extends BaseStack {
         const cdkSrc = new codepipeline.Artifact('CdkSrc')
         const buildOutput = new codepipeline.Artifact('BuildOutput')
 
-        //TODO if buildspec ever needs to read or write to s3, have to grant perms
+        //TODO optional: if buildspec ever needs to read or write to s3, have to grant perms
 
         const publishBuild = new PlatformServiceCodebuildPublish(this, 'PlatformServiceCodebuildPublish', {
             ...props,

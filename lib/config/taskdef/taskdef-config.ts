@@ -1,5 +1,6 @@
 import type { EnvConfig } from 'lib/config/env/env-config'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {ParamNamespace} from 'lib/config/domain'
 
 export type EnvMap = Readonly<Record<string, string>>
 export type SecretMap = Readonly<Record<string, string>> // name -> ssm param path
@@ -89,7 +90,7 @@ export const defaultTaskDefConfig = (args: {
                 APS_REMOTE_WRITE_ENDPOINT: args.apsRemoteWriteEndpoint
             },
             secrets: {
-                OTEL_CONFIG_YAML: `/${projectName}/${envName}/core/observability/adot/otel-config.yaml`
+                OTEL_CONFIG_YAML: `/${projectName}/${envName}/${ParamNamespace.core}/observability/adot/otel-config.yaml`
             },
             logging: {
                 logGroupName: `/ecs/${projectName}/${envName}/${args.serviceName}-adot`,

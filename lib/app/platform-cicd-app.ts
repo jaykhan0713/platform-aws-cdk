@@ -5,13 +5,14 @@ import { CicdInfraStack } from 'lib/stacks/tools/cicd/cicd-infra-stack'
 import { type EnvConfig, getEnvConfig, toCdkStackProps } from 'lib/config/env/env-config'
 import { EnvName } from 'lib/config/domain/env-name'
 import { StackDomain } from 'lib/config/domain/stack-domain'
-import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/platform-service-ecr-repos-stack'
-import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/platform-service-pipeline-stack'
+import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/service/platform-service-ecr-repos-stack'
+import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/service/platform-service-pipeline-stack'
 import {
     getPipelineStackDomainFromValue,
     getStackId,
     PlatformServiceName
 } from 'lib/config/service/platform-service-registry'
+import {PlatformFoundationEcrReposStack} from 'lib/stacks/tools/cicd/foundation/platform-foundation-ecr-repos-stack'
 
 export class PlatformCicdApp {
 
@@ -31,8 +32,8 @@ export class PlatformCicdApp {
         const toolsStackProps = toCdkStackProps(toolsConfig)
 
         const cicdInfraStack = this.createCicdInfraStack(toolsStackProps, toolsConfig)
+        const platformFoundationEcrReposStack = this.createPlatformFoundationEcrReposStack(toolsStackProps, toolsConfig)
         const platformServiceEcrReposStack = this.createPlatformServiceEcrReposStack(toolsStackProps, toolsConfig)
-
 
         for (const serviceName of Object.values(PlatformServiceName)) {
             this.createPlatformServicePipeline(
@@ -44,7 +45,6 @@ export class PlatformCicdApp {
             )
         }
 
-
     }
 
     //shared cicd for 'tools' env
@@ -54,6 +54,21 @@ export class PlatformCicdApp {
         return new CicdInfraStack(
             this.app,
             'CicdInfra',
+            {
+                stackName: resolveStackName(envConfig, stackDomain),
+                ...stackProps,
+                envConfig,
+                stackDomain
+            }
+        )
+    }
+
+    private createPlatformFoundationEcrReposStack(stackProps: cdk.StackProps, envConfig: EnvConfig) {
+        const stackDomain = StackDomain.foundationEcrRepos
+
+        return new PlatformFoundationEcrReposStack(
+            this.app,
+            'PlatformFoundationEcrRepos',
             {
                 stackName: resolveStackName(envConfig, stackDomain),
                 ...stackProps,
