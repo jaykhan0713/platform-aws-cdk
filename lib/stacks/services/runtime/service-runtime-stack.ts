@@ -22,12 +22,14 @@ export class ServiceRuntimeStack extends BaseStack {
         const { envConfig, stackDomain } = props
         const { projectName, envName} = envConfig
 
-        const vpc = NetworkImports.vpc(this, envConfig)
+        const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
 
         this.ecsCluster = new ecs.Cluster(this, 'EcsCluster', {
             vpc,
             clusterName: `${projectName}-cluster-${envName}`,
-            containerInsightsV2: ecs.ContainerInsights.DISABLED
+            containerInsightsV2: ecs.ContainerInsights.DISABLED,
+
+            enableFargateCapacityProviders: true
         })
 
         /* alb backed services consume this SG, internal services will consume this SG AND

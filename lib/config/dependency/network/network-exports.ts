@@ -8,5 +8,9 @@ export const NetworkExports = {
 
     privateIsolatedSubnetId: (index: number) => `private-isolated-subnet-${index}-id`,
     privateIsolatedSubnetAz: (index: number) => `private-isolated-subnet-${index}-az`,
-    privateIsolatedSubnetRt: (index: number) => `private-isolated-subnet-${index}-rt`
+    privateIsolatedSubnetRt: (index: number) => `private-isolated-subnet-${index}-rt`,
+
+    publicSubnetId: (index: number) => `public-subnet-${index}-id`,
+    publicSubnetAz: (index: number) => `public-subnet-${index}-az`,
+    publicSubnetRt: (index: number) => `public-subnet-${index}-rt`,
 } as const

@@ -3,7 +3,7 @@ import * as cdk from 'aws-cdk-lib'
 import {type EnvConfig} from 'lib/config/env/env-config'
 import {resolveStackName} from 'lib/config/naming/stacks'
 import {
-    getStackId, PlatformServiceExposure,
+    getPlatformServiceStackId, PlatformServiceExposure,
     PlatformServiceName,
     platformServiceOverridesMap
 } from 'lib/config/service/platform-service-registry'
@@ -45,7 +45,7 @@ export class PlatformServiceStackFactory {
 
         return new InternalAlbServiceStack(
             scope,
-            getStackId(serviceName),
+            getPlatformServiceStackId(serviceName),
             {
                 stackName: resolveStackName(envConfig, stackDomain),
                 ...stackProps,
@@ -66,7 +66,7 @@ export class PlatformServiceStackFactory {
 
         return new InternalServiceStack(
             scope,
-            getStackId(serviceName),
+            getPlatformServiceStackId(serviceName),
             {
                 stackName: resolveStackName(envConfig, stackDomain),
                 ...stackProps,

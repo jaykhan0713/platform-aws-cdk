@@ -14,15 +14,15 @@ export interface K6RunnerPipelineStackProps extends BaseStackProps {
     githubConnectionArn: string
 
     ecrRepo: ecr.IRepository
+
+    foundationName: PlatformFoundationName
 }
 
 export class K6RunnerPipelineStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: K6RunnerPipelineStackProps) {
         super(scope, id, props)
 
-        const foundationName = PlatformFoundationName.k6Runner
-
-        const {envConfig} = props
+        const {envConfig, foundationName} = props
         const {projectName} = envConfig
 
         const foundationGit = getPlatformFoundationGithubConfig()

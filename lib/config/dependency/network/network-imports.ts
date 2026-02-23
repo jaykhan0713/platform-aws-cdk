@@ -28,6 +28,14 @@ export class NetworkImports {
         })
     }
 
+    public static publicSubnetAzs(envConfig: EnvConfig) {
+        return Array.from({ length: this.maxAzs(envConfig) }, (_, index) => {
+            return cdk.Fn.importValue(
+                resolveExportName(envConfig, this.stackDomain, NetworkExports.publicSubnetAz(index))
+            )
+        })
+    }
+
     public static privateIsolatedSubnetRts(envConfig: EnvConfig) {
         return Array.from({ length: this.maxAzs(envConfig) }, (_, index) => {
             return cdk.Fn.importValue(
@@ -36,10 +44,26 @@ export class NetworkImports {
         })
     }
 
+    public static publicSubnetRts(envConfig: EnvConfig) {
+        return Array.from({ length: this.maxAzs(envConfig) }, (_, index) => {
+            return cdk.Fn.importValue(
+                resolveExportName(envConfig, this.stackDomain, NetworkExports.publicSubnetRt(index))
+            )
+        })
+    }
+
     public static privateIsolatedSubnetIds(envConfig: EnvConfig) {
         return Array.from({ length: this.maxAzs(envConfig) }, (_, index) => {
             return cdk.Fn.importValue(
                 resolveExportName(envConfig, this.stackDomain, NetworkExports.privateIsolatedSubnetId(index))
+            )
+        })
+    }
+
+    public static publicSubnetIds(envConfig: EnvConfig) {
+        return Array.from({ length: this.maxAzs(envConfig) }, (_, index) => {
+            return cdk.Fn.importValue(
+                resolveExportName(envConfig, this.stackDomain, NetworkExports.publicSubnetId(index))
             )
         })
     }
@@ -88,21 +112,39 @@ export class NetworkImports {
     }
 
     //note that anything outside the network boundary should not need route table associations
-    public static vpc(scope: Construct, envConfig: EnvConfig) {
+    public static vpcPrivateIsolated(scope: Construct, envConfig: EnvConfig) {
 
         const vpcId = this.vpcId(envConfig)
         const vpcCidrBlock = this.vpcCidr(envConfig)
-        const privateIsolatedSubnetAzs = this.privateIsolatedSubnetAzs(envConfig)
-        const privateIsolatedSubnetRts = this.privateIsolatedSubnetRts(envConfig)
-        const privateIsolatedSubnetIds = this.privateIsolatedSubnetIds(envConfig)
+        const availabilityZones = this.privateIsolatedSubnetAzs(envConfig)
 
+        const privateIsolatedSubnetIds = this.privateIsolatedSubnetIds(envConfig)
+        const privateIsolatedSubnetRts = this.privateIsolatedSubnetRts(envConfig)
 
         return ec2.Vpc.fromVpcAttributes(scope, 'ImportedVpc', {
             vpcId,
             vpcCidrBlock,
-            availabilityZones: privateIsolatedSubnetAzs,
+            availabilityZones,
             privateSubnetIds: privateIsolatedSubnetIds,
             privateSubnetRouteTableIds: privateIsolatedSubnetRts
+        })
+    }
+
+    public static vpcPublic(scope: Construct, envConfig: EnvConfig) {
+
+        const vpcId = this.vpcId(envConfig)
+        const vpcCidrBlock = this.vpcCidr(envConfig)
+        const availabilityZones = this.publicSubnetAzs(envConfig)
+
+        const publicSubnetIds = this.publicSubnetIds(envConfig)
+        const publicSubnetRouteTableIds = this.publicSubnetRts(envConfig)
+
+        return ec2.Vpc.fromVpcAttributes(scope, 'ImportedVpcPublic', {
+            vpcId,
+            vpcCidrBlock,
+            availabilityZones,
+            publicSubnetIds,
+            publicSubnetRouteTableIds
         })
     }
 

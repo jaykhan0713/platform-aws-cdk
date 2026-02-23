@@ -1,5 +1,5 @@
 import {PlatformServiceName, servicePipelineDomains} from 'lib/config/service/platform-service-registry'
-import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
+import {foundationPipelineDomains, PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
 
 export const StackDomain = {
     //runtime envs
@@ -21,7 +21,9 @@ export const StackDomain = {
     cicdInfra: 'cicd-infra',
 
     // auto-generated pipeline stacks i.e edge-service-pipeline
-    ...servicePipelineDomains
+    ...servicePipelineDomains,
+
+    ...foundationPipelineDomains
 } as const
 
 export type StackDomain = typeof StackDomain[keyof typeof StackDomain]

@@ -7,7 +7,7 @@ import {Construct} from 'constructs'
 import {resolveIamRoleName} from 'lib/config/naming'
 import {IamConstants} from 'lib/config/domain/iam-constants'
 import {BaseStackProps} from 'lib/stacks/base-stack'
-import {getStackId, PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import {getPlatformServiceStackId, PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
 export interface PlatformServiceCodeBuildDeployProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -102,7 +102,7 @@ export class PlatformServiceCodebuildDeploy extends Construct {
                             '[ -n "$IMAGE_TAG" ] || { echo "IMAGE_TAG is empty"; exit 1; }',
 
                             [
-                                `npm run cdk:services -- deploy ${getStackId(props.serviceName)}`,
+                                `npm run cdk:services -- deploy ${getPlatformServiceStackId(props.serviceName)}`,
                                 '--require-approval never',
                                 '-c imageTag=$IMAGE_TAG'
                             ].join(' ')

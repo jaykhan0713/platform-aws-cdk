@@ -9,16 +9,14 @@ export const PlatformServiceName = {
 export type PlatformServiceName = typeof PlatformServiceName[keyof typeof PlatformServiceName]
 type PlatformServiceKey = keyof typeof PlatformServiceName
 
+//Exposure type for what the service is behind
 export const PlatformServiceExposure = {
-    internal: 'internal',
+    internal: 'internal', //internal for SC client + serv
     alb: 'alb'
 } as const
 
 export type PlatformServiceExposure = typeof PlatformServiceExposure[keyof typeof PlatformServiceExposure]
 
-/*
- * internal for SC client + serv
- */
 export type PlatformServiceOverrides = {
     readonly exposure?: PlatformServiceExposure
     //task def overrides
@@ -49,7 +47,7 @@ const STACK_ID_MAP: Record<PlatformServiceName, string> =
         return acc
     }, {} as Record<PlatformServiceName, string>)
 
-export const getStackId = (serviceName: PlatformServiceName) => {
+export const getPlatformServiceStackId = (serviceName: PlatformServiceName) => {
     return STACK_ID_MAP[serviceName]
 }
 

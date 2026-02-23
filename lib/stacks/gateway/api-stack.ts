@@ -24,7 +24,7 @@ export class ApiStack extends BaseStack {
 
         const { envConfig, stackDomain, platformCognito } = props
 
-        const vpc = NetworkImports.vpc(this, envConfig)
+        const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
         const vpcLinkId = NetworkImports.vpcLinkId(envConfig)
         const vpcLink = apigwv2.VpcLink.fromVpcLinkAttributes(this, 'ImportedVpcLink', {
             vpcLinkId,

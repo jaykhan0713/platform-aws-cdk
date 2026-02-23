@@ -9,12 +9,12 @@ import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/service/platfo
 import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/service/platform-service-pipeline-stack'
 import {
     getPipelineStackDomainFromValue,
-    getStackId,
+    getPlatformServiceStackId,
     PlatformServiceName
 } from 'lib/config/service/platform-service-registry'
 import {PlatformFoundationEcrReposStack} from 'lib/stacks/tools/cicd/foundation/platform-foundation-ecr-repos-stack'
 import {K6RunnerPipelineStack} from 'lib/stacks/tools/cicd/foundation/k6-runner-pipeline-stack'
-import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
+import {getPlatformFoundationStackId, PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
 
 export class PlatformCicdApp {
 
@@ -112,7 +112,7 @@ export class PlatformCicdApp {
 
         new PlatformServicePipelineStack(
             this.app,
-            `${getStackId(serviceName)}Pipeline`, //i.e EdgeServicePipeline
+            `${getPlatformServiceStackId(serviceName)}Pipeline`, //i.e EdgeServicePipeline
             {
                 stackName: resolveStackName(toolsEnvConfig, stackDomain),
                 ...toolsStackProps,
@@ -136,17 +136,19 @@ export class PlatformCicdApp {
         cicdInfraStack: CicdInfraStack,
         platformFoundationEcrReposStack: PlatformFoundationEcrReposStack
     ) {
-        const stackDomain = StackDomain.k6Runner
-        const foundationName = StackDomain.k6Runner
-
+        const stackDomain = StackDomain.k6RunnerPipeline
+        const foundationName = PlatformFoundationName.k6Runner
         const {artifactsBucket, githubConnectionArn} = cicdInfraStack
+
         new K6RunnerPipelineStack(
             this.app,
-            'K6RunnerPipeline',
+            `${getPlatformFoundationStackId(foundationName)}Pipeline`, //K6RunnerPipeline
             {
+                stackName: resolveStackName(toolsEnvConfig, stackDomain),
                 ...toolsStackProps,
                 envConfig: toolsEnvConfig,
                 stackDomain,
+                foundationName,
 
                 artifactsBucket,
                 githubConnectionArn,

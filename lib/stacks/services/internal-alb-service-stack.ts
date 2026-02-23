@@ -35,7 +35,7 @@ export class InternalAlbServiceStack extends BaseStack {
 
         const imageTag = this.node.tryGetContext('imageTag')
 
-        const vpc = NetworkImports.vpc(this, envConfig)
+        const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
 
         const taskDefCfg = defaultTaskDefConfig({

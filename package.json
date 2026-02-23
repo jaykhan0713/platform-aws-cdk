@@ -15,7 +15,8 @@
     "cdk:service-runtime": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/service-runtime.ts\"",
     "cdk:observability": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/observability.ts\"",
     "cdk:cicd": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/cicd.ts\"",
-    "cdk:gateway": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/gateway.ts\""
+    "cdk:gateway": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/gateway.ts\"",
+    "cdk:load-test": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/load-test.ts\""
   },
   "devDependencies": {
     "@types/jest": "^30",

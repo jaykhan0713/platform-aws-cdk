@@ -30,7 +30,7 @@ export class InternalServiceStack extends BaseStack {
 
         const { envConfig, serviceName, upstreamSgs } = props
 
-        const vpc = NetworkImports.vpc(this, envConfig)
+        const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
 
         const taskDefCfg = defaultTaskDefConfig({

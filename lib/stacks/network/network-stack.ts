@@ -43,11 +43,38 @@ export class NetworkStack extends BaseStack {
             cdk.Tags.of(subnet).add('Name', `public-subnet-${index}-${envName}`)
             cdk.Tags.of(subnet).add('Az', subnet.availabilityZone)
 
+            new cdk.CfnOutput(this, `CfnOutputPublicSubnet${index}Id`, {
+                value: subnet.subnetId,
+                exportName: resolveExportName(
+                    envConfig,
+                    StackDomain.network,
+                    NetworkExports.publicSubnetId(index)
+                )
+            })
+
+            new cdk.CfnOutput(this, `CfnOutputPublicSubnet${index}Az`, {
+                value: subnet.availabilityZone,
+                exportName: resolveExportName(
+                    envConfig,
+                    StackDomain.network,
+                    NetworkExports.publicSubnetAz(index)
+                )
+            })
+
             const routeTable = subnet.node.tryFindChild('RouteTable')
             if (routeTable) {
                 // future CDK version or shared RT; silently skip
                 cdk.Tags.of(routeTable).add('Name', `rtb-public-${index}-${envName}`)
             }
+
+            new cdk.CfnOutput(this,  `CfnOutputPublicSubnet${index}Rt`, {
+                value: subnet.routeTable.routeTableId,
+                exportName: resolveExportName(
+                    envConfig,
+                    StackDomain.network,
+                    NetworkExports.publicSubnetRt(index)
+                )
+            })
         })
 
         this.vpc.isolatedSubnets.forEach((subnet, index) => {
