@@ -4,7 +4,7 @@ import * as ecr from 'aws-cdk-lib/aws-ecr'
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
-import {getPlatformFoundationGithubConfig} from 'lib/config/github/github-config'
+import {getPlatformCdkGithubConfig, getPlatformFoundationGithubConfig} from 'lib/config/github/github-config'
 import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
 import * as codepipelineActions from 'aws-cdk-lib/aws-codepipeline-actions'
 import {PlatformFoundationCodebuildImage} from 'lib/constructs/cicd/foundation/platform-foundation-codebuild-image'
@@ -25,8 +25,10 @@ export class K6RunnerPipelineStack extends BaseStack {
         const {envConfig} = props
         const {projectName} = envConfig
 
-        const githubConfig = getPlatformFoundationGithubConfig()
-        const src = new codepipeline.Artifact('Src')
+        const foundationGit = getPlatformFoundationGithubConfig()
+        const cdkGit = getPlatformCdkGithubConfig()
+        const foundationSrc = new codepipeline.Artifact('MainSrc')
+        const cdkSrc = new codepipeline.Artifact('CdkSrc')
         const buildOutput = new codepipeline.Artifact('BuildOutput')
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
@@ -40,11 +42,20 @@ export class K6RunnerPipelineStack extends BaseStack {
             actions: [
                 new codepipelineActions.CodeStarConnectionsSourceAction({
                     actionName: 'PlatformFoundationGitHub',
-                    owner: githubConfig.githubOwner,
-                    repo: githubConfig.githubRepo,
-                    branch: githubConfig.githubBranch,
+                    owner: foundationGit.githubOwner,
+                    repo: foundationGit.githubRepo,
+                    branch: foundationGit.githubBranch,
                     connectionArn: props.githubConnectionArn,
-                    output: src,
+                    output: foundationSrc,
+                    triggerOnPush: false
+                }),
+                new codepipelineActions.CodeStarConnectionsSourceAction({
+                    actionName: 'CdkGitHub',
+                    owner: cdkGit.githubOwner,
+                    repo: cdkGit.githubRepo,
+                    branch: cdkGit.githubBranch,
+                    connectionArn: props.githubConnectionArn,
+                    output: cdkSrc,
                     triggerOnPush: false
                 })
             ]
@@ -62,7 +73,7 @@ export class K6RunnerPipelineStack extends BaseStack {
                 new codepipelineActions.CodeBuildAction({
                     actionName: 'DockerBuildAndPush',
                     project: imageBuild.project,
-                    input: src,
+                    input: foundationSrc,
                     outputs: [buildOutput]
                 })
             ]
