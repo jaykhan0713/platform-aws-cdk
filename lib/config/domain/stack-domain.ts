@@ -1,4 +1,5 @@
 import {PlatformServiceName, servicePipelineDomains} from 'lib/config/service/platform-service-registry'
+import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
 
 export const StackDomain = {
     //runtime envs
@@ -13,6 +14,8 @@ export const StackDomain = {
 
     //platform's service stacks
     ...PlatformServiceName,
+
+    ...PlatformFoundationName,
 
     //tools env
     cicdInfra: 'cicd-infra',

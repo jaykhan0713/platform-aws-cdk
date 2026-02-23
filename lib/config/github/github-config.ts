@@ -44,6 +44,6 @@ export function getPlatformCdkGithubConfig(): GithubConfig {
     return PLATFORM_CDK_GITHUB_CONFIG
 }
 
-export function getPlatformImagesGithubConfig(): GithubConfig {
+export function getPlatformFoundationGithubConfig(): GithubConfig {
     return PLATFORM_FOUNDATION_GITHUB_CONFIG
 }

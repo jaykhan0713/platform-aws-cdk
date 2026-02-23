@@ -13,6 +13,8 @@ import {
     PlatformServiceName
 } from 'lib/config/service/platform-service-registry'
 import {PlatformFoundationEcrReposStack} from 'lib/stacks/tools/cicd/foundation/platform-foundation-ecr-repos-stack'
+import {K6RunnerPipelineStack} from 'lib/stacks/tools/cicd/foundation/k6-runner-pipeline-stack'
+import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
 
 export class PlatformCicdApp {
 
@@ -45,6 +47,12 @@ export class PlatformCicdApp {
             )
         }
 
+        this.createK6RunnerPipeline(
+            toolsStackProps,
+            toolsConfig,
+            cicdInfraStack,
+            platformFoundationEcrReposStack
+        )
     }
 
     //shared cicd for 'tools' env
@@ -118,6 +126,31 @@ export class PlatformCicdApp {
                 platformCodeArtifact: cicdInfraStack.platformCodeArtifact,
 
                 ecrRepo: platformServiceEcrReposStack.repos[serviceName]
+            }
+        )
+    }
+
+    private createK6RunnerPipeline(
+        toolsStackProps: cdk.StackProps,
+        toolsEnvConfig: EnvConfig,
+        cicdInfraStack: CicdInfraStack,
+        platformFoundationEcrReposStack: PlatformFoundationEcrReposStack
+    ) {
+        const stackDomain = StackDomain.k6Runner
+        const foundationName = StackDomain.k6Runner
+
+        const {artifactsBucket, githubConnectionArn} = cicdInfraStack
+        new K6RunnerPipelineStack(
+            this.app,
+            'K6RunnerPipeline',
+            {
+                ...toolsStackProps,
+                envConfig: toolsEnvConfig,
+                stackDomain,
+
+                artifactsBucket,
+                githubConnectionArn,
+                ecrRepo: platformFoundationEcrReposStack.ecrRepos[foundationName]
             }
         )
     }
