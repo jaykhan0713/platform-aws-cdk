@@ -20,10 +20,6 @@ export interface PlatformCodeBuildCdkDeployProps extends BaseStackProps {
         [p: string]: codebuild.BuildEnvironmentVariable
     }
 
-    // CodePipeline artifact names (these become CODEBUILD_SRC_DIR_<name>)
-    cdkSourceArtifactName?: string // default: CdkSrc
-    buildOutputArtifactName?: string //default: BuildOuput
-
     // CDK bootstrap qualifier (default is stable, not random)
     bootstrapQualifier?: string // default: hnb659fds
 }
@@ -41,8 +37,6 @@ export class PlatformCodebuildCdkDeploy extends Construct {
         const region = envConfig.region
 
         const qualifier = props.bootstrapQualifier ?? 'hnb659fds'
-        const cdkSrcName = props.cdkSourceArtifactName ?? 'CdkSrc'
-        const buildOutputName = props.buildOutputArtifactName ?? 'BuildOutput'
 
         this.role = new iam.Role(this, 'CodebuildCdkDeployRole', {
             roleName: resolveIamRoleName(envConfig, stackDomain, IamConstants.roleArea.codebuildDeploy),
