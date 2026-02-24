@@ -9,3 +9,4 @@
 - Load tests image (k6) ecs spot, adot-collector image, base images etc need portability and automation in cdk
 - grafana workspace needs to be made portable.
 - add CB automatic state transition to HALF_OPEN in services. Grafana needs CB metrics as well.
+- use platform-codebuild-cdk-deploy.ts in place of platform-service-codebuild-deploy.ts 
