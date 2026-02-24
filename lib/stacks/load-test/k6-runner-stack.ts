@@ -5,8 +5,8 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
-import {resolveIamRoleName} from 'lib/config/naming'
-import {IamConstants, StackDomain} from 'lib/config/domain'
+import {resolveIamRoleName, resolveSsmParamPathArnWildcard, resolveSsmSecretPath} from 'lib/config/naming'
+import {IamConstants, ParamNamespace, StackDomain} from 'lib/config/domain'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import * as logs from 'aws-cdk-lib/aws-logs'
 
@@ -17,7 +17,7 @@ export interface K6RunnerStackProps extends BaseStackProps {
 export class K6RunnerStack extends cdk.Stack {
     public readonly fargateTaskDef: ecs.FargateTaskDefinition
     public readonly taskExecutionRole: iam.IRole
-    public readonly taskRole: iam.IRole
+    public readonly taskRole: iam.Role
     public readonly securityGroup: ec2.ISecurityGroup
 
     constructor(construct: cdk.App, id: string, props: K6RunnerStackProps) {
@@ -29,12 +29,37 @@ export class K6RunnerStack extends cdk.Stack {
         }
 
         const { envConfig, stackDomain, foundationName } = props
-        const { projectName, envName } = envConfig
+        const { projectName, envName, account, region } = envConfig
 
         this.taskRole = new iam.Role(this, 'IamTaskRole', {
             roleName: resolveIamRoleName(envConfig, stackDomain, IamConstants.roleArea.ecsTask),
             assumedBy: new iam.ServicePrincipal(IamConstants.principal.ecsTasks)
         })
+
+        const synthClientSecret =
+            resolveSsmSecretPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-secret')
+
+        this.taskRole.addToPolicy(new iam.PolicyStatement({
+            sid: 'GetSecret',
+            actions: ['secretsmanager:GetSecretValue'],
+            resources: [
+                `arn:aws:secretsmanager:${region}:${account}:secret:${synthClientSecret}*`
+            ]
+        }))
+
+        this.taskRole.addToPolicy(
+            new iam.PolicyStatement({
+                sid: 'ReadParameters',
+                actions: [
+                    'ssm:GetParameter',
+                    'ssm:GetParameters',
+                    'ssm:GetParametersByPath'
+                ],
+                resources: [
+                    resolveSsmParamPathArnWildcard(envConfig, ParamNamespace.gateway)
+                ]
+            })
+        )
 
         this.taskExecutionRole = new iam.Role(this,  'IamTaskExecutionRole', {
             roleName: resolveIamRoleName(envConfig, stackDomain, IamConstants.roleArea.ecsTaskExecution),
