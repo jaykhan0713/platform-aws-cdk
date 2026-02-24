@@ -79,6 +79,9 @@ export class PlatformServiceCodebuildDeploy extends Construct {
                 version: '0.2',
                 phases: {
                     install: {
+                        'runtime-versions': {
+                            nodejs: 20
+                        },
                         commands: [
                             'node --version',
                             'npm --version',
