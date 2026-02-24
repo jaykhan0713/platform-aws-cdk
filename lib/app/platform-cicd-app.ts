@@ -37,6 +37,13 @@ export class PlatformCicdApp {
         const platformFoundationEcrReposStack = this.createPlatformFoundationEcrReposStack(toolsStackProps, toolsConfig)
         const platformServiceEcrReposStack = this.createPlatformServiceEcrReposStack(toolsStackProps, toolsConfig)
 
+        this.createK6RunnerPipeline(
+            toolsStackProps,
+            toolsConfig,
+            cicdInfraStack,
+            platformFoundationEcrReposStack
+        )
+
         for (const serviceName of Object.values(PlatformServiceName)) {
             this.createPlatformServicePipeline(
                 serviceName,
@@ -46,13 +53,6 @@ export class PlatformCicdApp {
                 platformServiceEcrReposStack
             )
         }
-
-        this.createK6RunnerPipeline(
-            toolsStackProps,
-            toolsConfig,
-            cicdInfraStack,
-            platformFoundationEcrReposStack
-        )
     }
 
     //shared cicd for 'tools' env
