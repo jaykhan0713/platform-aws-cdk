@@ -9,7 +9,6 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-
     "cdk:network": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/network.ts\"",
     "cdk:services": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/services.ts\"",
     "cdk:service-runtime": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/service-runtime.ts\"",
@@ -29,6 +28,7 @@
     "typescript": "~5.9.3"
   },
   "dependencies": {
+    "@aws-sdk/client-ecs": "^3.996.0",
     "aws-cdk-lib": "^2.234.1",
     "constructs": "^10.0.0"
   },

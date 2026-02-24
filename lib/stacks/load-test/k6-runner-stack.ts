@@ -2,6 +2,10 @@ import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import * as iam from 'aws-cdk-lib/aws-iam'
+import * as lambda from 'aws-cdk-lib/aws-lambda'
+import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs'
+
+import * as path from 'path'
 
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
@@ -14,6 +18,7 @@ import {
 import {IamConstants, ParamNamespace, StackDomain} from 'lib/config/domain'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import * as logs from 'aws-cdk-lib/aws-logs'
+import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 
 export interface K6RunnerStackProps extends BaseStackProps {
     foundationName: PlatformFoundationName
@@ -117,6 +122,41 @@ export class K6RunnerStack extends cdk.Stack {
             }),
             essential: true
         })
+
+        const subnetIds = NetworkImports.publicSubnetIds(envConfig)
+        const clusterArn = ServiceRuntimeImports.ecsClusterArn(envConfig)
+
+        const lambdaFn = new lambdaNodejs.NodejsFunction(this, 'K6RunnerLambda', {
+            runtime: lambda.Runtime.NODEJS_20_X,
+            entry: path.join(__dirname, 'lib/lambda/run-k6.ts'),
+            timeout: cdk.Duration.seconds(30),
+            environment: {
+                CLUSTER_ARN: clusterArn,
+                TASK_DEF_ARN: this.fargateTaskDef.taskDefinitionArn,
+                SUBNET_IDS: subnetIds.join(','),
+                SECURITY_GROUP_ID: this.securityGroup.securityGroupId
+            }
+        })
+
+        this.fargateTaskDef.grantRun(lambdaFn)
+
+        lambdaFn.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['iam:PassRole'],
+            resources: [
+                this.taskRole.roleArn,
+                this.taskExecutionRole.roleArn
+            ],
+            conditions: {
+                StringEquals: {
+                    'iam:PassedToService': 'ecs-tasks.amazonaws.com'
+                }
+            }
+        }))
+
+        lambdaFn.addToRolePolicy(new iam.PolicyStatement({
+            actions: ['ecs:RunTask'],
+            resources: [this.fargateTaskDef.taskDefinitionArn]
+        }))
     }
 
 }
