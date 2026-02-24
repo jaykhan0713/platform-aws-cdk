@@ -8,6 +8,7 @@ import { StackDomain } from 'lib/config/domain/stack-domain'
 import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/service/platform-service-ecr-repos-stack'
 import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/service/platform-service-pipeline-stack'
 import {
+    getDtoPipelineStackDomainFromValue,
     getPipelineStackDomainFromValue,
     getPlatformServiceStackId,
     PlatformServiceName
@@ -15,6 +16,7 @@ import {
 import {PlatformFoundationEcrReposStack} from 'lib/stacks/tools/cicd/foundation/platform-foundation-ecr-repos-stack'
 import {K6RunnerPipelineStack} from 'lib/stacks/tools/cicd/foundation/k6-runner-pipeline-stack'
 import {getPlatformFoundationStackId, PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
+import {PlatformServiceDtoPipelineStack} from 'lib/stacks/tools/cicd/service/platform-service-dto-pipeline-stack'
 
 export class PlatformCicdApp {
 
@@ -44,6 +46,18 @@ export class PlatformCicdApp {
             platformFoundationEcrReposStack
         )
 
+        //dto pipelines first for publishing contracts
+        for (const serviceName of Object.values(PlatformServiceName)) {
+            this.createPlatformServiceDtoPipeline(
+                serviceName,
+                toolsStackProps,
+                toolsConfig,
+                cicdInfraStack,
+                platformServiceEcrReposStack
+            )
+        }
+
+        //service pipelines
         for (const serviceName of Object.values(PlatformServiceName)) {
             this.createPlatformServicePipeline(
                 serviceName,
@@ -119,7 +133,36 @@ export class PlatformCicdApp {
                 envConfig: toolsEnvConfig,
                 stackDomain,
 
-                serviceName, //TODO when adding more envs, handle gracefully for steps
+                serviceName,
+
+                artifactsBucket: cicdInfraStack.artifactsBucket,
+                githubConnectionArn: cicdInfraStack.githubConnectionArn,
+                platformCodeArtifact: cicdInfraStack.platformCodeArtifact,
+
+                ecrRepo: platformServiceEcrReposStack.repos[serviceName]
+            }
+        )
+    }
+
+    private createPlatformServiceDtoPipeline(
+        serviceName: PlatformServiceName,
+        toolsStackProps: cdk.StackProps,
+        toolsEnvConfig: EnvConfig,
+        cicdInfraStack: CicdInfraStack,
+        platformServiceEcrReposStack: PlatformServiceEcrReposStack
+    ) {
+        const stackDomain = getDtoPipelineStackDomainFromValue(serviceName)
+
+        new PlatformServiceDtoPipelineStack(
+            this.app,
+            `${getPlatformServiceStackId(serviceName)}DtoPipeline`, //i.e EdgeServiceDtoPipeline
+            {
+                stackName: resolveStackName(toolsEnvConfig, stackDomain),
+                ...toolsStackProps,
+                envConfig: toolsEnvConfig,
+                stackDomain,
+
+                serviceName,
 
                 artifactsBucket: cicdInfraStack.artifactsBucket,
                 githubConnectionArn: cicdInfraStack.githubConnectionArn,

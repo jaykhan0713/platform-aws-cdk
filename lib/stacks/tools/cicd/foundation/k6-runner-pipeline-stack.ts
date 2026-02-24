@@ -84,12 +84,8 @@ export class K6RunnerPipelineStack extends BaseStack {
             ]
         })
 
-        if (!cdkSrc.artifactName || !buildOutput.artifactName) {
-            throw new Error("cdkSrc and buildOutput artifact names must be defined.")
-        }
-
         const deployProject =
-            this.codebuildCdkDeployProject(this, props, cdkSrc.artifactName, buildOutput.artifactName).project
+            this.codebuildCdkDeployProject(this, props, cdkSrc.artifactName!, buildOutput.artifactName!).project
 
         pipeline.addStage({
             stageName: 'Deploy',
@@ -111,10 +107,10 @@ export class K6RunnerPipelineStack extends BaseStack {
         buildOutputName: string
     ) {
 
-        const {envConfig, foundationName, stackDomain} = props
+        const {envConfig, foundationName} = props
         const {projectName} = envConfig
 
-        const deployProjectName = `${projectName}-${stackDomain}-codebuild-cdk-deploy`
+        const deployProjectName = `${projectName}-${foundationName}-codebuild-deploy`
 
         const buildSpec = codebuild.BuildSpec.fromObject({
             version: '0.2',
@@ -155,7 +151,7 @@ export class K6RunnerPipelineStack extends BaseStack {
 
         return new PlatformCodebuildCdkDeploy(scope, 'PlatformCodebuildCdkDeploy', {
             envConfig,
-            stackDomain,
+            stackDomain: foundationName,
             deployProjectName,
             buildSpec
         })

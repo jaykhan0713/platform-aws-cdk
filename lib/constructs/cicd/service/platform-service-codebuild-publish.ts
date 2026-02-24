@@ -3,7 +3,6 @@ import * as codebuild from 'aws-cdk-lib/aws-codebuild'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
 import * as iam from 'aws-cdk-lib/aws-iam'
 import * as logs from 'aws-cdk-lib/aws-logs'
-import * as s3 from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 
 import { resolveIamRoleName } from 'lib/config/naming'
@@ -33,12 +32,12 @@ export class PlatformServiceCodebuildPublish extends Construct {
     public constructor(scope: Construct, id: string, props: PlatformServiceCodeBuildPublishProps) {
         super(scope, id)
 
-        const { platformCodeArtifact } = props
+        const { platformCodeArtifact, serviceName } = props
         const envConfig = props.envConfig
         const { account, region } = envConfig
 
         this.role = new iam.Role(this, 'CodeBuildPublishRole', {
-            roleName: resolveIamRoleName(envConfig, props.serviceName, IamConstants.roleArea.codebuildPublish),
+            roleName: resolveIamRoleName(envConfig, serviceName, IamConstants.roleArea.codebuildPublish),
             assumedBy: new iam.ServicePrincipal(IamConstants.principal.codeBuild)
         })
 
@@ -62,7 +61,7 @@ export class PlatformServiceCodebuildPublish extends Construct {
         //publish and read from codeartifact
         props.platformCodeArtifact.grantReadWriteTo(this.role, envConfig)
 
-        const codeBuildProjectName = `${envConfig.projectName}-${props.serviceName}-codebuild-publish`
+        const codeBuildProjectName = `${envConfig.projectName}-${serviceName}-codebuild-publish`
 
         // Logs: create a dedicated log group so permissions are clean and predictable
         this.logGroup = new logs.LogGroup(this, 'BuildLogGroup', {
@@ -74,7 +73,7 @@ export class PlatformServiceCodebuildPublish extends Construct {
 
         const ecrRegistry = `${account}.dkr.ecr.${region}.amazonaws.com`
 
-        this.project = new codebuild.PipelineProject(this, 'CodeBuildPublishPipelineProject', {
+        this.project = new codebuild.PipelineProject(this, 'CodebuildPublishPipelineProject', {
             projectName: codeBuildProjectName,
             role: this.role,
             environment: {

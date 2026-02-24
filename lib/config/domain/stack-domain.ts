@@ -1,4 +1,8 @@
-import {PlatformServiceName, servicePipelineDomains} from 'lib/config/service/platform-service-registry'
+import {
+    PlatformServiceName,
+    serviceDtoPipelineDomains,
+    servicePipelineDomains
+} from 'lib/config/service/platform-service-registry'
 import {foundationPipelineDomains, PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
 
 export const StackDomain = {
@@ -22,6 +26,8 @@ export const StackDomain = {
 
     // auto-generated pipeline stacks i.e edge-service-pipeline
     ...servicePipelineDomains,
+
+    ...serviceDtoPipelineDomains,
 
     ...foundationPipelineDomains
 } as const

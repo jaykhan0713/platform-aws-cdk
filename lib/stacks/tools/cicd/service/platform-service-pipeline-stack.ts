@@ -5,12 +5,14 @@ import * as ecr from 'aws-cdk-lib/aws-ecr'
 import * as s3 from 'aws-cdk-lib/aws-s3'
 
 import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
-import { PlatformServiceName } from 'lib/config/service/platform-service-registry'
+import {getPlatformServiceStackId, PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import { PlatformServiceCodebuildImage } from 'lib/constructs/cicd/service/platform-service-codebuild-image'
 import {getPlatformCdkGithubConfig, getServiceGithubConfig} from 'lib/config/github/github-config'
 import {PlatformServiceCodebuildDeploy} from 'lib/constructs/cicd/service/platform-service-codebuild-deploy'
 import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-codeartifact'
-import {PlatformServiceCodebuildPublish} from "lib/constructs/cicd/service/platform-service-codebuild-publish";
+import {Construct} from 'constructs'
+import {PlatformCodebuildCdkDeploy} from 'lib/constructs/cicd/platform-codebuild-cdk-deploy'
+import * as codebuild from 'aws-cdk-lib/aws-codebuild'
 
 export interface PlatformServicePipelineStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -34,15 +36,6 @@ export class PlatformServicePipelineStack extends BaseStack {
         const cdkSrc = new codepipeline.Artifact('CdkSrc')
         const buildOutput = new codepipeline.Artifact('BuildOutput')
 
-        //TODO optional: if buildspec ever needs to read or write to s3, have to grant perms
-
-        const publishBuild = new PlatformServiceCodebuildPublish(this, 'PlatformServiceCodebuildPublish', {
-            ...props,
-            repo: props.ecrRepo,
-            buildSpecPath: "buildspecs/buildspec-publish.yml",
-            enableReports: false
-        })
-
         // CodeBuild project created inside pipeline stack
         const imageBuild = new PlatformServiceCodebuildImage(this, 'PlatformServiceCodebuildImage', {
             ...props,
@@ -51,12 +44,8 @@ export class PlatformServicePipelineStack extends BaseStack {
             enableReports: false
         })
 
-        const deployBuild = new PlatformServiceCodebuildDeploy(this, 'PlatformServiceCodebuildDeploy', {
-            ...props
-        })
-
         this.pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
-            pipelineName: `${envConfig.projectName}-${props.serviceName}-pipeline`,
+            pipelineName: `${envConfig.projectName}-${props.stackDomain}`,
             artifactBucket: props.artifactsBucket,
             restartExecutionOnUpdate: true
         })
@@ -89,17 +78,6 @@ export class PlatformServicePipelineStack extends BaseStack {
         })
 
         this.pipeline.addStage({
-            stageName: 'Publish',
-            actions: [
-                new codepipelineActions.CodeBuildAction({
-                    actionName: 'DockerPublish',
-                    project: publishBuild.project,
-                    input: serviceSrc
-                })
-            ]
-        })
-
-        this.pipeline.addStage({
             stageName: 'Build',
             actions: [
                 new codepipelineActions.CodeBuildAction({
@@ -111,16 +89,76 @@ export class PlatformServicePipelineStack extends BaseStack {
             ]
         })
 
+        const deployProject =
+            this.codebuildCdkDeployProject(this, props, cdkSrc.artifactName!, buildOutput.artifactName!).project
+
         this.pipeline.addStage({
             stageName: 'Deploy',
             actions: [
                 new codepipelineActions.CodeBuildAction({
                     actionName: 'CdkDeploy',
-                    project: deployBuild.project,
+                    project: deployProject,
                     input: cdkSrc,
                     extraInputs: [buildOutput]
                 })
             ]
+        })
+    }
+
+    private codebuildCdkDeployProject(
+        scope: Construct,
+        props: PlatformServicePipelineStackProps,
+        cdkSrcName: string,
+        buildOutputName: string
+    ) {
+        const {envConfig, serviceName} = props
+        const {projectName} = envConfig
+
+        const deployProjectName = `${projectName}-${serviceName}-codebuild-deploy`
+
+        const buildSpec = codebuild.BuildSpec.fromObject({
+            version: '0.2',
+            phases: {
+                install: {
+                    'runtime-versions': {
+                        nodejs: 20
+                    },
+                    commands: [
+                        'node --version',
+                        'npm --version',
+                        `cd "$CODEBUILD_SRC_DIR_${cdkSrcName}"`,
+                        'npm ci'
+                    ]
+                },
+                build: {
+                    commands: [
+                        `cd "$CODEBUILD_SRC_DIR_${cdkSrcName}"`,
+
+                        `echo "BuildOutput dir: $CODEBUILD_SRC_DIR_${buildOutputName}"`,
+                        `ls -la "$CODEBUILD_SRC_DIR_${buildOutputName}" || true`,
+                        'echo "imagetag.txt contents:"',
+                        `cat "$CODEBUILD_SRC_DIR_${buildOutputName}/imagetag.txt" || true`,
+
+                        `export IMAGE_TAG="$(cat "$CODEBUILD_SRC_DIR_${buildOutputName}/imagetag.txt")"`,
+                        'echo "IMAGE_TAG=[$IMAGE_TAG]"',
+
+                        // fail early if empty
+                        '[ -n "$IMAGE_TAG" ] || { echo "IMAGE_TAG is empty"; exit 1; }',
+
+                        [
+                            `npm run cdk:services -- deploy ${getPlatformServiceStackId(props.serviceName)}`,
+                            '--require-approval never',
+                            '-c imageTag=$IMAGE_TAG'
+                        ].join(' ')
+                    ]
+                }
+            }
+        })
+        return new PlatformCodebuildCdkDeploy(scope, 'PlatformCodebuildCdkDeploy', {
+            envConfig,
+            stackDomain: serviceName,
+            deployProjectName,
+            buildSpec
         })
     }
 }
