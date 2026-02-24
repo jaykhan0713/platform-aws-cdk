@@ -103,9 +103,12 @@ export class K6RunnerStack extends cdk.Stack {
             volumes: []
         })
 
+        const containerName = PlatformFoundationName.k6Runner
         const container = this.fargateTaskDef.addContainer('K6RunnerContainer', {
+            containerName: containerName,
             image: ecs.ContainerImage.fromRegistry(imageDigestUri),
             environment: {
+                CONTAINER_NAME: containerName,
                 COGNITO_DOMAIN_URL_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'domain-url'),
                 COGNITO_CLIENT_ID_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-id'),
                 COGNITO_SCOPE_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-invoke-scope'),
@@ -129,7 +132,7 @@ export class K6RunnerStack extends cdk.Stack {
         const lambdaFn = new lambdaNodejs.NodejsFunction(this, 'K6RunnerLambda', {
             functionName: `${projectName}-${foundationName}-lambda-${envName}`,
             runtime: lambda.Runtime.NODEJS_20_X,
-            entry: path.join(__dirname, '../../lambda/run-k6.ts'),
+            entry: path.join(__dirname, 'lambda/invoke-k6-runner.ts'),
             timeout: cdk.Duration.seconds(30),
             environment: {
                 CLUSTER_ARN: clusterArn,
@@ -139,25 +142,8 @@ export class K6RunnerStack extends cdk.Stack {
             }
         })
 
+        //grants permissions to runTask for task role and exec role, as well as PassRole
         this.fargateTaskDef.grantRun(lambdaFn)
-
-        lambdaFn.addToRolePolicy(new iam.PolicyStatement({
-            actions: ['iam:PassRole'],
-            resources: [
-                this.taskRole.roleArn,
-                this.taskExecutionRole.roleArn
-            ],
-            conditions: {
-                StringEquals: {
-                    'iam:PassedToService': 'ecs-tasks.amazonaws.com'
-                }
-            }
-        }))
-
-        lambdaFn.addToRolePolicy(new iam.PolicyStatement({
-            actions: ['ecs:RunTask'],
-            resources: [this.fargateTaskDef.taskDefinitionArn]
-        }))
     }
 
 }
