@@ -5,9 +5,14 @@ import * as codepipeline from 'aws-cdk-lib/aws-codepipeline'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {getPlatformCdkGithubConfig, getPlatformFoundationGithubConfig} from 'lib/config/github/github-config'
-import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
+import {getPlatformFoundationStackId, PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
 import * as codepipelineActions from 'aws-cdk-lib/aws-codepipeline-actions'
 import {PlatformFoundationCodebuildImage} from 'lib/constructs/cicd/foundation/platform-foundation-codebuild-image'
+import {StackDomain} from 'lib/config/domain'
+import {Construct} from 'constructs'
+import {PlatformCodebuildCdkDeploy} from 'lib/constructs/cicd/platform-codebuild-cdk-deploy'
+import * as codebuild from 'aws-cdk-lib/aws-codebuild'
+import {getPlatformServiceStackId} from 'lib/config/service/platform-service-registry'
 
 export interface K6RunnerPipelineStackProps extends BaseStackProps {
     artifactsBucket: s3.IBucket
@@ -22,7 +27,7 @@ export class K6RunnerPipelineStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: K6RunnerPipelineStackProps) {
         super(scope, id, props)
 
-        const {envConfig, foundationName} = props
+        const {envConfig, foundationName, stackDomain} = props
         const {projectName} = envConfig
 
         const foundationGit = getPlatformFoundationGithubConfig()
@@ -32,7 +37,7 @@ export class K6RunnerPipelineStack extends BaseStack {
         const buildOutput = new codepipeline.Artifact('BuildOutput')
 
         const pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
-            pipelineName: `${projectName}-${foundationName}-pipeline`,
+            pipelineName: `${projectName}-${stackDomain}`,
             artifactBucket: props.artifactsBucket,
             restartExecutionOnUpdate: true
         })
@@ -78,5 +83,79 @@ export class K6RunnerPipelineStack extends BaseStack {
                 })
             ]
         })
+
+        if (!cdkSrc.artifactName || !buildOutput.artifactName) {
+            throw new Error("cdkSrc and buildOutput artifact names must be defined.")
+        }
+
+        const deployProject =
+            this.codebuildCdkDeployProject(this, props, cdkSrc.artifactName, buildOutput.artifactName).project
+
+        pipeline.addStage({
+            stageName: 'Deploy',
+            actions: [
+                new codepipelineActions.CodeBuildAction({
+                    actionName: 'CdkDeployLoadTestStack',
+                    project: deployProject,
+                    input: cdkSrc,
+                    extraInputs: [buildOutput]
+                })
+            ]
+        })
     }
+
+    private codebuildCdkDeployProject(
+        scope: Construct,
+        props: K6RunnerPipelineStackProps,
+        cdkSrcName: string,
+        buildOutputName: string
+    ) {
+
+        const {envConfig, foundationName, stackDomain} = props
+        const {projectName} = envConfig
+
+        const deployProjectName = `${projectName}-${stackDomain}-codebuild-cdk-deploy`
+
+        const buildSpec = codebuild.BuildSpec.fromObject({
+            version: '0.2',
+            phases: {
+                install: {
+                    commands: [
+                        'node --version',
+                        'npm --version',
+                        `cd "$CODEBUILD_SRC_DIR_${cdkSrcName}"`,
+                        'npm ci'
+                    ]
+                },
+                build: {
+                    commands: [
+                        `cd "$CODEBUILD_SRC_DIR_${cdkSrcName}"`,
+
+                        `echo "BuildOutput dir: $CODEBUILD_SRC_DIR_${buildOutputName}"`,
+                        `ls -la "$CODEBUILD_SRC_DIR_${buildOutputName}" || true`,
+
+                        `export IMAGE_DIGEST_URI="$(cat "$CODEBUILD_SRC_DIR_${buildOutputName}/imagedigesturi.txt")"`,
+                        'echo "IMAGE_DIGEST_URI=[$IMAGE_DIGEST_URI]"',
+
+                        // fail early if empty
+                        '[ -n "$IMAGE_DIGEST_URI" ] || { echo "IMAGE_DIGEST_URI is empty"; exit 1; }',
+
+                        [
+                            `npm run cdk:load-test -- deploy ${getPlatformFoundationStackId(foundationName)}`,
+                            '--require-approval never',
+                            '-c imageDigestUri=$IMAGE_DIGEST_URI'
+                        ].join(' ')
+                    ]
+                }
+            }
+        })
+
+        return new PlatformCodebuildCdkDeploy(scope, 'PlatformCodebuildCdkDeploy', {
+            envConfig,
+            stackDomain,
+            deployProjectName,
+            buildSpec
+        })
+    }
+
 }
