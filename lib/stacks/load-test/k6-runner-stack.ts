@@ -127,8 +127,9 @@ export class K6RunnerStack extends cdk.Stack {
         const clusterArn = ServiceRuntimeImports.ecsClusterArn(envConfig)
 
         const lambdaFn = new lambdaNodejs.NodejsFunction(this, 'K6RunnerLambda', {
+            functionName: `${projectName}-${foundationName}-lambda-${envName}`,
             runtime: lambda.Runtime.NODEJS_20_X,
-            entry: path.join(__dirname, 'lib/lambda/run-k6.ts'),
+            entry: path.join(__dirname, '../../lambda/run-k6.ts'),
             timeout: cdk.Duration.seconds(30),
             environment: {
                 CLUSTER_ARN: clusterArn,
