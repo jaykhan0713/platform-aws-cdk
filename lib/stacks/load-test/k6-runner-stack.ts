@@ -5,7 +5,12 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
-import {resolveIamRoleName, resolveSsmParamPathArnWildcard, resolveSsmSecretPath} from 'lib/config/naming'
+import {
+    resolveIamRoleName,
+    resolveSsmParamPath,
+    resolveSsmParamPathArnWildcard,
+    resolveSsmSecretName
+} from 'lib/config/naming'
 import {IamConstants, ParamNamespace, StackDomain} from 'lib/config/domain'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import * as logs from 'aws-cdk-lib/aws-logs'
@@ -37,7 +42,7 @@ export class K6RunnerStack extends cdk.Stack {
         })
 
         const synthClientSecret =
-            resolveSsmSecretPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-secret')
+            resolveSsmSecretName(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-secret')
 
         this.taskRole.addToPolicy(new iam.PolicyStatement({
             sid: 'GetSecret',
@@ -94,6 +99,13 @@ export class K6RunnerStack extends cdk.Stack {
 
         const container = this.fargateTaskDef.addContainer('K6RunnerContainer', {
             image: ecs.ContainerImage.fromRegistry(imageDigestUri),
+            environment: {
+                COGNITO_DOMAIN_URL_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'domain-url'),
+                COGNITO_CLIENT_ID_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-id'),
+                COGNITO_SCOPE_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-invoke-scope'),
+                API_URL_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.api, 'api-url'),
+                COGNITO_CLIENT_SECRET_NAME: resolveSsmSecretName(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-secret')
+            },
             logging: ecs.LogDrivers.awsLogs({
                 streamPrefix: 'ecs',
                 logGroup: new logs.LogGroup(this, 'K6RunnerLogGroup', {

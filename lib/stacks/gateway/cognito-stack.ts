@@ -5,7 +5,7 @@ import * as ssm from 'aws-cdk-lib/aws-ssm'
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformCognito} from 'lib/constructs/api/platform-cognito'
 import {ParamNamespace} from 'lib/config/domain'
-import {resolveSsmParamPath, resolveSsmSecretPath} from 'lib/config/naming'
+import {resolveSsmParamPath, resolveSsmSecretName} from 'lib/config/naming'
 
 export class CognitoStack extends BaseStack {
 
@@ -23,7 +23,7 @@ export class CognitoStack extends BaseStack {
 
         //secrets
         new secretsmanager.Secret(this, 'SecretSynthUserPoolClientId', {
-            secretName: `${resolveSsmSecretPath(envConfig, paramNamespace, stackDomain, 'synth-client-secret')}`,
+            secretName: `${resolveSsmSecretName(envConfig, paramNamespace, stackDomain, 'synth-client-secret')}`,
             secretStringValue: synthClient.userPoolClientSecret
         })
 

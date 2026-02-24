@@ -11,7 +11,7 @@ const ssmParamPathRoot = (cfg: EnvConfig) =>
 const clean = (s: string) =>
     s.replace(/^\/+/, '').replace(/\/+$/, '')
 
-export const resolveSsmSecretPath = (
+export const resolveSsmSecretName = (
     cfg: EnvConfig,
     namespace: ParamNamespace,
     domain: StackDomain,
