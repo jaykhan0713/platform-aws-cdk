@@ -108,7 +108,6 @@ export class K6RunnerStack extends cdk.Stack {
             containerName: containerName,
             image: ecs.ContainerImage.fromRegistry(imageDigestUri),
             environment: {
-                CONTAINER_NAME: containerName,
                 COGNITO_DOMAIN_URL_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'domain-url'),
                 COGNITO_CLIENT_ID_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-id'),
                 COGNITO_SCOPE_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-invoke-scope'),
@@ -135,6 +134,7 @@ export class K6RunnerStack extends cdk.Stack {
             entry: path.join(__dirname, 'lambda/invoke-k6-runner.ts'),
             timeout: cdk.Duration.seconds(30),
             environment: {
+                CONTAINER_NAME: containerName,
                 CLUSTER_ARN: clusterArn,
                 TASK_DEF_ARN: this.fargateTaskDef.taskDefinitionArn,
                 SUBNET_IDS: subnetIds.join(','),
