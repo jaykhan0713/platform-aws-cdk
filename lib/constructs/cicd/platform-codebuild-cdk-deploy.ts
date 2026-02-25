@@ -12,7 +12,7 @@ import {StackDomain} from 'lib/config/domain'
 export interface PlatformCodeBuildCdkDeployProps extends BaseStackProps {
     deployProjectName: string
 
-    stackDomain: StackDomain
+    deployDomain: StackDomain
 
     buildSpec: codebuild.BuildSpec
 
@@ -32,14 +32,14 @@ export class PlatformCodebuildCdkDeploy extends Construct {
     public constructor(scope: Construct, id: string, props: PlatformCodeBuildCdkDeployProps) {
         super(scope, id)
 
-        const { envConfig, deployProjectName, stackDomain, buildSpec, environmentVariables } = props
+        const { envConfig, deployProjectName, deployDomain, buildSpec, environmentVariables } = props
         const account = envConfig.account
         const region = envConfig.region
 
         const qualifier = props.bootstrapQualifier ?? 'hnb659fds'
 
         this.role = new iam.Role(this, 'CodebuildCdkDeployRole', {
-            roleName: resolveIamRoleName(envConfig, stackDomain, IamConstants.roleArea.codebuildDeploy),
+            roleName: resolveIamRoleName(envConfig, deployDomain, IamConstants.roleArea.codebuildDeploy),
             assumedBy: new iam.ServicePrincipal(IamConstants.principal.codeBuild)
         })
 

@@ -48,7 +48,7 @@ export class PlatformCicdApp {
 
         //dto pipelines first for publishing contracts
         for (const serviceName of Object.values(PlatformServiceName)) {
-            this.createPlatformServiceDtoPipeline(
+            this.createPlatformServiceDtoPipelineStack(
                 serviceName,
                 toolsStackProps,
                 toolsConfig,
@@ -59,7 +59,7 @@ export class PlatformCicdApp {
 
         //service pipelines
         for (const serviceName of Object.values(PlatformServiceName)) {
-            this.createPlatformServicePipeline(
+            this.createPlatformServicePipelineStack(
                 serviceName,
                 toolsStackProps,
                 toolsConfig,
@@ -115,7 +115,7 @@ export class PlatformCicdApp {
         )
     }
 
-    private createPlatformServicePipeline(
+    private createPlatformServicePipelineStack(
         serviceName: PlatformServiceName,
         toolsStackProps: cdk.StackProps,
         toolsEnvConfig: EnvConfig,
@@ -144,7 +144,7 @@ export class PlatformCicdApp {
         )
     }
 
-    private createPlatformServiceDtoPipeline(
+    private createPlatformServiceDtoPipelineStack(
         serviceName: PlatformServiceName,
         toolsStackProps: cdk.StackProps,
         toolsEnvConfig: EnvConfig,

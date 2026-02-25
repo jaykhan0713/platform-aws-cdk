@@ -8,7 +8,6 @@ import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
 import {getPlatformServiceStackId, PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import { PlatformServiceCodebuildImage } from 'lib/constructs/cicd/service/platform-service-codebuild-image'
 import {getPlatformCdkGithubConfig, getServiceGithubConfig} from 'lib/config/github/github-config'
-import {PlatformServiceCodebuildDeploy} from 'lib/constructs/cicd/service/platform-service-codebuild-deploy'
 import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-codeartifact'
 import {Construct} from 'constructs'
 import {PlatformCodebuildCdkDeploy} from 'lib/constructs/cicd/platform-codebuild-cdk-deploy'
@@ -155,8 +154,8 @@ export class PlatformServicePipelineStack extends BaseStack {
             }
         })
         return new PlatformCodebuildCdkDeploy(scope, 'PlatformCodebuildCdkDeploy', {
-            envConfig,
-            stackDomain: serviceName,
+            ...props,
+            deployDomain: serviceName,
             deployProjectName,
             buildSpec
         })

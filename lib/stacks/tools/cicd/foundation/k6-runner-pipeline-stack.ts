@@ -150,8 +150,8 @@ export class K6RunnerPipelineStack extends BaseStack {
         })
 
         return new PlatformCodebuildCdkDeploy(scope, 'PlatformCodebuildCdkDeploy', {
-            envConfig,
-            stackDomain: foundationName,
+            ...props,
+            deployDomain: foundationName,
             deployProjectName,
             buildSpec
         })
