@@ -36,7 +36,7 @@ export class PlatformFoundationCodebuildImage extends Construct {
         const codebuildProjectName = `${envConfig.projectName}-${foundationName}-codebuild-image`
 
         const role = new iam.Role(this, 'CodebuildImage', {
-            roleName: resolveIamRoleName(envConfig, foundationName, IamConstants.roleArea.codebuildDeploy),
+            roleName: resolveIamRoleName(envConfig, foundationName, IamConstants.roleArea.codebuildImage),
             assumedBy: new iam.ServicePrincipal(IamConstants.principal.codeBuild)
         })
 
