@@ -46,7 +46,7 @@ export class PlatformServicePipelineStack extends BaseStack {
         this.pipeline = new codepipeline.Pipeline(this, 'Pipeline', {
             pipelineName: `${envConfig.projectName}-${props.stackDomain}`,
             artifactBucket: props.artifactsBucket,
-            restartExecutionOnUpdate: true
+            restartExecutionOnUpdate: false
         })
 
         const serviceGit = getServiceGithubConfig(props.serviceName)

@@ -1,18 +1,17 @@
 import * as cdk from 'aws-cdk-lib'
 import * as s3 from 'aws-cdk-lib/aws-s3'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
+import * as codebuild from 'aws-cdk-lib/aws-codebuild'
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline'
+import * as codepipelineActions from 'aws-cdk-lib/aws-codepipeline-actions'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {getPlatformCdkGithubConfig, getPlatformFoundationGithubConfig} from 'lib/config/github/github-config'
 import {getPlatformFoundationStackId, PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
-import * as codepipelineActions from 'aws-cdk-lib/aws-codepipeline-actions'
 import {PlatformFoundationCodebuildImage} from 'lib/constructs/cicd/foundation/platform-foundation-codebuild-image'
-import {StackDomain} from 'lib/config/domain'
 import {Construct} from 'constructs'
 import {PlatformCodebuildCdkDeploy} from 'lib/constructs/cicd/platform-codebuild-cdk-deploy'
-import * as codebuild from 'aws-cdk-lib/aws-codebuild'
-import {getPlatformServiceStackId} from 'lib/config/service/platform-service-registry'
+
 
 export interface K6RunnerPipelineStackProps extends BaseStackProps {
     artifactsBucket: s3.IBucket

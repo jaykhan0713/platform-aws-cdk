@@ -5,7 +5,6 @@ import * as logs from 'aws-cdk-lib/aws-logs'
 import { Construct } from 'constructs'
 
 import {BaseStackProps} from 'lib/stacks/base-stack'
-import {PlatformCodeArtifact} from 'lib/constructs/cicd/platform-codeartifact'
 import {PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
 import {resolveIamRoleName} from 'lib/config/naming'
 import {IamConstants} from 'lib/config/domain'
@@ -30,9 +29,8 @@ export class PlatformFoundationCodebuildImage extends Construct {
     public constructor(scope: Construct, id: string, props: PlatformFoundationCodeBuildImageProps) {
         super(scope, id)
 
-        const { envConfig, ecrRepo } = props
+        const { envConfig, ecrRepo, foundationName } = props
 
-        const foundationName = PlatformFoundationName.k6Runner
         const codebuildProjectName = `${envConfig.projectName}-${foundationName}-codebuild-image`
 
         const role = new iam.Role(this, 'CodebuildImage', {

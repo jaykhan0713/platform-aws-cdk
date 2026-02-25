@@ -1,13 +1,22 @@
 import {StackDomain} from 'lib/config/domain'
+import {BaseStack} from 'lib/stacks/base-stack'
 
 export const PlatformFoundationName = {
-    k6Runner: 'k6-runner'
-    //adotCollector: 'adot-collector',
-    //baseImages: 'base-images'
+    k6Runner: 'k6-runner',
+    baseImages: 'base-images'
+    //adotCollector: 'adot-collector'
+
 } as const
 
 export type PlatformFoundationName = typeof PlatformFoundationName[keyof typeof PlatformFoundationName]
 type PlatformFoundationKey = keyof typeof PlatformFoundationName
+
+//if the foundation uses custom stack creation
+export const platformFoundationOverridesSet: ReadonlySet<PlatformFoundationName> = new Set(
+    [
+        PlatformFoundationName.k6Runner,
+    ]
+)
 
 //i.e edge-service stack id is 'EdgeService'
 const kebabToPascal = (value: string): string =>
@@ -43,5 +52,5 @@ const foundationKeyByValue = Object.fromEntries(
     Object.entries(PlatformFoundationName).map(([k, v]) => [v, k])
 ) as Record<PlatformFoundationName, PlatformFoundationKey>
 
-export const getPipelineStackDomainFromValue = (foundationName: PlatformFoundationName) =>
+export const getFoundationPipelineStackDomainFromValue = (foundationName: PlatformFoundationName) =>
     StackDomain[`${foundationKeyByValue[foundationName]}Pipeline` as keyof FoundationPipelineDomains]

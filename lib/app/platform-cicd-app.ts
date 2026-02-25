@@ -9,14 +9,20 @@ import {PlatformServiceEcrReposStack} from 'lib/stacks/tools/cicd/service/platfo
 import {PlatformServicePipelineStack} from 'lib/stacks/tools/cicd/service/platform-service-pipeline-stack'
 import {
     getDtoPipelineStackDomainFromValue,
-    getPipelineStackDomainFromValue,
+    getServicePipelineStackDomainFromValue,
     getPlatformServiceStackId,
     PlatformServiceName
 } from 'lib/config/service/platform-service-registry'
 import {PlatformFoundationEcrReposStack} from 'lib/stacks/tools/cicd/foundation/platform-foundation-ecr-repos-stack'
 import {K6RunnerPipelineStack} from 'lib/stacks/tools/cicd/foundation/k6-runner-pipeline-stack'
-import {getPlatformFoundationStackId, PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
+import {
+    getFoundationPipelineStackDomainFromValue,
+    getPlatformFoundationStackId,
+    PlatformFoundationName,
+    platformFoundationOverridesSet
+} from 'lib/config/foundation/platform-foundation-registry'
 import {PlatformServiceDtoPipelineStack} from 'lib/stacks/tools/cicd/service/platform-service-dto-pipeline-stack'
+import {PlatformFoundationPipelineStack} from 'lib/stacks/tools/cicd/foundation/platform-foundation-pipeline-stack'
 
 export class PlatformCicdApp {
 
@@ -39,7 +45,19 @@ export class PlatformCicdApp {
         const platformFoundationEcrReposStack = this.createPlatformFoundationEcrReposStack(toolsStackProps, toolsConfig)
         const platformServiceEcrReposStack = this.createPlatformServiceEcrReposStack(toolsStackProps, toolsConfig)
 
-        this.createK6RunnerPipeline(
+        for (const foundationName of Object.values(PlatformFoundationName)) {
+            if (!platformFoundationOverridesSet.has(foundationName)) {
+                this.createPlatformFoundationPipelineStack(
+                    toolsStackProps,
+                    toolsConfig,
+                    foundationName,
+                    cicdInfraStack,
+                    platformFoundationEcrReposStack
+                )
+            }
+        }
+
+        this.createK6RunnerPipelineStack(
             toolsStackProps,
             toolsConfig,
             cicdInfraStack,
@@ -122,7 +140,7 @@ export class PlatformCicdApp {
         cicdInfraStack: CicdInfraStack,
         platformServiceEcrReposStack: PlatformServiceEcrReposStack
     ) {
-        const stackDomain = getPipelineStackDomainFromValue(serviceName)
+        const stackDomain = getServicePipelineStackDomainFromValue(serviceName)
 
         new PlatformServicePipelineStack(
             this.app,
@@ -173,7 +191,34 @@ export class PlatformCicdApp {
         )
     }
 
-    private createK6RunnerPipeline(
+    private createPlatformFoundationPipelineStack(
+        toolsStackProps: cdk.StackProps,
+        toolsEnvConfig: EnvConfig,
+        foundationName: PlatformFoundationName,
+        cicdInfraStack: CicdInfraStack,
+        platformFoundationEcrReposStack: PlatformFoundationEcrReposStack
+    ) {
+        const stackDomain = getFoundationPipelineStackDomainFromValue(foundationName)
+        const {artifactsBucket, githubConnectionArn} = cicdInfraStack
+
+        new PlatformFoundationPipelineStack(
+            this.app,
+            `${getPlatformFoundationStackId(foundationName)}Pipeline`,
+            {
+                stackName: resolveStackName(toolsEnvConfig, stackDomain),
+                ...toolsStackProps,
+                envConfig: toolsEnvConfig,
+                stackDomain,
+                foundationName,
+
+                artifactsBucket,
+                githubConnectionArn,
+                ecrRepo: platformFoundationEcrReposStack.ecrRepos[foundationName]
+            }
+        )
+    }
+
+    private createK6RunnerPipelineStack(
         toolsStackProps: cdk.StackProps,
         toolsEnvConfig: EnvConfig,
         cicdInfraStack: CicdInfraStack,

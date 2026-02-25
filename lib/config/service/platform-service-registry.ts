@@ -69,7 +69,7 @@ export const servicePipelineDomains = Object.fromEntries(
     ])
 ) as ServicePipelineDomains
 
-export const getPipelineStackDomainFromValue = (serviceName: PlatformServiceName) =>
+export const getServicePipelineStackDomainFromValue = (serviceName: PlatformServiceName) =>
     StackDomain[`${serviceKeyByValue[serviceName]}Pipeline` as keyof ServicePipelineDomains]
 
 //service dto pipeline related
