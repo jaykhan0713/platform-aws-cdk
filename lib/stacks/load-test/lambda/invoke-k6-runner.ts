@@ -19,6 +19,10 @@ export const handler = async (event: InvokeK6RunnerEvent) => {
         throw new Error("Missing required ENV variable(s)")
     }
 
+    if (event.vus && event.vus > 10) {
+        throw new Error(`Virtual users cannot exceed 10: ${event.vus}`)
+    }
+
     const duration = event.duration ? validateDuration(event.duration) : '10s'
 
     const command = new RunTaskCommand({
