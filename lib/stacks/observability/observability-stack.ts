@@ -1,7 +1,6 @@
 import * as cdk from 'aws-cdk-lib'
-
 import * as aps from 'aws-cdk-lib/aws-aps'
-import * as ecr from 'aws-cdk-lib/aws-ecr'
+import * as grafana from 'aws-cdk-lib/aws-grafana'
 
 import {TagKeys, resolveExportName} from 'lib/config/naming';
 import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
@@ -19,21 +18,30 @@ export class ObservabilityStack extends BaseStack {
         props: BaseStackProps
     ) {
         super(scope, id, props)
-        const envConfig = props.envConfig
+        const { envConfig } = props
+        const { projectName, envName } = envConfig
 
         this.templateOptions.description =
             `${envConfig.projectName} observability: SSM + APS (prometheus) workspace + shared outputs`
 
         // Resources
-        const aliasName = `${envConfig.projectName}-aps-${envConfig.envName}`
+        const apsAliasName = `${projectName}-aps-${envName}`
 
         const apsWorkspace = new aps.CfnWorkspace(this, 'ApsWorkspace', {
-            alias: `${aliasName}`
+            alias: `${apsAliasName}`
         })
         cdk.Tags.of(apsWorkspace).add(
             TagKeys.Name,
-            `${aliasName}`
+            `${apsAliasName}`
         )
+
+        const grafanaWorkspace = new grafana.CfnWorkspace(this, 'GrafanaWorkspace', {
+            name: `${projectName}-grafana-${envName}`,
+            accountAccessType: 'CURRENT_ACCOUNT',
+            authenticationProviders: ['AWS_SSO'],
+            permissionType: 'SERVICE_MANAGED', //TODO option to tightly scope via CUSTOMER_MANAGED
+            dataSources: ['PROMETHEUS', 'CLOUDWATCH', 'XRAY']
+        })
 
         //Outputs with exports
         this.apsRemoteWriteEndpoint = cdk.Fn.sub('${URL}api/v1/remote_write', {
@@ -79,6 +87,10 @@ export class ObservabilityStack extends BaseStack {
             key: 'ApsPrometheusEndpoint',
             description: 'APS Prometheus endpoint (ends with /api/v1/)',
             value: apsPrometheusEndpoint.toString()
+        })
+
+        new cdk.CfnOutput(this, 'GrafanaUrl', {
+            value: grafanaWorkspace.attrEndpoint
         })
     }
 }
