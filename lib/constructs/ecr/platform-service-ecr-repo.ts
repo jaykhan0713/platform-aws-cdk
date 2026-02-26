@@ -19,7 +19,9 @@ export class PlatformServiceEcrRepo extends Construct {
             repositoryName: resolvePlatformServiceRepoName(props.envConfig, props.serviceName),
             imageTagMutability: ecr.TagMutability.IMMUTABLE,
             imageScanOnPush: true,
-            encryption: ecr.RepositoryEncryption.AES_256
+            encryption: ecr.RepositoryEncryption.AES_256,
+            removalPolicy: cdk.RemovalPolicy.DESTROY,
+            emptyOnDelete: true
         })
 
         ecrRepo.addLifecycleRule({

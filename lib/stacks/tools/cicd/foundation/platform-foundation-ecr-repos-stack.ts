@@ -23,7 +23,9 @@ export class PlatformFoundationEcrReposStack extends BaseStack {
                 repositoryName: repoName,
                 imageTagMutability: ecr.TagMutability.MUTABLE,
                 imageScanOnPush: true,
-                encryption: ecr.RepositoryEncryption.AES_256
+                encryption: ecr.RepositoryEncryption.AES_256,
+                removalPolicy: cdk.RemovalPolicy.DESTROY,
+                emptyOnDelete: true
             })
 
             repo.addLifecycleRule({
