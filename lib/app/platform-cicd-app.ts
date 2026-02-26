@@ -203,7 +203,7 @@ export class PlatformCicdApp {
 
         new PlatformFoundationPipelineStack(
             this.app,
-            `${getPlatformFoundationStackId(foundationName)}Pipeline`,
+            `${getPlatformFoundationStackId(foundationName)}FoundationPipeline`,
             {
                 stackName: resolveStackName(toolsEnvConfig, stackDomain),
                 ...toolsStackProps,
@@ -230,7 +230,7 @@ export class PlatformCicdApp {
 
         new K6RunnerPipelineStack(
             this.app,
-            `${getPlatformFoundationStackId(foundationName)}Pipeline`, //K6RunnerPipeline
+            `${getPlatformFoundationStackId(foundationName)}FoundationPipeline`, //K6RunnerFoundationPipeline
             {
                 stackName: resolveStackName(toolsEnvConfig, stackDomain),
                 ...toolsStackProps,

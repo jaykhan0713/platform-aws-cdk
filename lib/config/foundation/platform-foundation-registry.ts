@@ -1,10 +1,9 @@
 import {StackDomain} from 'lib/config/domain'
-import {BaseStack} from 'lib/stacks/base-stack'
 
 export const PlatformFoundationName = {
     k6Runner: 'k6-runner',
-    baseImages: 'base-images'
-    //adotCollector: 'adot-collector'
+    baseImages: 'base-images',
+    adotCollector: 'adot-collector'
 
 } as const
 
