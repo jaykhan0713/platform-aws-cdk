@@ -105,18 +105,6 @@ export class PlatformEcsTaskDef extends Construct {
                 }
             ],
             environment: adot.env,
-            secrets: Object.fromEntries(
-                Object.entries(adot.secrets).map(([envVarName, paramPath]) => [
-                    envVarName,
-                    ecs.Secret.fromSsmParameter(
-                        ssm.StringParameter.fromStringParameterName(
-                            this,
-                            `Secret-${envVarName}`,
-                            paramPath
-                        )
-                    ),
-                ])
-            ),
             logging: ecs.LogDrivers.awsLogs({
                 streamPrefix: adot.logging.streamPrefix,
                 logGroup: new logs.LogGroup(this, 'AdotLogGroup', {

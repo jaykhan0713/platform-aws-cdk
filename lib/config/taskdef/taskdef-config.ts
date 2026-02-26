@@ -33,7 +33,6 @@ export interface AdotContainerConfig {
         http: number
     }
     env: EnvMap
-    secrets: SecretMap
     logging: ContainerLoggingConfig
 }
 
@@ -88,9 +87,6 @@ export const defaultTaskDefConfig = (args: {
                 SERVICE_NAME: args.serviceName,
                 APP_PORT: String(port),
                 APS_REMOTE_WRITE_ENDPOINT: args.apsRemoteWriteEndpoint
-            },
-            secrets: {
-                OTEL_CONFIG_YAML: `/${projectName}/${envName}/${ParamNamespace.core}/observability/adot/otel-config.yaml`
             },
             logging: {
                 logGroupName: `/ecs/${projectName}/${envName}/${args.serviceName}-adot`,
