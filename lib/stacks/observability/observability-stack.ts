@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib'
 import * as aps from 'aws-cdk-lib/aws-aps'
 import * as grafana from 'aws-cdk-lib/aws-grafana'
+import * as iam from 'aws-cdk-lib/aws-iam'
 
 import {TagKeys, resolveExportName} from 'lib/config/naming';
 import { BaseStack, BaseStackProps } from 'lib/stacks/base-stack'
@@ -35,12 +36,46 @@ export class ObservabilityStack extends BaseStack {
             `${apsAliasName}`
         )
 
+        const grafanaWorkspaceRole = new iam.Role(this, 'GrafanaWorkspaceRole', {
+            roleName: `${projectName}-grafana-workspace-${envName}`,
+            assumedBy: new iam.ServicePrincipal('grafana.amazonaws.com')
+        })
+
+        // CloudWatch datasource access (AWS managed)
+        grafanaWorkspaceRole.addManagedPolicy(
+            iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchReadOnlyAccess')
+        )
+
+        //Cloudwatch logs + insights
+        grafanaWorkspaceRole.addManagedPolicy(
+            iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchLogsReadOnlyAccess')
+        )
+
+        grafanaWorkspaceRole.addManagedPolicy(
+            iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXrayReadOnlyAccess')
+        )
+
+        // APS datasource access (inline, per AWS docs)
+        grafanaWorkspaceRole.addToPolicy(new iam.PolicyStatement({
+            effect: iam.Effect.ALLOW,
+            actions: [
+                'aps:ListWorkspaces',
+                'aps:DescribeWorkspace',
+                'aps:QueryMetrics',
+                'aps:GetLabels',
+                'aps:GetSeries',
+                'aps:GetMetricMetadata'
+            ],
+            resources: ['*']
+        }))
+
+
         const grafanaWorkspace = new grafana.CfnWorkspace(this, 'GrafanaWorkspace', {
             name: `${projectName}-grafana-${envName}`,
             accountAccessType: 'CURRENT_ACCOUNT',
             authenticationProviders: ['AWS_SSO'],
-            permissionType: 'SERVICE_MANAGED', //TODO option to tightly scope via CUSTOMER_MANAGED
-            dataSources: ['PROMETHEUS', 'CLOUDWATCH', 'XRAY']
+            permissionType: 'CUSTOMER_MANAGED',
+            roleArn: grafanaWorkspaceRole.roleArn
         })
 
         //Outputs with exports
