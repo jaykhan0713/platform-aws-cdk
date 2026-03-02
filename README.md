@@ -1,66 +1,58 @@
 # platform-aws-cdk
-CDK For jay.platform AWS architecture
+
+IaC CDK project for a fully portable, fully reproducible platform AWS architecture end-to-end. 
+
+For my standardized microservice, refer to github repo: [platform-service](https://github.com/jaykhan0713/platform-service)
 
 ---
+## About this project
 
-first installation- do NOT use npm install or it mutates package-lock.json
-```
-npm ci
-```
+This CDK project serves as a part of my portfolio to demonstrate my skills in developing an entire portable, secure AWS architecture end-to-end for a single account
+with clear ownership boundaries of cloudformation stacks. 
 
-aws sso login example:
+Note: To mitigate costs for the portfolio, a single account is used with only "prod" environment in mind. This project is able to be tweaked for single account multi-env (test, prod, etc) as well as
+multi account (test, prod, etc). CICD for single account is emulated under a "tools" environment but can also move to multi-account.
 
-```
-aws sso configure
-```
+The stack boundaries, in order of cdk app deployment on a fresh AWS account are these \<area\>'s
 
 ```
-aws sso login --profile jay-prod 
+npm run cdk:\<area\> -- deploy --require-approval never --all
 ```
 
-windows
-```
-$env:AWS_PROFILE="jay-prod"
-```
-
-unix
-```
+if working on existing project
 
 ```
-
-for running different ownership boundaries (scripts in package.json) ex:
-```
-npm run cdk:services -- diff
-npm run cdk:network -- deploy NetworkStackName
-npm run cdk:cicd -- deploy
-npm run cdk:core -- deploy
+npm run cdk:\<area\> -- deploy <StackId>
 ```
 
-migration of existing stacks:
-jay-platform-observability-prod is example stack name
-$env:AWS_PROFILE="jay-prod"
-jay-prod is example profile, AWS SDK must be told which profile to use
+\<area\>'s in order of deployment
+```
+network: VPC, VPC endpoints, VPC Link
+observability: Grafana, Prometheus workspaces
+service-runtime: ECS Cluster, Service Connect Http namespace, ECS shared membership security group
+cicd: - ECR repos for service apps, foundation (k6 load testing, adot collector, base-images, etc)
+      - CodePipelines for foundations (image push to above ECR repos)
+      - CodePipelines for services owned DTO publishing to CodeArtifact
+      - CodePipelines for services, source/build/deploy
+gateway: Cognito, Http API gateway
+```
+
+\<area\>'s that are handled by Codepipeline and use cdk deploy (sources this project).
 
 ```
-npx cdk deploy Network
+services: ECS Tasks on ECS Fargate Service behind ALB or service connect server-mode envoy sidecar 
+load-test: K6 runner and Lambda that invokes runner with optional params via ops/load-test.sh or AWS UI/cli
 ```
 
+Simplified workflow intent: 
+
 ```
-cdk migrate --from-stack --stack-name jay-platform-network-endpoints-prod --language typescript --output-path .\_migrate
+
+K6 Cognito authroized synthetic traffic -> 
+Http API gateway (via VPC link) -> 
+VPC private subnet ALBs in front of microservice -> 
+other microservices (service connect) or AWS resources
+
 ```
 
 
----
-
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
-
----

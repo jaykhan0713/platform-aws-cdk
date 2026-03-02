@@ -16,3 +16,5 @@ wake-infra.sh: Destroy VPC interface endpoints
 wake.sh: runs everything in order safely
 
 ---
+
+load-test-start.sh: invokes lambda to start K6 runner on an ECS Fargate Spot task with custom number of virtual users, sleepIntervalMs
