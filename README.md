@@ -42,8 +42,10 @@ the rest.
 9. K6 Load tester with Cognito OAuth2 and Client Credentials in front of an Http API gateway invoked by a lambda, so you can see AWS xray traces, Cloudwatch logs, Grafana light up
    under synthetic traffic.
 
-Of course by default for a portfolio, taskdef is on the cheapest ECS resources (with scaling and health checks in place). These mem/cpu resources are overridable and
+Note: By default for a portfolio, taskdef is using the cheapest ECS resources (with scaling and health checks in place). 
+These mem/cpu resources are overridable and
 distributed between your app, adot collector sidecar, and envoy sidecar (handled by ECS Service Connect)
+
 ---
 ## Ownership app boundaries for deploying stacks, Full portability and reproducibility on a fresh AWS account
 
