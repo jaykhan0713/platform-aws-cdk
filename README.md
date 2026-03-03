@@ -9,7 +9,8 @@ For my standardized microservice, first refer to github repo README:
 ---
 ## About this project
 
-This CDK project serves as a part of my portfolio to demonstrate my skills in developing an entire portable, secure AWS architecture end-to-end for a single account
+This CDK project serves as a part of my portfolio to demonstrate my skills 
+in developing an entire portable, secure AWS architecture end-to-end for a single account
 with clear ownership boundaries of cloudformation stacks. 
 
 Note: To mitigate costs for the portfolio, a single account is used with only "prod" environment in mind. This project is able to be tweaked for single account multi-env (test, prod, etc) as well as
