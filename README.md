@@ -23,13 +23,13 @@ The stack boundaries, in order of cdk app deployment on a fresh AWS account are 
 ## Ownership app boundaries for deploying stacks
 
 ```
-npm run cdk:\<area\> -- deploy --require-approval never --all
+npm run cdk:<area> -- deploy --require-approval never --all
 ```
 
 if working on existing project
 
 ```
-npm run cdk:\<area\> -- deploy <StackId>
+npm run cdk:<area> -- deploy <StackId>
 ```
 
 \<area\>'s in order of deployment
