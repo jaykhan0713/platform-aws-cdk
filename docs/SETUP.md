@@ -30,14 +30,7 @@ AWS_PROFILE="jay-prod"
 
 for running different ownership boundaries (scripts in package.json, uses npx cdk) ex:
 ```
-npm run cdk:services -- diff
-npm run cdk:network -- deploy NetworkStackName
-npm run cdk:cicd -- deploy
-npm run cdk:core -- deploy
-```
-
-```
-npx cdk deploy Network
+npm run cdk:<area> -- deploy <StackId>
 ```
 
 ```
