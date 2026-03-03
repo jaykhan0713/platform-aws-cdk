@@ -2,7 +2,7 @@
 
 IaC CDK project for a fully portable, fully reproducible platform AWS architecture end-to-end. 
 
-For my standardized microservice, refer to github repo README: 
+For my standardized microservice, first refer to github repo README: 
 
 [platform-service](https://github.com/jaykhan0713/platform-service)
 
