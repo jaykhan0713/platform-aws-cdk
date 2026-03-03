@@ -19,9 +19,31 @@ multi account (test, prod, etc). CICD for single account is emulated under a "to
 The stack boundaries, in order of cdk app deployment on a fresh AWS account are these \<area\>
 
 ---
-## High level workflow:
+## High level runtime workflow:
 
 ![](docs/high_level_workflowV2.png)
+
+Intent: Deploy any edge or internal microservices easily templated from below. Service is fully functional wired
+with observability and resiliency end-to-end. Portability of defaults require one line of code in CDK and CICD automates
+the rest.
+---
+## Adding a microservice
+
+1. Template this project: [platform-service](https://github.com/jaykhan0713/platform-service)
+2. Rename all occurrences of "service-template" to your new service name ex: "edge-service"
+3. On CDK project's platform-service-registry.ts, simply add in a key value pair one-liner into PlatformService object: edgeService: 'edge-service'
+4. By default, the service will be in service connect client + server mode, but you can choose to put it behind an ALB
+   with only service connect client mode. Simply choose exposure: 'alb'
+5. Run: npm run cdk:cicd deploy --require-approval never 'EdgeService*'
+   This automates: ECR repo, CodeArtifact for DTOs, published via a dto CodePipeline. CodePipeline for the microservice itself.
+6. Once the above dependencies are published, trigger the execution of microservice's CodePipeline via AWS console (i.e edge-service-pipeline) that deploys your service into production.
+7. You now have a fully standardized and secure ECS fargate microservice deployed in your vpc private subnet. All it took was a line of CDK code!
+8. Start working on your business-layer use cases for the microservice.
+9. K6 Load tester with Cognito OAuth2 and Client Credentials in front of an Http API gateway invoked by a lambda, so you can see AWS xray traces, Cloudwatch logs, Grafana light up
+   under synthetic traffic.
+
+Of course by default for a portfolio, taskdef is on the cheapest ECS resources (with scaling and health checks in place). These mem/cpu resources are overridable and
+distributed between your app, adot collector sidecar, and envoy sidecar (handled by ECS Service Connect)
 ---
 ## Ownership app boundaries for deploying stacks, Full portability and reproducibility on a fresh AWS account
 
@@ -55,24 +77,6 @@ load-test: K6 runner and Lambda that invokes runner with optional params via ops
 
 Note: before executing service CodePipelines, ensure DTO pipelines have successfully passed and published.
 
----
-## Adding a microservice
-
-1. Template this project: [platform-service](https://github.com/jaykhan0713/platform-service)
-2. Rename all occurrences of "service-template" to your new service name ex: "edge-service"
-3. On CDK project's platform-service-registry.ts, simply add in a key value pair one-liner into PlatformService object: edgeService: 'edge-service'
-4. By default, the service will be in service connect client + server mode, but you can choose to put it behind an ALB
-   with only service connect client mode. Simply choose exposure: 'alb'
-5. Run: npm run cdk:cicd deploy --require-approval never 'EdgeService*'
-   This automates: ECR repo, CodeArtifact for DTOs, published via a dto CodePipeline. CodePipeline for the microservice itself.
-6. Once the above dependencies are published, trigger the execution of microservice's CodePipeline via AWS console (i.e edge-service-pipeline) that deploys your service into production.
-7. You now have a fully standardized and secure ECS fargate microservice deployed in your vpc private subnet. All it took was a line of CDK code!
-8. Start working on your business-layer use cases for the microservice.
-9. K6 Load tester with Cognito OAuth2 and Client Credentials in front of an Http API gateway invoked by a lambda, so you can see AWS xray traces, Cloudwatch logs, Grafana light up
-   under synthetic traffic.
-
-Of course by default for a portfolio, taskdef is on the cheapest ECS resources (with scaling and health checks in place). These mem/cpu resources are overridable and
-distributed between your app, adot collector sidecar, and envoy sidecar (handled by ECS Service Connect)
 ---
 ## Security
 
@@ -111,9 +115,27 @@ For Synthetic load traffic, Http Client Credentials UserPoolClient is used (x-us
 A custom scope, client id is stored in SSM for the k6 runner to fetch via parameter key. Client Secret ID is stored in AWS Secret manager.
 
 ### Security TODOs
-WAF is not used due to cost constrains for the portfolio.
+WAF is not used due to cost constraints for the portfolio.
 public API with tokens and rate-limiting will be created later as unfortunately Http API gateway enforces
 it's rate limiting and burst limits on all integrations in a stage ($default being used)
+
+---
+### CICD
+
+Sidenote: created dates can be very recent, as every cdk.app and stack in this project is fully portable- I've done experiments where I cdk destroy all stacks
+or an entire ownership boundary such as cicd and deploy fresh.
+
+Intent: cicd app handles automatic creation for the following:
+
+## ECR repos for services, sidecars, dependencies such as base-images for jdk and jre. Load testing deps (k6 project)
+![img.png](docs/ecr_repos.png)
+
+Note when simply adding a service to the registry, it's ecr repo is automatically created.
+
+## CodePipeline
+
+TODO: Create index for app boundaries
+
 
 ---
 ## Status
