@@ -136,8 +136,13 @@ Note when simply adding a service to the registry, it's ecr repo is automaticall
 
 ## CodePipeline
 
-TODO: Create index for app boundaries
+The following are automated
 
+- Foundation images with custom code (adot collector, k6 load tester with lambda invoker), base-images (jdk and jre 25)
+- Microservice owned DTOs are standardized and published in their own pipeline lifecycle
+- Microservices that are added above. Builds both the image containing java entrypoint as well as CDK project to deploy the service stacks automatically with ease
+
+![img.png](docs/codepipeline.png)
 
 ---
 ## Status
