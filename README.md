@@ -15,6 +15,13 @@ multi account (test, prod, etc). CICD for single account is emulated under a "to
 
 The stack boundaries, in order of cdk app deployment on a fresh AWS account are these \<area\>'s
 
+---
+## High level workflow:
+
+![](docs/high_level_workflowV2.png)
+---
+## Ownership app boundaries for deploying stacks
+
 ```
 npm run cdk:\<area\> -- deploy --require-approval never --all
 ```
@@ -43,16 +50,4 @@ gateway: Cognito, Http API gateway
 services: ECS Tasks on ECS Fargate Service behind ALB or service connect server-mode envoy sidecar 
 load-test: K6 runner and Lambda that invokes runner with optional params via ops/load-test.sh or AWS UI/cli
 ```
-
-Simplified workflow intent: 
-
-```
-
-K6 Cognito authroized synthetic traffic -> 
-Http API gateway (via VPC link) -> 
-VPC private subnet ALBs in front of microservice -> 
-other microservices (service connect) or AWS resources
-
-```
-
 
