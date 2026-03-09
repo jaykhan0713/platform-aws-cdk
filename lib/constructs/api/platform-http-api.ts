@@ -39,18 +39,41 @@ export class PlatformHttpApi extends Construct {
 
         this.apiUrl = api.url ?? ''
 
-        //note that CDK does not delete parameter mappings if removed here.
+        //note that CDK does not delete parameter mappings if removed here. Must manually delete in AWS console/UI
         const userIdHeader = 'x-user-id'
         const requestIdHeader = 'x-request-id'
         const apiPrefix = "api/v1"
 
-        const integration = new integrations.HttpAlbIntegration(
+        const publicIntegration = new integrations.HttpAlbIntegration(
+            'PublicIntegration',
+            props.listener,
+            {
+                vpcLink: props.vpcLink,
+                parameterMapping: new apigwv2.ParameterMapping()
+                    .overwritePath( //strips 'public' in /public/api/v1/{proxy+} transforms to /api/v1{proxy+}
+                        apigwv2.MappingValue.custom(`/${apiPrefix}/$request.path.proxy`)
+                    )
+                    .overwriteHeader(
+                        userIdHeader,
+                        apigwv2.MappingValue.custom('anon')
+                    ) //removeHeader does not work currently.
+                    .overwriteHeader(
+                        requestIdHeader,
+                        apigwv2.MappingValue.contextVariable('requestId')
+                    )
+            }
+        )
+
+        const userIntegration = new integrations.HttpAlbIntegration(
             'ApiIntegration',
             props.listener,
             {
                 vpcLink: props.vpcLink,
                 parameterMapping: new apigwv2.ParameterMapping()
-                    .removeHeader(userIdHeader) //anon/unauth'd has no user-id from sub
+                    .overwriteHeader(
+                        userIdHeader,
+                        apigwv2.MappingValue.contextVariable('authorizer.claims.sub')
+                    )
                     .overwriteHeader(
                         requestIdHeader,
                         apigwv2.MappingValue.contextVariable('requestId')
@@ -107,10 +130,18 @@ export class PlatformHttpApi extends Construct {
             }
         )
 
+        //public route, anonymous without login
+        api.addRoutes({
+            path: '/public/api/v1/{proxy+}',
+            methods: [apigwv2.HttpMethod.GET],
+            integration: publicIntegration
+        })
+
+        //authorized routes: user, admin, synthetic traffic
         api.addRoutes({
             path: '/api/v1/{proxy+}', //{proxy+} takes anything
             methods: [apigwv2.HttpMethod.GET],
-            integration,
+            integration: userIntegration,
             authorizer,
             authorizationScopes: ['openid']
         })
@@ -132,7 +163,17 @@ export class PlatformHttpApi extends Construct {
             authorizationScopes: ['synth/invoke']
         })
 
-        //TODO: optional: rate limit public API (L1 construct)
+        //Rate limiting
+
+        const defaultStage = api.defaultStage?.node.defaultChild as apigwv2.CfnStage
+
+        defaultStage.routeSettings = {
+            'GET /public/api/v1/{proxy+}' : {
+                ThrottlingBurstLimit: 10, //bucket size
+                ThrottlingRateLimit: 5, //refills bucket w these tokens per second
+                DetailedMetricsEnabled: true //since overwriting the settings, this gets disabled by default
+            }
+        }
     }
 
 }
