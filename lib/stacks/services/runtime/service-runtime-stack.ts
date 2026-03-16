@@ -27,7 +27,9 @@ export class ServiceRuntimeStack extends BaseStack {
         this.ecsCluster = new ecs.Cluster(this, 'EcsCluster', {
             vpc,
             clusterName: `${projectName}-cluster-${envName}`,
-            containerInsightsV2: ecs.ContainerInsights.DISABLED,
+            containerInsightsV2: envConfig.ecsClusterConfig?.enableContainerInsights
+                ? ecs.ContainerInsights.ENABLED
+                : ecs.ContainerInsights.DISABLED,
 
             enableFargateCapacityProviders: true
         })
