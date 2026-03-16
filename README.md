@@ -116,6 +116,11 @@ For users, a cognto managed login web page UserPoolClient is used or can use pos
 For Synthetic load traffic, Http Client Credentials UserPoolClient is used (x-user-id is removed upon entry for security).
 A custom scope, client id is stored in SSM for the k6 runner to fetch via parameter key. Client Secret ID is stored in AWS Secret manager.
 
+### TLS
+Internal services are designed to talk via mTLS (Mutal TLS) so ECS itself handles certs and
+you get encrypted transport without having to worry about company HTTPS compliance standards even in private 
+VPCE
+
 ### Security TODOs
 WAF is not used due to cost constraints for the portfolio.
 public API with tokens and rate-limiting will be created later as unfortunately Http API gateway enforces
