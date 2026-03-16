@@ -28,7 +28,7 @@ export class ServiceRuntimeStack extends BaseStack {
             vpc,
             clusterName: `${projectName}-cluster-${envName}`,
             containerInsightsV2: envConfig.ecsClusterConfig?.enableContainerInsights
-                ? ecs.ContainerInsights.ENABLED
+                ? ecs.ContainerInsights.ENHANCED
                 : ecs.ContainerInsights.DISABLED,
 
             enableFargateCapacityProviders: true
