@@ -61,13 +61,13 @@ export const defaultTaskDefConfig = (args: {
             containerName: 'app',
             containerPortName: 'http',
             containerPort: port,
-            cpuUnits: 350,
-            memoryMiB: 600,
+            cpuUnits: 430,
+            memoryMiB: 800,
             essential: true,
             stopTimeoutSeconds: 30,
             env: {
                 SPRING_PROFILES_ACTIVE: envName,
-                JAVA_TOOL_OPTIONS: '-Xms128m -Xmx352m',
+                JAVA_TOOL_OPTIONS: '-Xms256m -Xmx512m -XX:+UseZGC -XX:+ZUncommit -XX:ZUncommitDelay=30 -XX:+UseContainerSupport',
                 SERVICE_NAME: args.serviceName
             },
             logging: {
@@ -78,7 +78,7 @@ export const defaultTaskDefConfig = (args: {
         adot: {
             enabled: true,
             containerName: 'adot-collector',
-            cpuUnits: 64,
+            cpuUnits: 32,
             memoryMiB: 128,
             essential: false,
             ports: { grpc: 4317, http: 4318 },
