@@ -60,7 +60,7 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
         },
 
         ecsClusterConfig: {
-            enableContainerInsights: true
+            enableContainerInsights: false
         }
     },
 
