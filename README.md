@@ -35,7 +35,7 @@ the rest.
 
 | Section                                                                                     | Description                                                                             |
 |---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| [Observability](docs/observability/OBSERVABILITY.md)                                        | ADOT collector, X-Ray, Micrometer, Grafana                                              |
+| [Observability](docs/observability/OBSERVABILITY.md)                                        | ADOT collector, X-Ray, Cloudwatch, Prometheus (APS), Grafana                            |
 | [Services](docs/services/SERVICES.md)                                                       | Microservices, ECS, ELB, Service Connect                                                |
 | [Ownership Stack Boundaries](docs/ownership-stack-boundaries/OWNERSHIP_STACK_BOUNDARIES.md) | gateway, network, services, runtime, obesrvability, load-test, cicd                     |
 | [CICD](docs/cicd/CICD.md)                                                                   | Automation of CodePipeline, CodeBuild, CDK deploy, ECR, CodeArtifact, Github Connection |
@@ -47,8 +47,6 @@ the rest.
 ## Status
 
 Actively evolving as a platform foundation. Post MVP iterative work on-going
-
-Actively updating Documentation to better display the depth of project
 
 ---
 ## Contact
