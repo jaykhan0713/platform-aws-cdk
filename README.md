@@ -48,6 +48,8 @@ the rest.
 
 Actively evolving as a platform foundation. Post MVP iterative work on-going
 
+Actively updating Documentation to better display the depth of project
+
 ---
 ## Contact
 
