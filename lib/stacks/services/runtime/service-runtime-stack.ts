@@ -6,7 +6,6 @@ import * as servicediscovery from 'aws-cdk-lib/aws-servicediscovery'
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import {resolveExportName} from "lib/config/naming";
-import {getEnvConfig} from "lib/config/env/env-config";
 import {ServiceRuntimeExports} from 'lib/config/dependency/service-runtime/service-runtime-exports'
 
 export class ServiceRuntimeStack extends BaseStack {
@@ -24,12 +23,14 @@ export class ServiceRuntimeStack extends BaseStack {
 
         const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
 
+        const enableContainerInsights = this.node.tryGetContext('insights') == 'true'
+            ? ecs.ContainerInsights.ENHANCED
+            : ecs.ContainerInsights.DISABLED
+
         this.ecsCluster = new ecs.Cluster(this, 'EcsCluster', {
             vpc,
             clusterName: `${projectName}-cluster-${envName}`,
-            containerInsightsV2: envConfig.ecsClusterConfig?.enableContainerInsights
-                ? ecs.ContainerInsights.ENHANCED
-                : ecs.ContainerInsights.DISABLED,
+            containerInsightsV2: enableContainerInsights,
 
             enableFargateCapacityProviders: true
         })

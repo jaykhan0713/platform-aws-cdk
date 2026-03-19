@@ -1,7 +1,0 @@
-- use SSM for 'tools' account (app in this case on same account) exporting resource uri's like service + other images
-- pass in overrideable taskcfgs and settings to service stack while using defaults when empty.
-- Automate deletion of CodeArtifact packages (lambda eventbridge)
-- ratelimiting at gw, api tokens at edge
-- add CB automatic state transition to HALF_OPEN in services. Grafana needs CB metrics as well.
-- use platform-codebuild-cdk-deploy.ts in place of platform-service-codebuild-deploy.ts 
-- toggle ecs container insights with context
