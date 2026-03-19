@@ -26,7 +26,6 @@ multi account (test, prod, etc). CICD for single account is emulated under a "to
 - Deploy any elb+edge or internal microservices easily. Service is fully functional wired with observability and resiliency end-to-end. Portability of defaults require adding service name to **[platform-service-registry.ts](lib/config/service/platform-service-registry.ts)** and CICD automates
 the rest.
 - Cost saving scripts that run cdk to destroy vpc endpoints, scale down tasks to 0, destroy stacks in order and bring them up clearly (For longer off-cloud-dev time)
-- Refer to [SETUP.md](docs/SETUP.md) to initialize account/profile
 ---
 
 ## Index
