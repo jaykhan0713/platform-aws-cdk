@@ -36,7 +36,7 @@ the rest.
 | [Observability](docs/observability/OBSERVABILITY.md)                                        | ADOT collector, X-Ray, Cloudwatch, Prometheus (APS), Grafana                            |
 | [Services](docs/services/SERVICES.md)                                                       | Microservices, ECS, ELB, Service Connect                                                |
 | [CICD](docs/cicd/CICD.md)                                                                   | Automation of CodePipeline, CodeBuild, CDK deploy, ECR, CodeArtifact, Github Connection |
-| [Security](docs/security/SECURITY.md)                                                       | IAM scoping, Cognito, mTLS                                                              |
+| [Security](docs/security/SECURITY.md)                                                       | IAM scoping, Cognito, mTLS, Security Group tightening                                   |
 | [Cost Design](docs/cost-design/COST_DESIGN.md)                                              | Documented savings, right-sizing rationale                                              |
 
 ---
