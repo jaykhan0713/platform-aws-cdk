@@ -14,9 +14,6 @@ For my standardized [Spring boot 4 + Java25 + Project loom virtual threads enabl
 - I integrate my skill-set of 7 years in industry as a backend engineer at Expedia Group's Flights team updated with the most up-to-date modern industry tech standards I learned as an Independent Engineer over the year.
 - To demonstrate end to end high user traffic and scalability with auth, A lambda invokes a public subnet Fargate SPOT task K6 load test with synthetic traffic to API Gateway.
 
-Note: To mitigate costs for the portfolio, a single account is used with only "prod" environment in mind. This project is able to be tweaked for single account multi-env (test, prod, etc) as well as
-multi account (test, prod, etc). CICD for single account is emulated under a "tools" environment but can also move to multi-account.
-
 ---
 ## High level runtime workflow:
 
