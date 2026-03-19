@@ -1,6 +1,6 @@
 # platform-aws-cdk
 
-IaC CDK project for a production-aimed secure, portable, observable AWS architecture end-to-end
+IaC CDK project for a production-aimed portable scalable, secure, resilient, observable AWS architecture end-to-end
 with clear ownership boundaries of cloudformation stacks.
 
 Intent: 0-1, Walk into a seed-stage/start-up company. Plug and play their business use-case. Have an optimized, scalable distributed system, cost-savings, all deployed within the first hour. 
