@@ -5,12 +5,13 @@ with clear ownership boundaries of cloudformation stacks.
 
 Intent: 0-1, Walk into a seed-stage/start-up company. Plug and play their business use-case. Have an optimized, scalable distributed system, cost-savings, all deployed within the first hour. 
 
-For my standardized microservices, please refer to github repo README: **[platform-service](https://github.com/jaykhan0713/platform-service)**
+For my standardized [Spring boot 4 + Java25 + Project loom virtual threads enabled] microservices, please refer to github repo README: **[platform-service](https://github.com/jaykhan0713/platform-service)**
 
 ---
 ## About this project
 
 - This CDK project serves as a part of my portfolio to demonstrate my skill-set of end-to-end distributed systems, SDLC, and micro-services.
+- I integrate my skill-set of 7 years in industry as a backend engineer at Expedia Group's Flights team updated with the most up-to-date modern industry tech standards I learned as an Independent Engineer over the year.
 - To demonstrate end to end high user traffic and scalability with auth, A lambda invokes a public subnet Fargate SPOT task K6 load test with synthetic traffic to API Gateway.
 
 Note: To mitigate costs for the portfolio, a single account is used with only "prod" environment in mind. This project is able to be tweaked for single account multi-env (test, prod, etc) as well as
