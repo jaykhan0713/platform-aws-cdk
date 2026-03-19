@@ -33,13 +33,14 @@ the rest.
 
 ## Index
 
-| Section                                                                                     | Description                                                         |
-|---------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
-| [Observability](docs/observability/OBSERVABILITY.md)                                        | ADOT collector, X-Ray, Micrometer, Grafana                          |
-| [Services](docs/services/SERVICES.md)                                                       | Microservices, ECS, ELB, Service Connect                            |
-| [Ownership Stack Boundaries](docs/ownership-stack-boundaries/OWNERSHIP_STACK_BOUNDARIES.md) | gateway, network, services, runtime, obesrvability, load-test, cicd |
-| [Security](docs/security/SECURITY.md)                                                       | IAM scoping, Cognito, mTLS                                          |
-| [Cost Design](docs/cost-design/COST_DESIGN.md)                                              | Documented savings, right-sizing rationale                          |
+| Section                                                                                     | Description                                                                             |
+|---------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------|
+| [Observability](docs/observability/OBSERVABILITY.md)                                        | ADOT collector, X-Ray, Micrometer, Grafana                                              |
+| [Services](docs/services/SERVICES.md)                                                       | Microservices, ECS, ELB, Service Connect                                                |
+| [Ownership Stack Boundaries](docs/ownership-stack-boundaries/OWNERSHIP_STACK_BOUNDARIES.md) | gateway, network, services, runtime, obesrvability, load-test, cicd                     |
+| [CICD](docs/cicd/CICD.md)                                                                   | Automation of CodePipeline, CodeBuild, CDK deploy, ECR, CodeArtifact, Github Connection |
+| [Security](docs/security/SECURITY.md)                                                       | IAM scoping, Cognito, mTLS                                                              |
+| [Cost Design](docs/cost-design/COST_DESIGN.md)                                              | Documented savings, right-sizing rationale                                              |
 
 ---
 
