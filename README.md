@@ -5,9 +5,7 @@ with clear ownership boundaries of cloudformation stacks.
 
 Intent: 0-1, Walk into a seed-stage/start-up company. Plug and play their business use-case. Have an optimized, scalable distributed system, cost-savings, all deployed within the first hour. 
 
-For my standardized microservices, please refer to github repo README: 
-
-[platform-service](https://github.com/jaykhan0713/platform-service)
+For my standardized microservices, please refer to github repo README: **[platform-service](https://github.com/jaykhan0713/platform-service)**
 
 ---
 ## About this project
