@@ -44,7 +44,7 @@ the rest.
 
 ## Status
 
-Actively evolving as a platform foundation. Post MVP iterative work on-going
+Actively evolving as a platform foundation. Post MVP iterative work is actively on-going
 
 ---
 ## Contact
