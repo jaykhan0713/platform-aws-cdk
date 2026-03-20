@@ -35,7 +35,7 @@ export class ServiceRuntimeStack extends BaseStack {
             enableFargateCapacityProviders: true
         })
 
-        /* alb backed services consume this SG, internal services will consume this SG AND
+        /* services consume this SG, internal services will consume this SG AND
          * do their unique ecsTaskSg.addIngress(internalServices.sg) so any service registered
          * with internalServices sg can talk to the unique service. This is an internal service subscription
          * pattern.

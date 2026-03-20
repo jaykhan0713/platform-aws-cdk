@@ -166,7 +166,7 @@ export class InternalAlbServiceStack extends BaseStack {
             httpNamespaceName: ServiceRuntimeImports.httpNamespaceName(envConfig)
         }).fargateService
 
-        //use L1 as attachToApplicationTargetGroup helper mutates SG's ingress and egress
+        //use L1 since attachToApplicationTargetGroup helper mutates SG's ingress and egress
         const cfnService = fargateService.node.defaultChild as ecs.CfnService
 
         cfnService.loadBalancers = [
