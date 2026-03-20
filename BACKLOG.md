@@ -3,3 +3,4 @@
 - Automate deletion of CodeArtifact packages (lambda eventbridge)
 - add CB automatic state transition to HALF_OPEN in services. Grafana needs CB metrics as well.
 - use platform-codebuild-cdk-deploy.ts in place of platform-service-codebuild-deploy.ts 
+- Currently service SGs use membership model, can tightly scope via config
