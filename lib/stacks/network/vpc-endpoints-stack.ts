@@ -43,9 +43,15 @@ export class VpcEndpointsStack extends BaseStack {
             name: VpceServiceName.xray
         },
         {
+            id: 'SecretsManagerVpcEndpoint',
+            service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
+            name: VpceServiceName.secrets
+        },
+        {
             id: 'SsmVpcEndpoint',
             service: ec2.InterfaceVpcEndpointAwsService.SSM,
-            name: VpceServiceName.ssm
+            name: VpceServiceName.ssm,
+            enabled: () => false
         },
         {
             id: 'SsmMessagesVpcEndpoint',

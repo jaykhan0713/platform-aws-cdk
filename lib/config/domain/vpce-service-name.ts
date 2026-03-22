@@ -4,6 +4,7 @@ export const VpceServiceName = {
     logs: 'logs',
     apsWorkspaces: 'aps-workspaces',
     xray: 'xray',
+    secrets: 'secrets',
     ssm: 'ssm',
     ssmMessages: 'ssm-messages',
     ec2Messages: 'ec2-messages',
