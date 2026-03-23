@@ -3,7 +3,8 @@ import {StackDomain} from 'lib/config/domain'
 
 export const PlatformServiceName = {
     edgeService: 'edge-service',
-    voyagerService: 'voyager-service'
+    voyagerService: 'voyager-service',
+    apolloService: 'apollo-service'
 } as const
 
 export type PlatformServiceName = typeof PlatformServiceName[keyof typeof PlatformServiceName]
@@ -17,8 +18,15 @@ export const PlatformServiceExposure = {
 
 export type PlatformServiceExposure = typeof PlatformServiceExposure[keyof typeof PlatformServiceExposure]
 
+export const PlatformServiceResource = {
+    rds: 'rds',
+}
+
+export type PlatformServiceResource = typeof PlatformServiceResource[keyof typeof PlatformServiceResource]
+
 export type PlatformServiceOverrides = {
     readonly exposure?: PlatformServiceExposure
+    readonly resources?: Set<PlatformServiceResource>
     //task def overrides
 }
 
@@ -29,7 +37,15 @@ export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, Platf
     [
         PlatformServiceName.edgeService,
         {
-            exposure: 'alb'
+            exposure: PlatformServiceExposure.alb
+        }
+    ],
+    [
+        PlatformServiceName.apolloService,
+        {
+            resources: new Set<PlatformServiceResource>([
+                PlatformServiceResource.rds
+            ])
         }
     ]
 ])
@@ -87,3 +103,4 @@ export const serviceDtoPipelineDomains = Object.fromEntries(
 
 export const getDtoPipelineStackDomainFromValue = (serviceName: PlatformServiceName) =>
     StackDomain[`${serviceKeyByValue[serviceName]}DtoPipeline` as keyof ServiceDtoPipelineDomains]
+

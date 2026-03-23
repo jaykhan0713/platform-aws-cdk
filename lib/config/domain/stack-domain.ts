@@ -21,6 +21,9 @@ export const StackDomain = {
 
     ...PlatformFoundationName,
 
+    //service owned resources
+    apolloServiceRds: 'apollo-service-rds',
+
     //tools env
     cicdInfra: 'cicd-infra',
 
@@ -33,3 +36,4 @@ export const StackDomain = {
 } as const
 
 export type StackDomain = typeof StackDomain[keyof typeof StackDomain]
+

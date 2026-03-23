@@ -1,8 +1,10 @@
+import * as ecs from 'aws-cdk-lib/aws-ecs'
+
 import type { EnvConfig } from 'lib/config/env/env-config'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 
 export type EnvMap = Readonly<Record<string, string>>
-export type SecretMap = Readonly<Record<string, string>> // name -> ssm param path
+export type SecretMap = Readonly<Record<string, ecs.Secret>>
 
 export interface ContainerLoggingConfig {
     logGroupName: string
@@ -18,7 +20,8 @@ export interface AppContainerConfig {
     essential: boolean
     stopTimeoutSeconds: number
     env: EnvMap
-    logging: ContainerLoggingConfig
+    logging: ContainerLoggingConfig,
+    secrets?: SecretMap
 }
 
 export interface AdotContainerConfig {

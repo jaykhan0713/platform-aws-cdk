@@ -13,7 +13,7 @@ import {
     resolveIamRoleName,
     resolveSsmParamPath,
     resolveSsmParamPathArnWildcard,
-    resolveSsmSecretName
+    resolveSecretName
 } from 'lib/config/naming'
 import {IamConstants, ParamNamespace, StackDomain} from 'lib/config/domain'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
@@ -47,7 +47,7 @@ export class K6RunnerStack extends cdk.Stack {
         })
 
         const synthClientSecret =
-            resolveSsmSecretName(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-secret')
+            resolveSecretName(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-secret')
 
         this.taskRole.addToPolicy(new iam.PolicyStatement({
             sid: 'GetSecret',
@@ -112,7 +112,7 @@ export class K6RunnerStack extends cdk.Stack {
                 COGNITO_CLIENT_ID_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-id'),
                 COGNITO_SCOPE_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-invoke-scope'),
                 API_URL_PARAM: resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.api, 'api-url'),
-                COGNITO_CLIENT_SECRET_NAME: resolveSsmSecretName(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-secret')
+                COGNITO_CLIENT_SECRET_NAME: resolveSecretName(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'synth-client-secret')
             },
             logging: ecs.LogDrivers.awsLogs({
                 streamPrefix: 'ecs',

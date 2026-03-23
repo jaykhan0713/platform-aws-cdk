@@ -2,7 +2,7 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import {Construct} from 'constructs'
 
 import {
-    resolveIamRoleName, resolveSsmParamPathArnWildcard
+    resolveIamRoleName, resolveSecretPathArnWildcard, resolveSsmParamPathArnWildcard
 } from 'lib/config/naming'
 import {IamConstants} from 'lib/config/domain/iam-constants'
 import {ParamNamespace} from 'lib/config/domain/param-namespace'
@@ -39,6 +39,16 @@ export class PlatformEcsTaskExecutionRole extends Construct {
             ],
             resources: [
                 resolveSsmParamPathArnWildcard(props.envConfig, ParamNamespace.core)
+            ]
+        }))
+
+        this.taskExecutionRole.addToPolicy(new iam.PolicyStatement({
+            sid: 'ReadSecrets',
+            actions: [
+                'secretsmanager:GetSecretValue'
+            ],
+            resources: [
+                resolveSecretPathArnWildcard(props.envConfig, ParamNamespace.services, props.stackDomain)
             ]
         }))
 

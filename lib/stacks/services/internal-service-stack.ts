@@ -4,7 +4,6 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
-import {defaultTaskDefConfig} from 'lib/config/taskdef/taskdef-config'
 import {ObservabilityImports} from 'lib/config/dependency/observability/observability-imports'
 import {PlatformEcsTaskSecurityGroup} from 'lib/constructs/ecs/platform-ecs-task-security-group'
 import {PlatformEcsTaskRole} from 'lib/constructs/ecs/platform-ecs-task-role'
@@ -15,10 +14,12 @@ import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling-service'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
+import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
 
 export interface InternalServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
     upstreamSgs?: ec2.ISecurityGroup[] //sg's to ecsTaskSg.addIngress()
+    taskDefCfg: TaskDefinitionConfig
 }
 
 export class InternalServiceStack extends BaseStack {
@@ -28,16 +29,10 @@ export class InternalServiceStack extends BaseStack {
         // 1. Initialize dependencies
         const imageTag = this.node.tryGetContext('imageTag')
 
-        const { envConfig, serviceName, upstreamSgs } = props
+        const { envConfig, serviceName, upstreamSgs, taskDefCfg } = props
 
         const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
-
-        const taskDefCfg = defaultTaskDefConfig({
-            serviceName,
-            envConfig,
-            apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig)
-        })
 
         //add membership service to SG and allow unique task SG ingress from membership service.
         const internalServicesSg = ec2.SecurityGroup.fromSecurityGroupId(

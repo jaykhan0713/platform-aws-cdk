@@ -5,7 +5,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformInternalAlb} from 'lib/constructs/alb/platform-internal-alb'
 import {PlatformEcsTaskSecurityGroup} from 'lib/constructs/ecs/platform-ecs-task-security-group'
-import {defaultTaskDefConfig} from 'lib/config/taskdef/taskdef-config'
+import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
 import {PlatformEcsTaskRole} from 'lib/constructs/ecs/platform-ecs-task-role'
 import {PlatformEcsTaskDef} from 'lib/constructs/ecs/platform-ecs-task-def'
 import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling-service'
@@ -24,6 +24,7 @@ export interface InternalAlbServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
     upstreamToAlbSgs?: ec2.ISecurityGroup[] //sg's to albSg.addIngress(),
     vpcLinkEnabled ?: boolean
+    taskDefCfg: TaskDefinitionConfig
 }
 
 export class InternalAlbServiceStack extends BaseStack {
@@ -31,18 +32,12 @@ export class InternalAlbServiceStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: InternalAlbServiceStackProps) {
         super(scope, id, props)
 
-        const { envConfig, serviceName, upstreamToAlbSgs } = props
+        const { envConfig, serviceName, taskDefCfg, upstreamToAlbSgs } = props
 
         const imageTag = this.node.tryGetContext('imageTag')
 
         const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
-
-        const taskDefCfg = defaultTaskDefConfig({
-            serviceName,
-            envConfig,
-            apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig)
-        })
 
         // 1. Create  ALB, TG, solve SG dependencies
 

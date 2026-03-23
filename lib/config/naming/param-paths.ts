@@ -1,7 +1,7 @@
 import type {EnvConfig} from 'lib/config/env/env-config'
 import type { StackDomain, ParamNamespace} from 'lib/config/domain'
 
-const ssmSecretPathRoot = (cfg: EnvConfig) =>
+const secretPathRoot = (cfg: EnvConfig) =>
     `${cfg.projectName}/${cfg.envName}`
 
 const ssmParamPathRoot = (cfg: EnvConfig) =>
@@ -11,13 +11,13 @@ const ssmParamPathRoot = (cfg: EnvConfig) =>
 const clean = (s: string) =>
     s.replace(/^\/+/, '').replace(/\/+$/, '')
 
-export const resolveSsmSecretName = (
+export const resolveSecretName = (
     cfg: EnvConfig,
     namespace: ParamNamespace,
     domain: StackDomain,
     suffix : string
 ) => {
-    return `${ssmSecretPathRoot(cfg)}/${namespace}/${domain}/${clean(suffix)}`
+    return `${secretPathRoot(cfg)}/${namespace}/${domain}/${clean(suffix)}`
 }
 
 export const resolveSsmParamPath = (
@@ -35,3 +35,16 @@ export const resolveSsmParamPathArnWildcard = (
 ) =>
     `arn:aws:ssm:${cfg.region}:${cfg.account}:parameter${ssmParamPathRoot(cfg)}/${namespace}/*`
 
+export const resolveSsmParamDomainPathArnWildcard = (
+    cfg: EnvConfig,
+    namespace: ParamNamespace,
+    domain: StackDomain
+)=>
+    `arn:aws:ssm:${cfg.region}:${cfg.account}:parameter${resolveSsmParamPath(cfg, namespace, domain, '*')}`
+
+export const resolveSecretPathArnWildcard = (
+    cfg: EnvConfig,
+    namespace: ParamNamespace,
+    domain: StackDomain
+) =>
+    `arn:aws:secretsmanager:${cfg.region}:${cfg.account}:secret:${resolveSecretName(cfg, namespace, domain, '*')}`
