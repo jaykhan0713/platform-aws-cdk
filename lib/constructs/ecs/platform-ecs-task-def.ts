@@ -65,6 +65,7 @@ export class PlatformEcsTaskDef extends Construct {
                 }
             ],
             environment: app.env,
+            secrets: app.secrets,
             logging: ecs.LogDrivers.awsLogs({
                 streamPrefix: app.logging.streamPrefix,
                 logGroup: new logs.LogGroup(this, 'AppLogGroup', {
