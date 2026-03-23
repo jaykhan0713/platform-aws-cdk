@@ -15,22 +15,22 @@ import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
-import {PlatformServiceResourceFactory} from 'lib/config/service/platform-service-resource-factory'
+import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
 
 export interface InternalServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
     upstreamSgs?: ec2.ISecurityGroup[] //sg's to ecsTaskSg.addIngress()
-    taskDefCfg: TaskDefinitionConfig
 }
 
 export class InternalServiceStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: InternalServiceStackProps) {
         super(scope, id, props)
 
-        const { envConfig, serviceName, upstreamSgs, taskDefCfg } = props
+        const { envConfig, serviceName, upstreamSgs,} = props
 
         //0. Wire any taskdef dependencies for internal service resources
-        new PlatformServiceResourceFactory(this, props, taskDefCfg)
+        const taskdefCfgFactory = new PlatformServiceTaskdefCfgFactory(this, props)
+        const taskdefCfg = taskdefCfgFactory.buildTaskdefCfg()
 
         // 1. Initialize dependencies
         const imageTag = this.node.tryGetContext('imageTag')
@@ -50,7 +50,7 @@ export class InternalServiceStack extends BaseStack {
 
         //2. Create ECS service SG and deps
 
-        const appContainerPort = taskDefCfg.app.containerPort
+        const appContainerPort = taskdefCfg.app.containerPort
 
         const ecsTaskSg = new PlatformEcsTaskSecurityGroup(this, 'PlatformEcsTaskSecurityGroup', {
             ...props,
@@ -75,7 +75,7 @@ export class InternalServiceStack extends BaseStack {
         const fargateTaskDef = new PlatformEcsTaskDef(this, 'PlatformEcsTaskDef', {
             ...props,
             serviceName,
-            taskDefCfg,
+            taskDefCfg: taskdefCfg,
             taskRole,
             taskExecutionRole,
             appImage: ecs.ContainerImage.fromEcrRepository(
@@ -111,7 +111,7 @@ export class InternalServiceStack extends BaseStack {
             securityGroups: [ecsTaskSg, internalServicesSg],
             privateIsolatedSubnets,
             serviceConnectServerMode: {
-                appPortName: taskDefCfg.app.containerPortName
+                appPortName: taskdefCfg.app.containerPortName
             },
             serviceName,
             cluster,

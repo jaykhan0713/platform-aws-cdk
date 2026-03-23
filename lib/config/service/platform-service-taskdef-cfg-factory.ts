@@ -2,18 +2,18 @@ import {Construct} from 'constructs'
 import {InternalServiceStackProps} from 'lib/stacks/services/internal-service-stack'
 import {InternalAlbServiceStackProps} from 'lib/stacks/services/internal-alb-service-stack'
 import {
-    PlatformServiceName,
     platformServiceOverridesMap,
     PlatformServiceResource
 } from 'lib/config/service/platform-service-registry'
-import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
+import {defaultTaskDefConfig, TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager'
 import {resolveSecretName} from 'lib/config/naming'
 import {ParamNamespace} from 'lib/config/domain'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
+import {ObservabilityImports} from 'lib/config/dependency/observability/observability-imports'
 
 //optional, when InternalAlb service stacks have resources- can add to that stack
-export class PlatformServiceResourceFactory {
+export class PlatformServiceTaskdefCfgFactory {
 
     private readonly resourceMappings: Partial<
         Record<PlatformServiceResource, (taskDefCfg: TaskDefinitionConfig) => void >
@@ -21,26 +21,36 @@ export class PlatformServiceResourceFactory {
 
     constructor(
         private readonly scope: Construct,
-        private readonly props: InternalServiceStackProps | InternalAlbServiceStackProps,
-        taskdefCfg: TaskDefinitionConfig
+        private readonly props: InternalServiceStackProps | InternalAlbServiceStackProps
     ) {
         this.resourceMappings = {
             [PlatformServiceResource.rds]: this.mapRds
         }
+    }
 
-        const { serviceName } = this.props
+    public buildTaskdefCfg = () => {
+        const { envConfig, serviceName } = this.props
+
+        const taskdefCfg = defaultTaskDefConfig({
+            serviceName,
+            envConfig: envConfig,
+            apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig)
+        })
+
         platformServiceOverridesMap.get(serviceName)?.resources?.forEach((stackDomain, resource) => {
             this.resourceMappings[resource]?.(taskdefCfg)
         })
+
+        return taskdefCfg
     }
 
     private mapRds = (
-        taskDefCfg: TaskDefinitionConfig
+        taskdefCfg: TaskDefinitionConfig
     ) => {
 
         const {envConfig, serviceName} = this.props
 
-        const appSecrets = taskDefCfg.app.secrets ?? {}
+        const appSecrets = taskdefCfg.app.secrets ?? {}
 
         const secret = secretsmanager.Secret.fromSecretNameV2(
             this.scope,
@@ -56,6 +66,6 @@ export class PlatformServiceResourceFactory {
             DB_PASSWORD: ecs.Secret.fromSecretsManager(secret, 'password'),
         }
 
-        taskDefCfg.app.secrets = { ...appSecrets, ...rdsSecrets }
+        taskdefCfg.app.secrets = { ...appSecrets, ...rdsSecrets }
     }
 }

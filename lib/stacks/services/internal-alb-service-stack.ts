@@ -19,12 +19,12 @@ import {resolveExportName} from "lib/config/naming";
 import {AlbExports} from "lib/config/dependency/alb/alb-exports";
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
+import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
 
 export interface InternalAlbServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
     upstreamToAlbSgs?: ec2.ISecurityGroup[] //sg's to albSg.addIngress(),
     vpcLinkEnabled ?: boolean
-    taskDefCfg: TaskDefinitionConfig
 }
 
 export class InternalAlbServiceStack extends BaseStack {
@@ -32,12 +32,16 @@ export class InternalAlbServiceStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: InternalAlbServiceStackProps) {
         super(scope, id, props)
 
-        const { envConfig, serviceName, taskDefCfg, upstreamToAlbSgs } = props
+        const { envConfig, serviceName, upstreamToAlbSgs } = props
 
         const imageTag = this.node.tryGetContext('imageTag')
 
         const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
+
+        //0. Wire any taskdef dependencies for internal service resources
+        const taskDefCfgFactory = new PlatformServiceTaskdefCfgFactory(this, props)
+        const taskDefCfg = taskDefCfgFactory.buildTaskdefCfg()
 
         // 1. Create  ALB, TG, solve SG dependencies
 
