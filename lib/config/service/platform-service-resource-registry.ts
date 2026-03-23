@@ -3,7 +3,7 @@ import {StackDomain} from 'lib/config/domain'
 
 export const PlatformServiceResource = {
     rds: 'rds',
-}
+} as const
 
 export type PlatformServiceResource = typeof PlatformServiceResource[keyof typeof PlatformServiceResource]
 
