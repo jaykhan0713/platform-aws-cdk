@@ -26,7 +26,7 @@ export type PlatformServiceResource = typeof PlatformServiceResource[keyof typeo
 
 export type PlatformServiceOverrides = {
     readonly exposure?: PlatformServiceExposure
-    readonly resources?: Set<PlatformServiceResource>
+    readonly resources?: Map<PlatformServiceResource, StackDomain>
     //task def overrides
 }
 
@@ -43,8 +43,8 @@ export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, Platf
     [
         PlatformServiceName.apolloService,
         {
-            resources: new Set<PlatformServiceResource>([
-                PlatformServiceResource.rds
+            resources: new Map<PlatformServiceResource, StackDomain>([
+                [PlatformServiceResource.rds, StackDomain.apolloServiceRds]
             ])
         }
     ]

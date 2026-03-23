@@ -15,6 +15,7 @@ import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
+import {PlatformServiceResourceFactory} from 'lib/config/service/platform-service-resource-factory'
 
 export interface InternalServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -26,10 +27,15 @@ export class InternalServiceStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: InternalServiceStackProps) {
         super(scope, id, props)
 
+        const { envConfig, serviceName, upstreamSgs, taskDefCfg } = props
+
+        //0. Wire any taskdef dependencies for internal service resources
+        new PlatformServiceResourceFactory(this, props, taskDefCfg)
+
         // 1. Initialize dependencies
         const imageTag = this.node.tryGetContext('imageTag')
 
-        const { envConfig, serviceName, upstreamSgs, taskDefCfg } = props
+
 
         const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)

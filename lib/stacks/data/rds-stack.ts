@@ -33,7 +33,7 @@ export class RdsStack extends BaseStack {
                 stackDomain,
                 vpc,
                 serviceName,
-                userName: `${serviceName}-user`,
+                userName: `${serviceName.replace(/-/g, '_')}_user`,
                 upstreamSecurityGroup: internalServicesSg
             }
         )

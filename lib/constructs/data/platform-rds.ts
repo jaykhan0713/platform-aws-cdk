@@ -6,6 +6,7 @@ import {BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformServiceName, PlatformServiceResource} from 'lib/config/service/platform-service-registry'
 import {resolveSecretName} from 'lib/config/naming'
 import {ParamNamespace, StackDomain} from 'lib/config/domain'
+import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 
 export interface PlatformRdsProps extends BaseStackProps {
     stackDomain: StackDomain
@@ -27,7 +28,7 @@ export class PlatformRds extends Construct {
         const {
             envConfig, upstreamSecurityGroup, stackDomain, serviceName, userName, vpc
         } = props
-        const databaseName = `${serviceName}-db`;
+        const databaseName = `${serviceName.replace(/-/g, '_')}_db`
 
         const rdsSg = new ec2.SecurityGroup(this,  `RdsSecurityGroup`, {
             securityGroupName: `${envConfig.projectName}-${stackDomain}-sg-${envConfig.envName}`,
@@ -42,6 +43,7 @@ export class PlatformRds extends Construct {
             `allow ingress from ${serviceName} to ${databaseName} on RDS`
         )
 
+        //note that RDS already enforces SSL by default without any parameter groups
         const rdsDb = new rds.DatabaseInstance(this,  `RdsDbInstance`, {
             engine: rds.DatabaseInstanceEngine.postgres({
                 version: rds.PostgresEngineVersion.VER_18_1
@@ -50,11 +52,8 @@ export class PlatformRds extends Construct {
                 ec2.InstanceClass.T4G,
                 ec2.InstanceSize.MICRO
             ),
-            parameters: {
-                rds_force_ssl: '1'
-            },
             vpc,
-            vpcSubnets: { subnets: vpc.isolatedSubnets },
+            vpcSubnets: { subnets: NetworkImports.privateIsolatedSubnets(this, envConfig) },
             securityGroups: [rdsSg],
             credentials: rds.Credentials.fromGeneratedSecret(userName, {
                 secretName: `${resolveSecretName(envConfig, ParamNamespace.services, serviceName, PlatformServiceResource.rds)}`

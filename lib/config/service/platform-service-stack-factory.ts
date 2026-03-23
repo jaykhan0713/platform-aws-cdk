@@ -47,7 +47,7 @@ export class PlatformServiceStackFactory {
             apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(this.envConfig)
         })
 
-        overrides?.resources?.forEach(resource => {
+        overrides?.resources?.forEach((stackDomain, resource) => {
             this.resourceMappings[resource]?.(serviceName, taskDefCfg)
         }, taskDefCfg)
 
