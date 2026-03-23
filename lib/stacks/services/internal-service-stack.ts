@@ -35,8 +35,6 @@ export class InternalServiceStack extends BaseStack {
         // 1. Initialize dependencies
         const imageTag = this.node.tryGetContext('imageTag')
 
-
-
         const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
 

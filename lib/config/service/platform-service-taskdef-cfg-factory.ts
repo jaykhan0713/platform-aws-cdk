@@ -2,8 +2,7 @@ import {Construct} from 'constructs'
 import {InternalServiceStackProps} from 'lib/stacks/services/internal-service-stack'
 import {InternalAlbServiceStackProps} from 'lib/stacks/services/internal-alb-service-stack'
 import {
-    platformServiceOverridesMap,
-    PlatformServiceResource
+    platformServiceOverridesMap
 } from 'lib/config/service/platform-service-registry'
 import {defaultTaskDefConfig, TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager'
@@ -11,6 +10,7 @@ import {resolveSecretName} from 'lib/config/naming'
 import {ParamNamespace} from 'lib/config/domain'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import {ObservabilityImports} from 'lib/config/dependency/observability/observability-imports'
+import {PlatformServiceResource, platformServiceResources} from 'lib/config/service/platform-service-resource-registry'
 
 //optional, when InternalAlb service stacks have resources- can add to that stack
 export class PlatformServiceTaskdefCfgFactory {
@@ -37,7 +37,7 @@ export class PlatformServiceTaskdefCfgFactory {
             apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig)
         })
 
-        platformServiceOverridesMap.get(serviceName)?.resources?.forEach((stackDomain, resource) => {
+        platformServiceResources.get(serviceName)?.forEach((_, resource) => {
             this.resourceMappings[resource]?.(taskdefCfg)
         })
 

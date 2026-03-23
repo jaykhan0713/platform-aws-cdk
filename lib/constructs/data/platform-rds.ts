@@ -3,10 +3,11 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as rds from 'aws-cdk-lib/aws-rds'
 import {Construct} from 'constructs'
 import {BaseStackProps} from 'lib/stacks/base-stack'
-import {PlatformServiceName, PlatformServiceResource} from 'lib/config/service/platform-service-registry'
+import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {resolveSecretName} from 'lib/config/naming'
 import {ParamNamespace, StackDomain} from 'lib/config/domain'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
+import {PlatformServiceResource} from 'lib/config/service/platform-service-resource-registry'
 
 export interface PlatformRdsProps extends BaseStackProps {
     stackDomain: StackDomain

@@ -5,10 +5,11 @@ import {resolveStackName} from 'lib/config/naming/stacks'
 import {
     getPlatformServiceStackId, PlatformServiceExposure,
     PlatformServiceName,
-    platformServiceOverridesMap, PlatformServiceResource
+    platformServiceOverridesMap
 } from 'lib/config/service/platform-service-registry'
 import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 import {InternalServiceStack} from 'lib/stacks/services/internal-service-stack'
+import {PlatformServiceResource} from 'lib/config/service/platform-service-resource-registry'
 
 export class PlatformServiceStackFactory {
     private readonly scope: cdk.App

@@ -1,5 +1,6 @@
 //note that adding another service here will automatically create an ECR repo for it.
 import {StackDomain} from 'lib/config/domain'
+import {PlatformServiceResource} from 'lib/config/service/platform-service-resource-registry'
 
 export const PlatformServiceName = {
     edgeService: 'edge-service',
@@ -18,16 +19,8 @@ export const PlatformServiceExposure = {
 
 export type PlatformServiceExposure = typeof PlatformServiceExposure[keyof typeof PlatformServiceExposure]
 
-export const PlatformServiceResource = {
-    rds: 'rds',
-}
-
-export type PlatformServiceResource = typeof PlatformServiceResource[keyof typeof PlatformServiceResource]
-
 export type PlatformServiceOverrides = {
     readonly exposure?: PlatformServiceExposure
-    readonly resources?: Map<PlatformServiceResource, StackDomain>
-    //task def overrides
 }
 
 export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, PlatformServiceOverrides> = new Map<
@@ -38,14 +31,6 @@ export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, Platf
         PlatformServiceName.edgeService,
         {
             exposure: PlatformServiceExposure.alb
-        }
-    ],
-    [
-        PlatformServiceName.apolloService,
-        {
-            resources: new Map<PlatformServiceResource, StackDomain>([
-                [PlatformServiceResource.rds, StackDomain.apolloServiceRds]
-            ])
         }
     ]
 ])
