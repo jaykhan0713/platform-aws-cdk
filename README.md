@@ -36,6 +36,7 @@ the rest.
 | [CICD](docs/cicd/CICD.md)                                                                   | Automation of CodePipeline, CodeBuild, CDK deploy, ECR, CodeArtifact, Github Connection |
 | [Security](docs/security/SECURITY.md)                                                       | IAM scoping, Cognito, mTLS, Security Group tightening                                   |
 | [Cost Design](docs/cost-design/COST_DESIGN.md)                                              | Documented savings, right-sizing rationale                                              |
+| [Data Persistence](docs/data-persistence/DATA_PERSISTENCE.md)                               | RDS, Dynamo, Redis |
 
 ---
 
