@@ -4,6 +4,7 @@ NOTE: must run these from project root.
 
 ---
 sleep-services.sh: ecs service desired counts to 0
+sleep-data.sh: Destroy persistent data layers (RDS, Dynamo, etc)
 sleep-infra.sh: Destroy VPC interface endpoints
 
 sleep.sh: runs everything in order safely
