@@ -7,6 +7,7 @@ export const PlatformServiceResource = {
 
 export type PlatformServiceResource = typeof PlatformServiceResource[keyof typeof PlatformServiceResource]
 
+//Note these are 1:1 owned resources by the service. I.e 1 service owns 1 rds instance
 export const platformServiceResources: ReadonlyMap<PlatformServiceName, ReadonlyMap<PlatformServiceResource, StackDomain>> = new Map<
     PlatformServiceName,
     ReadonlyMap<PlatformServiceResource, StackDomain>

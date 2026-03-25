@@ -5,3 +5,4 @@
 - Currently service SGs use membership model, can tightly scope via config
 - rotate secrets for resources like RDS (need custom spring boot code), can also use IAM db auth for RDS
 - remove AWS managed AmazonECSTaskExecutionRolePolicy w/ ecr and logs "*" access from (custom policy already scoped tight)
+- for docker dev, add envoy container per service for production adjacent workflow
