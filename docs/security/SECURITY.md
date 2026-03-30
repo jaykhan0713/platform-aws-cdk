@@ -1,7 +1,7 @@
 ## Security
 
 Security is handled tightly across the architecture via SG ingress, egress and Cognito Auth at the Gateway.
-TLS is terminated at the ALB. ALB listens on HTTP port 443, internal microservices communicate via service connect which
+TLS is terminated at the ALB. ALB listens on HTTPS port 443, internal microservices communicate via service connect which
 use mTLS so service to service certificates are automatically handled by ECS. Each microservice is given a Service Connect Envoy container sidecar automatically
 
 ### VPC Private Subnet with VPC endpoints (No NAT)
