@@ -29,6 +29,11 @@ export type EnvConfig = {
         }
     }
 
+    route53Config?: { //find zone id and domainName in route53 hosted zones
+        domainName: string
+        hostedZoneId: string
+    },
+
     /*** services ***/
 
     ecsClusterConfig?: {
@@ -57,6 +62,11 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
                 enableEcsExec: false,
                 enableInterfaceMultiAz: false
             }
+        },
+
+        route53Config: {
+            domainName: 'jay-platform-api.com',
+            hostedZoneId: 'Z04506972PM9CI98WZAOC'
         },
 
         ecsClusterConfig: {

@@ -1,5 +1,6 @@
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
+import * as acm from 'aws-cdk-lib/aws-certificatemanager'
 
 import {Construct} from 'constructs'
 
@@ -11,7 +12,7 @@ export interface PlatformInternalAlbProps extends BaseStackProps {
     vpc: ec2.IVpc
     privateIsolatedSubnets: ec2.ISubnet[]
     upstreamSgs?: ec2.ISecurityGroup[]
-    albHttpListenerPort?: number
+    albCertificateArn?: string
     tg: elbv2.ApplicationTargetGroup
 }
 
@@ -24,8 +25,7 @@ export class PlatformInternalAlb extends Construct {
     constructor(scope: Construct, id: string, props: PlatformInternalAlbProps) {
         super(scope, id);
 
-        const { envConfig, serviceName, vpc } = props
-        const defaultHttpListenerPort = 80
+        const { envConfig, serviceName, vpc, albCertificateArn } = props
 
         //egress rule set by orchestrator
         this.securityGroup = new ec2.SecurityGroup(this, 'AlbSg', {
@@ -34,7 +34,7 @@ export class PlatformInternalAlb extends Construct {
             allowAllOutbound: false //tighten to service via addEgressRule
         })
 
-        const listenerPort = props.albHttpListenerPort ?? defaultHttpListenerPort
+        const listenerPort = albCertificateArn ? 443 : 80
 
         for (const upstreamSg of props.upstreamSgs ?? []) {
             this.securityGroup.addIngressRule(
@@ -54,9 +54,22 @@ export class PlatformInternalAlb extends Construct {
             securityGroup: this.securityGroup
         })
 
+        const listenerProps = albCertificateArn ?
+            {
+                protocol: elbv2.ApplicationProtocol.HTTPS,
+                certificates: [acm.Certificate.fromCertificateArn(
+                    this, 'AlbCert', props.albCertificateArn!
+                )],
+                sslPolicy: elbv2.SslPolicy.RECOMMENDED_TLS
+            } :
+            {
+                protocol: elbv2.ApplicationProtocol.HTTP
+            }
+
         this.listener = this.alb.addListener('HttpListener', {
-            port: props.albHttpListenerPort ?? defaultHttpListenerPort,
-            open: false
+            port: listenerPort,
+            open: false,
+            ...listenerProps
         })
 
         // tell listener to forward to TG

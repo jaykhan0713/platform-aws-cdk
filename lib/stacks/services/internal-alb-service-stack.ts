@@ -1,11 +1,13 @@
 import * as cdk from 'aws-cdk-lib'
 import * as ec2 from 'aws-cdk-lib/aws-ec2'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
+import * as ecr from 'aws-cdk-lib/aws-ecr'
+import * as acm from 'aws-cdk-lib/aws-certificatemanager'
+import * as route53 from 'aws-cdk-lib/aws-route53'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformInternalAlb} from 'lib/constructs/alb/platform-internal-alb'
 import {PlatformEcsTaskSecurityGroup} from 'lib/constructs/ecs/platform-ecs-task-security-group'
-import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
 import {PlatformEcsTaskRole} from 'lib/constructs/ecs/platform-ecs-task-role'
 import {PlatformEcsTaskDef} from 'lib/constructs/ecs/platform-ecs-task-def'
 import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling-service'
@@ -13,7 +15,6 @@ import {PlatformInternalAlbTargetGroup} from 'lib/constructs/alb/platform-intern
 import {PlatformEcsTaskExecutionRole} from 'lib/constructs/ecs/platform-ecs-task-execution-role'
 import {NetworkImports} from 'lib/config/dependency/network/network-imports'
 import {ObservabilityImports} from 'lib/config/dependency/observability/observability-imports'
-import * as ecr from 'aws-cdk-lib/aws-ecr'
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 import {resolveExportName} from "lib/config/naming";
 import {AlbExports} from "lib/config/dependency/alb/alb-exports";
@@ -39,9 +40,26 @@ export class InternalAlbServiceStack extends BaseStack {
         const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
         const privateIsolatedSubnets = NetworkImports.privateIsolatedSubnets(this, envConfig)
 
-        //0. Wire any taskdef dependencies for internal service resources
+        //0. Wire any taskdef dependencies for internal service resources, set up acmm certs
         const taskDefCfgFactory = new PlatformServiceTaskdefCfgFactory(this, props)
         const taskDefCfg = taskDefCfgFactory.buildTaskdefCfg()
+
+        let albCertificateArn
+
+        if (envConfig.route53Config) {
+            const domainName = envConfig.route53Config.domainName
+            const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ApiHostedZone', {
+                hostedZoneId: envConfig.route53Config.hostedZoneId,
+                zoneName: domainName
+            })
+
+            const albCert = new acm.Certificate(this, 'AlbInternalCert', {
+                domainName: `internal.${domainName}`,
+                validation: acm.CertificateValidation.fromDns(hostedZone)
+            })
+
+            albCertificateArn = albCert.certificateArn
+        }
 
         // 1. Create  ALB, TG, solve SG dependencies
 
@@ -77,13 +95,12 @@ export class InternalAlbServiceStack extends BaseStack {
                 ...(vpcLinkSubSg ? [] : [internalServicesSg])
             ]
 
-        const albHttpListenerPort = 80
         const platformInternalAlb = new PlatformInternalAlb(this, 'PlatformInternalAlb', {
             ...props,
             upstreamSgs: combinedToAlbSgs, //for albsg.addIngress(), if non vpc link -> alb, pass in internalServices sg here
             serviceName,
             vpc,
-            albHttpListenerPort,
+            albCertificateArn,
             privateIsolatedSubnets,
             tg
         })
