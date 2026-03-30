@@ -103,7 +103,7 @@ export class ApiStack extends BaseStack {
 
         const paramNamespace = ParamNamespace.gateway
 
-        const apiUrl = customDomain ? `${customDomain.name}/` : platformHttpApi.apiUrl
+        const apiUrl = customDomain ? `https://${customDomain.name}/` : platformHttpApi.apiUrl
         //parameter store
         new ssm.StringParameter(this, 'ParameterApiUrl', {
             parameterName: resolveSsmParamPath(envConfig, paramNamespace, stackDomain, 'api-url'),

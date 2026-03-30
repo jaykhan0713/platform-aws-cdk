@@ -47,11 +47,16 @@ export class PlatformHttpApi extends Construct {
         const requestIdHeader = 'x-request-id'
         const apiPrefix = "api/v1"
 
+        const secureServerName = envConfig.route53Config
+            ? `internal.${envConfig.route53Config.domainName}`
+            : undefined
+
         const publicIntegration = new integrations.HttpAlbIntegration(
             'PublicIntegration',
             props.listener,
             {
                 vpcLink: props.vpcLink,
+                secureServerName,
                 parameterMapping: new apigwv2.ParameterMapping()
                     .overwritePath( //strips 'public' in /public/api/v1/{proxy+} transforms to /api/v1{proxy+}
                         apigwv2.MappingValue.custom(`/${apiPrefix}/$request.path.proxy`)
@@ -72,6 +77,7 @@ export class PlatformHttpApi extends Construct {
             props.listener,
             {
                 vpcLink: props.vpcLink,
+                secureServerName,
                 parameterMapping: new apigwv2.ParameterMapping()
                     .overwriteHeader(
                         userIdHeader,
@@ -89,6 +95,7 @@ export class PlatformHttpApi extends Construct {
             props.listener,
             {
                 vpcLink: props.vpcLink,
+                secureServerName,
                 parameterMapping: new apigwv2.ParameterMapping()
                     .overwritePath( //strips 'internal' in internal/{proxy+} transforms to /{proxy+}
                         apigwv2.MappingValue.custom('/$request.path.proxy')
@@ -109,6 +116,7 @@ export class PlatformHttpApi extends Construct {
             props.listener,
             {
                 vpcLink: props.vpcLink,
+                secureServerName,
                 parameterMapping: new apigwv2.ParameterMapping()
                     .overwritePath(
                         apigwv2.MappingValue.custom(`/${apiPrefix}/$request.path.proxy`)
