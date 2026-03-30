@@ -26,4 +26,8 @@ for SERVICE in "${SERVICES[@]}"; do
     --services "$SERVICE"
 done
 
+echo "Disabling Container Insights..."
+npm run cdk:service-runtime -- deploy ServiceRuntime \
+  --require-approval never
+
 echo "All services are now asleep zzzz"
