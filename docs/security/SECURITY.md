@@ -1,8 +1,12 @@
 ## Security
 
 Security is handled tightly across the architecture via SG ingress, egress and Cognito Auth at the Gateway.
-TLS is terminated at the ALB. ALB listens on HTTPS port 443, internal microservices communicate via service connect which
-use mTLS so service to service certificates are automatically handled by ECS. Each microservice is given a Service Connect Envoy container sidecar automatically
+TLS is terminated at API gateway, API gw -> TLS to ALB. ALB listens on HTTPS port 443, terminates TLS. 
+Custom Route 53 domain is optionally used. ACM cert is used by ALB so API gw can invoke a TLS connection to ALB via secureServerName in integrations.
+Same Route 53 can be used for custom domain name with an additional ACM cert so you don't have to hit AWS prebuild execute-API (which still manages it's own cert).
+internal microservices communicate via service connect which can use mTLS so service to service certificates are automatically handled by ECS. 
+Each microservice is given a Service Connect Envoy container sidecar automatically.
+For this portfolio, mTLS is expensive so only having services in private subnets with VPCE is sufficient, you would add mtls for defense-in-depth.
 
 ### VPC Private Subnet with VPC endpoints (No NAT)
 All services are deployed on private subnets within the VPC with no egress to internet. Any AWS resources fargate or
