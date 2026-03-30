@@ -1,7 +1,7 @@
 ## Security
 
 Security is handled tightly across the architecture via SG ingress, egress and Cognito Auth at the Gateway.
-TLS is terminated at the gateway. ALB listens on HTTP port 80, internal microservices communicate via service connect which
+TLS is terminated at the ALB. ALB listens on HTTP port 443, internal microservices communicate via service connect which
 use mTLS so service to service certificates are automatically handled by ECS. Each microservice is given a Service Connect Envoy container sidecar automatically
 
 ### VPC Private Subnet with VPC endpoints (No NAT)
@@ -38,4 +38,4 @@ A custom scope, client id is stored in SSM for the k6 runner to fetch via parame
 ### TLS
 Internal services are designed to talk via mTLS (Mutal TLS) so ECS itself handles certs and
 you get encrypted transport without having to worry about company HTTPS compliance standards even in private
-VPCE
+VPCE. Currently disabled by default for cost savings.
