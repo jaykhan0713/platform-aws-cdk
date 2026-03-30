@@ -18,6 +18,7 @@ export interface PlatformHttpApiGatewayProps extends BaseStackProps {
 
 export class PlatformHttpApi extends Construct {
     public readonly apiUrl: string
+    public readonly api: apigwv2.HttpApi
 
     constructor(scope: Construct, id: string, props: PlatformHttpApiGatewayProps) {
         super(scope, id);
@@ -25,7 +26,7 @@ export class PlatformHttpApi extends Construct {
         const { envConfig } = props
         const { projectName, envName } = envConfig
 
-        const api = new apigwv2.HttpApi(this, "HttpApi", {
+        this.api = new apigwv2.HttpApi(this, "HttpApi", {
             apiName: `${projectName}-api-${envName}`,
             createDefaultStage: true,
             corsPreflight: {
@@ -36,6 +37,8 @@ export class PlatformHttpApi extends Construct {
                 maxAge: cdk.Duration.days(1),
             }
         })
+
+        const api = this.api
 
         this.apiUrl = api.url ?? ''
 

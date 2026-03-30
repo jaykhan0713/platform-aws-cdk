@@ -2,6 +2,9 @@ import * as cdk from 'aws-cdk-lib'
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2'
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
+import * as acm from 'aws-cdk-lib/aws-certificatemanager'
+import * as route53 from 'aws-cdk-lib/aws-route53'
+import * as targets from 'aws-cdk-lib/aws-route53-targets'
 import * as ssm from 'aws-cdk-lib/aws-ssm'
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack';
@@ -61,17 +64,55 @@ export class ApiStack extends BaseStack {
             synthAuthClient: platformCognito.synthAuthClient
         })
 
+        let customDomain
+
+        if (envConfig.route53Config) {
+            const domainName = envConfig.route53Config.domainName
+
+            const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ApiHostedZone', {
+                hostedZoneId: envConfig.route53Config.hostedZoneId,
+                zoneName: domainName
+            })
+
+            const apiCert = new acm.Certificate(this, 'ApiGwCert', {
+                domainName: `api.${domainName}`,
+                validation: acm.CertificateValidation.fromDns(hostedZone)
+            })
+
+            customDomain = new apigwv2.DomainName(this, 'ApiCustomDomain', {
+                domainName: `api.${domainName}`,
+                certificate: apiCert
+            })
+
+            new apigwv2.ApiMapping(this, 'ApiMapping', {
+                api: platformHttpApi.api,
+                domainName: customDomain
+            })
+
+            new route53.ARecord(this, 'ApiAliasRecord', {
+                zone: hostedZone,
+                recordName: 'api',
+                target: route53.RecordTarget.fromAlias(
+                    new targets.ApiGatewayv2DomainProperties(
+                        customDomain.regionalDomainName, // i.e the new d-xyz789.execute-api...
+                        customDomain.regionalHostedZoneId
+                    )
+                )
+            })
+        }
+
         const paramNamespace = ParamNamespace.gateway
 
+        const apiUrl = customDomain ? `${customDomain.name}/` : platformHttpApi.apiUrl
         //parameter store
         new ssm.StringParameter(this, 'ParameterApiUrl', {
             parameterName: resolveSsmParamPath(envConfig, paramNamespace, stackDomain, 'api-url'),
-            stringValue: platformHttpApi.apiUrl
+            stringValue: apiUrl
         })
 
         //outputs
         new cdk.CfnOutput(this, 'CfnOutputApiUrl', {
-            value: platformHttpApi.apiUrl
+            value: apiUrl
         })
     }
 }
