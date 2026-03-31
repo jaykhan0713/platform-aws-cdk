@@ -142,7 +142,7 @@ export class PlatformHttpApi extends Construct {
         )
 
         //public route, anonymous without login
-        api.addRoutes({
+        const publicRoutes = api.addRoutes({
             path: '/public/api/v1/{proxy+}',
             methods: [apigwv2.HttpMethod.GET],
             integration: publicIntegration
@@ -185,6 +185,10 @@ export class PlatformHttpApi extends Construct {
                 DetailedMetricsEnabled: true //since overwriting the settings, this gets disabled by default
             }
         }
+
+        //route has to exist before giving it settings via defaultChild
+        const cfnPublicRoute = publicRoutes[0].node.defaultChild as apigwv2.CfnRoute
+        defaultStage.addDependency(cfnPublicRoute)
     }
 
 }

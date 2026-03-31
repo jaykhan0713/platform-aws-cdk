@@ -23,8 +23,22 @@ export class PlatformCognito extends Construct {
         //store of users + authentication engine. Tokens are issued by pool
         this.userPool = new cognito.UserPool(this, 'UserPool', {
             userPoolName: `${projectName}-user-pool-${envName}`,
-            selfSignUpEnabled: false,
-            signInAliases: { username: true },
+            selfSignUpEnabled: true,
+            signInAliases: { email: true },
+            autoVerify: { email: true },
+            userVerification: {
+                emailSubject: 'Verify your jay.platform account',
+                emailBody: 'Your verifcation code is {####}',
+                emailStyle: cognito.VerificationEmailStyle.CODE
+            },
+            passwordPolicy: {
+                minLength: 8,
+                requireLowercase: true,
+                requireUppercase: true,
+                requireDigits: true,
+                requireSymbols: false
+            },
+            accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
             removalPolicy: cdk.RemovalPolicy.DESTROY, // for showcase
         })
 
@@ -47,7 +61,8 @@ export class PlatformCognito extends Construct {
             generateSecret: false, // requires false for PKCE
 
             authFlows: {
-                userSrp: true, // good to keep
+                userSrp: true,
+                userPassword: false // SRP only
             },
 
             oAuth: {
@@ -55,15 +70,18 @@ export class PlatformCognito extends Construct {
                     authorizationCodeGrant: true,
                 },
                 scopes: [
-                    cognito.OAuthScope.OPENID, //only use sub currently
-                    // cognito.OAuthScope.PROFILE,
-                    // cognito.OAuthScope.EMAIL,
+                    cognito.OAuthScope.OPENID,
+                    cognito.OAuthScope.EMAIL,
                 ],
                 callbackUrls: [
+                    'https://jay-platform.com/login',
+                    'http://localhost:3000/login',
                     'postman://app/oauth2/callback',
                     'https://oauth.pstmn.io/v1/callback',
                 ],
                 logoutUrls: [
+                    'https://jay-platform.com',
+                    'http://localhost:3000',
                     'https://oauth.pstmn.io/v1/callback',
                 ],
             }
