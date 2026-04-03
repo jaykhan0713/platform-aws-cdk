@@ -5,6 +5,8 @@ with clear ownership boundaries of cloudformation stacks.
 
 Intent: 0-1, Walk into a seed-stage/start-up company. Plug and play their business use-case. Have an optimized, scalable distributed system, cost-savings, all deployed within the first hour. 
 
+For project visual overview please visit: [jay-platform.com](https://jay-platform.com)
+
 For my standardized [Spring boot 4 + Java25 + Project loom virtual threads enabled] microservices, please refer to github repo README: **[platform-service](https://github.com/jaykhan0713/platform-service)**
 
 ---
