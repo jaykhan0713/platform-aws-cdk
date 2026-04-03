@@ -61,11 +61,12 @@ export class NatStack extends BaseStack {
          * MASQUERADE: rewrites source IP so the internet sees the NAT instance's IP, not your private subnet IP
          * Both required, neither is on by default.
          */
+
         natInstance.addUserData(
             'echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf',
             'sysctl -p',
             'yum install -y iptables-services',
-            'iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE',
+            'iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE',
             'service iptables save',
         )
 
