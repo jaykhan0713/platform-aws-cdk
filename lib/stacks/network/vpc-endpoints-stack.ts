@@ -8,7 +8,6 @@ import { resolveVpceNameTag, TagKeys} from 'lib/config/naming'
 import { PlatformInterfaceVpce } from 'lib/constructs/vpc/platform-interface-vpce'
 import {VpceServiceName} from 'lib/config/domain/vpce-service-name'
 import {EnvConfig} from 'lib/config/env/env-config'
-import { AZ } from 'lib/config/domain'
 
 export class VpcEndpointsStack extends BaseStack {
 
@@ -20,12 +19,14 @@ export class VpcEndpointsStack extends BaseStack {
     }> = [
         {   id: 'EcrApiVpcEndpoint',
             service: ec2.InterfaceVpcEndpointAwsService.ECR,
-            name: VpceServiceName.ecrApi
+            name: VpceServiceName.ecrApi,
+            enabled: cfg => VpcEndpointsStack.nonRuntimeEndpointsEnabled(cfg)
         },
         {
             id: 'EcrDkrVpcEndpoint',
             service: ec2.InterfaceVpcEndpointAwsService.ECR_DOCKER,
-            name: VpceServiceName.ecrDkr
+            name: VpceServiceName.ecrDkr,
+            enabled: cfg => VpcEndpointsStack.nonRuntimeEndpointsEnabled(cfg)
         },
         {
             id: 'CloudWatchLogsVpcEndpoint',
@@ -45,13 +46,14 @@ export class VpcEndpointsStack extends BaseStack {
         {
             id: 'SecretsManagerVpcEndpoint',
             service: ec2.InterfaceVpcEndpointAwsService.SECRETS_MANAGER,
-            name: VpceServiceName.secrets
+            name: VpceServiceName.secrets,
+            enabled: cfg => VpcEndpointsStack.nonRuntimeEndpointsEnabled(cfg)
         },
         {
             id: 'SsmVpcEndpoint',
             service: ec2.InterfaceVpcEndpointAwsService.SSM,
             name: VpceServiceName.ssm,
-            enabled: () => false
+            enabled: cfg => VpcEndpointsStack.nonRuntimeEndpointsEnabled(cfg)
         },
         {
             id: 'SsmMessagesVpcEndpoint',
@@ -155,6 +157,10 @@ export class VpcEndpointsStack extends BaseStack {
             TagKeys.Name,
             resolveVpceNameTag(props.envConfig, VpceServiceName.s3Gateway)
         )
+    }
+
+    private static nonRuntimeEndpointsEnabled(cfg: EnvConfig): boolean {
+        return cfg.vpceConfig?.interfaceOptions.enableNonRuntime === true;
     }
 
     private static ecsExecEndpointsEnabled(cfg: EnvConfig): boolean {

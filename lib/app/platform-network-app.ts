@@ -6,6 +6,7 @@ import { type EnvConfig, getEnvConfig, toCdkStackProps } from 'lib/config/env/en
 import type { EnvName } from 'lib/config/domain/env-name'
 import { StackDomain } from 'lib/config/domain/stack-domain'
 import { NetworkStack } from 'lib/stacks/network/network-stack'
+import {NatStack} from 'lib/stacks/network/nat-stack'
 
 export class PlatformNetworkApp {
 
@@ -26,7 +27,8 @@ export class PlatformNetworkApp {
         const networkStack = this.createNetworkStack(stackProps, envConfig)
 
         this.createVpcEndpointsStack(stackProps, envConfig, networkStack)
-        //const ecsClusterStack = this.createEcsClusterStack(stackProps, envConfig, networkStack)
+
+        this.createNatStack(stackProps, envConfig, networkStack)
     }
 
     //network stacks
@@ -56,6 +58,26 @@ export class PlatformNetworkApp {
         new VpcEndpointsStack(
             this.app,
             'VpcEndpoints',
+            {
+                stackName: resolveStackName(envConfig, stackDomain),
+                ...stackProps,
+                envConfig,
+                stackDomain,
+                vpc: networkStack.vpc
+            }
+        )
+    }
+
+    private createNatStack(
+        stackProps: cdk.StackProps,
+        envConfig: EnvConfig,
+        networkStack: NetworkStack
+    ) {
+        const stackDomain = StackDomain.nat
+
+        new NatStack(
+            this.app,
+            'Nat',
             {
                 stackName: resolveStackName(envConfig, stackDomain),
                 ...stackProps,

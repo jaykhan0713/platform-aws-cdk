@@ -22,6 +22,7 @@ export type EnvConfig = {
 
     vpceConfig?: {
         interfaceOptions: {
+            enableNonRuntime: boolean //enables vpce on low traffic paths, when not using NAT instance.
             enableEcsExec: boolean
 
             // single AZ per interface endpoint by default to save cost. For real traffic, can toggle
@@ -59,6 +60,7 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
 
         vpceConfig: {
             interfaceOptions: {
+                enableNonRuntime: false,
                 enableEcsExec: false,
                 enableInterfaceMultiAz: false
             }

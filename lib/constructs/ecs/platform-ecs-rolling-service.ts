@@ -87,7 +87,7 @@ export class PlatformEcsRollingService extends Construct {
                 enable: true,
                 rollback: true
             },
-            enableExecuteCommand: true, //enable ecs exec
+            enableExecuteCommand: false, //enable ssm agent to run as process on each container
             minHealthyPercent: 100,
             maxHealthyPercent: 200
         })
@@ -101,7 +101,7 @@ export class PlatformEcsRollingService extends Construct {
         })
 
         scaling.scaleOnCpuUtilization('CpuTargetTracking', {
-            targetUtilizationPercent: 70,
+            targetUtilizationPercent: 75,
             scaleInCooldown: cdk.Duration.seconds(180),
             scaleOutCooldown: cdk.Duration.seconds(60)
         })

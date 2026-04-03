@@ -6,9 +6,9 @@ import {
 import {foundationPipelineDomains, PlatformFoundationName} from 'lib/config/foundation/platform-foundation-registry'
 
 export const StackDomain = {
-    //runtime envs
     network: 'network',
     vpcEndpoints: 'vpc-endpoints',
+    nat: 'nat',
     observability: 'observability',
     serviceRuntime: 'service-runtime',
     serviceEcrRepos: 'service-ecr-repos',
