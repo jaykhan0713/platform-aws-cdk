@@ -18,6 +18,7 @@ export class CognitoStack extends BaseStack {
 
         this.platformCognito = new PlatformCognito(this, 'PlatformCognito', props)
 
+        const userClient = this.platformCognito.userAuthClient
         const synthClient = this.platformCognito.synthAuthClient
         const paramNamespace = ParamNamespace.gateway
 
@@ -37,6 +38,11 @@ export class CognitoStack extends BaseStack {
         new ssm.StringParameter(this, 'ParameterCognitoIssuerUri', {
             parameterName: resolveSsmParamPath(envConfig, paramNamespace, stackDomain, 'issuer-uri'),
             stringValue: this.platformCognito.userPool.userPoolProviderUrl
+        })
+
+        new ssm.StringParameter(this, 'ParameterUserAuthClientId', {
+            parameterName: resolveSsmParamPath(envConfig, paramNamespace, stackDomain, 'user-client-id'),
+            stringValue: userClient.userPoolClientId,
         })
 
         new ssm.StringParameter(this, 'ParameterSynthClientId', {

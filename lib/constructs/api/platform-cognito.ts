@@ -28,7 +28,7 @@ export class PlatformCognito extends Construct {
             autoVerify: { email: true },
             userVerification: {
                 emailSubject: 'Verify your jay.platform account',
-                emailBody: 'Your verifcation code is {####}',
+                emailBody: 'Your verification code is {####}',
                 emailStyle: cognito.VerificationEmailStyle.CODE
             },
             passwordPolicy: {
@@ -43,13 +43,14 @@ export class PlatformCognito extends Construct {
         })
 
         //Creates https://<projectName>-auth-<envName>.auth.us-west-2.amazoncognito.com Oauth endpoint
-        //https://<projectName>-auth-<envName>.auth.us-west-2.amazoncognito.com/oauth2/{authorize,token,logout,jwks.json.. etc}
+        //https://<projectName>-auth-<envName>.auth.us-west-2.amazoncognito.com/oauth2/{authorize,token,logout etc}
         const domainPrefix = `${projectName}-auth-${envName}`
 
         this.userPool.addDomain('CognitoDomain', {
             cognitoDomain: {
                 domainPrefix,
-            }
+            },
+            managedLoginVersion: cognito.ManagedLoginVersion.NEWER_MANAGED_LOGIN
         })
 
         this.cognitoDomainUrl = `https://${domainPrefix}.auth.${region}.amazoncognito.com`
@@ -61,7 +62,7 @@ export class PlatformCognito extends Construct {
             generateSecret: false, // requires false for PKCE
 
             authFlows: {
-                userSrp: true,
+                userSrp: true, //TODO: switch to false once oAuth is live
                 userPassword: false // SRP only
             },
 
@@ -72,10 +73,11 @@ export class PlatformCognito extends Construct {
                 scopes: [
                     cognito.OAuthScope.OPENID,
                     cognito.OAuthScope.EMAIL,
+                    //cognito.OAuthScope.PROFILE
                 ],
                 callbackUrls: [
-                    'https://jay-platform.com/login',
-                    'http://localhost:3000/login',
+                    'https://jay-platform.com/auth/callback',
+                    'http://localhost:3000/auth/callback',
                     'postman://app/oauth2/callback',
                     'https://oauth.pstmn.io/v1/callback',
                 ],
@@ -85,6 +87,12 @@ export class PlatformCognito extends Construct {
                     'https://oauth.pstmn.io/v1/callback',
                 ],
             }
+        })
+
+        new cognito.CfnManagedLoginBranding(this, 'ManagedLoginBranding', {
+            userPoolId: this.userPool.userPoolId,
+            clientId: this.userAuthClient.userPoolClientId,
+            useCognitoProvidedValues: true,  // use Cognito defaults, customize in console after
         })
 
         // 1) Resource server + scope used for client_credentials

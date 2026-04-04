@@ -154,7 +154,7 @@ export class PlatformHttpApi extends Construct {
             methods: [apigwv2.HttpMethod.GET],
             integration: userIntegration,
             authorizer,
-            authorizationScopes: ['openid']
+            //authorizationScopes: ['openid'] //TODO enforce scope later when using HttpOnly cookies
         })
 
 
@@ -163,7 +163,7 @@ export class PlatformHttpApi extends Construct {
             methods: [apigwv2.HttpMethod.ANY],
             integration: internalIntegration,
             authorizer,
-            authorizationScopes: ['openid']
+            //authorizationScopes: ['openid'] //TODO enforce scope later when using HttpOnly cookies
         })
 
         api.addRoutes({

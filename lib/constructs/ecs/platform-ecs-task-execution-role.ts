@@ -7,7 +7,6 @@ import {
 import {IamConstants} from 'lib/config/domain/iam-constants'
 import {ParamNamespace} from 'lib/config/domain/param-namespace'
 import {BaseStackProps} from 'lib/stacks/base-stack'
-import {StackDomain} from 'lib/config/domain'
 
 export class PlatformEcsTaskExecutionRole extends Construct {
 
