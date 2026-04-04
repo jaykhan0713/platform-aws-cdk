@@ -1,6 +1,5 @@
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 
-import {Construct} from 'constructs'
 import type { EnvConfig } from 'lib/config/env/env-config'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 

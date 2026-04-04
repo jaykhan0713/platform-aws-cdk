@@ -34,8 +34,12 @@ export class CognitoStack extends BaseStack {
             stringValue: this.platformCognito.cognitoDomainUrl
         })
 
+        new ssm.StringParameter(this, 'ParameterCognitoIssuerUri', {
+            parameterName: resolveSsmParamPath(envConfig, paramNamespace, stackDomain, 'issuer-uri'),
+            stringValue: this.platformCognito.userPool.userPoolProviderUrl
+        })
+
         new ssm.StringParameter(this, 'ParameterSynthClientId', {
-            //parameterName: `/${projectName}/${envName}/core/cognito/synth-client-id`,
             parameterName: resolveSsmParamPath(envConfig, paramNamespace, stackDomain, 'synth-client-id'),
             stringValue: synthClient.userPoolClientId
         })

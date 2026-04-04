@@ -2,11 +2,12 @@ import * as iam from 'aws-cdk-lib/aws-iam'
 import {Construct} from 'constructs'
 
 import {
-    resolveIamRoleName, resolveSecretPathArnWildcard, resolveSsmParamPathArnWildcard
+    resolveIamRoleName, resolveSecretPathArnWildcard, resolveSsmParamPath, resolveSsmParamPathArnWildcard
 } from 'lib/config/naming'
 import {IamConstants} from 'lib/config/domain/iam-constants'
 import {ParamNamespace} from 'lib/config/domain/param-namespace'
 import {BaseStackProps} from 'lib/stacks/base-stack'
+import {StackDomain} from 'lib/config/domain'
 
 export class PlatformEcsTaskExecutionRole extends Construct {
 
@@ -38,7 +39,8 @@ export class PlatformEcsTaskExecutionRole extends Construct {
                 'ssm:GetParametersByPath'
             ],
             resources: [
-                resolveSsmParamPathArnWildcard(props.envConfig, ParamNamespace.core)
+                resolveSsmParamPathArnWildcard(props.envConfig, ParamNamespace.core),
+                resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'issuer-uri')
             ]
         }))
 

@@ -13,11 +13,14 @@ npm run cdk:<area> -- deploy --require-approval never --all
 network: VPC, VPC endpoints, VPC Link
 observability: Grafana, Prometheus workspaces
 service-runtime: ECS Cluster, Service Connect Http namespace, ECS shared membership security group
+data: RDS, DynamoDB, Redis
+gateway: Cognito, services have dependency on jwks for security
 cicd: - ECR repos for service apps, foundation (k6 load testing, adot collector, base-images, etc)
       - CodePipelines for foundations (image push to above ECR repos)
       - CodePipelines for services owned DTO publishing to CodeArtifact
       - CodePipelines for services, source/build/deploy
-gateway: Cognito, Http API gateway
+      - edge services can have ALB that use route53 custom domains + cert for TLS termination
+gateway: Http API gateway
 ```
 
 \<area\> that are handled by Codepipeline and use cdk deploy (sources this project).

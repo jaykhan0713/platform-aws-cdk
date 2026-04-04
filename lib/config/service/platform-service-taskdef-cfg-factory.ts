@@ -1,13 +1,12 @@
-import {Construct} from 'constructs'
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager'
+import * as ssm from 'aws-cdk-lib/aws-ssm'
+import { Construct } from 'constructs'
+
 import {InternalServiceStackProps} from 'lib/stacks/services/internal-service-stack'
 import {InternalAlbServiceStackProps} from 'lib/stacks/services/internal-alb-service-stack'
-import {
-    platformServiceOverridesMap
-} from 'lib/config/service/platform-service-registry'
 import {defaultTaskDefConfig, TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
-import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager'
-import {resolveSecretName} from 'lib/config/naming'
-import {ParamNamespace} from 'lib/config/domain'
+import {resolveSecretName, resolveSsmParamPath} from 'lib/config/naming'
+import {ParamNamespace, StackDomain} from 'lib/config/domain'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import {ObservabilityImports} from 'lib/config/dependency/observability/observability-imports'
 import {PlatformServiceResource, platformServiceResources} from 'lib/config/service/platform-service-resource-registry'
@@ -37,11 +36,34 @@ export class PlatformServiceTaskdefCfgFactory {
             apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig)
         })
 
+        this.mapDefaultSecrets(taskdefCfg)
+
         platformServiceResources.get(serviceName)?.forEach((_, resource) => {
             this.resourceMappings[resource]?.(taskdefCfg)
         })
 
         return taskdefCfg
+    }
+
+    private mapDefaultSecrets = (
+        taskdefCfg: TaskDefinitionConfig
+    ) => {
+
+        const { envConfig } = this.props
+
+        const appSecrets = taskdefCfg.app.secrets ?? {}
+
+        const defaultSecrets = {
+            ISSUER_URI: ecs.Secret.fromSsmParameter(
+                ssm.StringParameter.fromStringParameterName(
+                    this.scope, `IssuerUriParam`,
+                    resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'issuer-uri')
+                )
+            )
+        }
+
+        taskdefCfg.app.secrets = { ...appSecrets, ...defaultSecrets }
+
     }
 
     private mapRds = (
