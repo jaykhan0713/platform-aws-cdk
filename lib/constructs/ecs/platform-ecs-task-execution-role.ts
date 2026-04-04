@@ -39,8 +39,8 @@ export class PlatformEcsTaskExecutionRole extends Construct {
                 'ssm:GetParametersByPath'
             ],
             resources: [
-                resolveSsmParamPathArnWildcard(props.envConfig, ParamNamespace.core),
-                resolveSsmParamPath(envConfig, ParamNamespace.gateway, StackDomain.cognito, 'issuer-uri')
+                resolveSsmParamPathArnWildcard(envConfig, ParamNamespace.core),
+                resolveSsmParamPathArnWildcard(envConfig, ParamNamespace.gateway)
             ]
         }))
 
