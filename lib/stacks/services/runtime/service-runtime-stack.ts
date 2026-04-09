@@ -23,7 +23,7 @@ export class ServiceRuntimeStack extends BaseStack {
 
         const vpc = NetworkImports.vpcPrivateIsolated(this, envConfig)
 
-        const enableContainerInsights = this.node.tryGetContext('insights') == 'true'
+        const enableContainerInsights = this.node.tryGetContext('insights') === 'true'
             ? ecs.ContainerInsights.ENHANCED
             : ecs.ContainerInsights.DISABLED
 
