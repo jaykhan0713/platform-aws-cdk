@@ -56,6 +56,12 @@ export class VpcEndpointsStack extends BaseStack {
             enabled: cfg => VpcEndpointsStack.nonRuntimeEndpointsEnabled(cfg)
         },
         {
+            id: 'CognitoVpcEndpoint', //for
+            service: ec2.InterfaceVpcEndpointAwsService.COGNITO_IDP,
+            name: VpceServiceName.cognitoIdp,
+            enabled: cfg => VpcEndpointsStack.nonRuntimeEndpointsEnabled(cfg)
+        },
+        {
             id: 'SsmMessagesVpcEndpoint',
             service: ec2.InterfaceVpcEndpointAwsService.SSM_MESSAGES,
             name: VpceServiceName.ssmMessages,

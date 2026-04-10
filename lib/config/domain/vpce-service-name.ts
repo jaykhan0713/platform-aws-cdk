@@ -8,7 +8,8 @@ export const VpceServiceName = {
     ssm: 'ssm',
     ssmMessages: 'ssm-messages',
     ec2Messages: 'ec2-messages',
-    s3Gateway: 's3-gateway'
+    s3Gateway: 's3-gateway',
+    cognitoIdp: 'cognito-idp',
 } as const
 
 export type VpceServiceName = typeof VpceServiceName[keyof typeof VpceServiceName]
