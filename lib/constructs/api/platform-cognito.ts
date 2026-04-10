@@ -76,14 +76,14 @@ export class PlatformCognito extends Construct {
                     //cognito.OAuthScope.PROFILE
                 ],
                 callbackUrls: [
-                    'https://jay-platform.com/auth/callback',
-                    'http://localhost:3000/auth/callback',
+                    'http://localhost:3000/api/auth/sign-in-callback',
+                    'https://jay-platform.com/api/auth/sign-in-callback',
                     'postman://app/oauth2/callback',
                     'https://oauth.pstmn.io/v1/callback',
                 ],
                 logoutUrls: [
-                    'https://jay-platform.com',
-                    'http://localhost:3000',
+                    'http://localhost:3000/api/auth/sign-out-callback',
+                    'https://jay-platform.com/api/auth/sign-out-callback',
                     'https://oauth.pstmn.io/v1/callback',
                 ],
             }
