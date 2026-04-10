@@ -56,7 +56,7 @@ export class VpcEndpointsStack extends BaseStack {
             enabled: cfg => VpcEndpointsStack.nonRuntimeEndpointsEnabled(cfg)
         },
         {
-            id: 'CognitoVpcEndpoint', //for
+            id: 'CognitoVpcEndpoint', //for issuer .wellknown/jwks endpoint used by microservice security
             service: ec2.InterfaceVpcEndpointAwsService.COGNITO_IDP,
             name: VpceServiceName.cognitoIdp,
             enabled: cfg => VpcEndpointsStack.nonRuntimeEndpointsEnabled(cfg)
