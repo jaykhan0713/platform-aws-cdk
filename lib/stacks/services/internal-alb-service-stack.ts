@@ -21,11 +21,13 @@ import {AlbExports} from "lib/config/dependency/alb/alb-exports";
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
+import {TaskDefOverrides} from 'lib/config/taskdef/taskdef-config'
 
 export interface InternalAlbServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
     upstreamToAlbSgs?: ec2.ISecurityGroup[] //sg's to albSg.addIngress(),
     vpcLinkEnabled ?: boolean
+    taskDefOverrides ?: TaskDefOverrides
 }
 
 export class InternalAlbServiceStack extends BaseStack {

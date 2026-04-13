@@ -28,12 +28,13 @@ export class PlatformServiceTaskdefCfgFactory {
     }
 
     public buildTaskdefCfg = () => {
-        const { envConfig, serviceName } = this.props
+        const { envConfig, serviceName, taskDefOverrides } = this.props
 
         const taskdefCfg = defaultTaskDefConfig({
             serviceName,
             envConfig: envConfig,
-            apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig)
+            apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig),
+            taskDefOverrides
         })
 
         this.mapDefaultSecrets(taskdefCfg)

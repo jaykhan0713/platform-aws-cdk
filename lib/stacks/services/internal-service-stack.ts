@@ -14,12 +14,13 @@ import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling-service'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
-import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
+import {TaskDefinitionConfig, TaskDefOverrides} from 'lib/config/taskdef/taskdef-config'
 import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
 
 export interface InternalServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
-    upstreamSgs?: ec2.ISecurityGroup[] //sg's to ecsTaskSg.addIngress()
+    upstreamSgs?: ec2.ISecurityGroup[] //sg's to ecsTaskSg.addIngress(),
+    taskDefOverrides ?: TaskDefOverrides
 }
 
 export class InternalServiceStack extends BaseStack {

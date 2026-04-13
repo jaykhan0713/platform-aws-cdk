@@ -1,6 +1,7 @@
 //note that adding another service here will automatically create an ECR repo for it.
 import {StackDomain} from 'lib/config/domain'
 import {PlatformServiceResource} from 'lib/config/service/platform-service-resource-registry'
+import {TaskDefOverrides} from 'lib/config/taskdef/taskdef-config'
 
 export const PlatformServiceName = {
     edgeService: 'edge-service',
@@ -21,6 +22,7 @@ export type PlatformServiceExposure = typeof PlatformServiceExposure[keyof typeo
 
 export type PlatformServiceOverrides = {
     readonly exposure?: PlatformServiceExposure
+    readonly taskDefOverrides?: TaskDefOverrides
 }
 
 export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, PlatformServiceOverrides> = new Map<
@@ -30,7 +32,13 @@ export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, Platf
     [
         PlatformServiceName.edgeService,
         {
-            exposure: PlatformServiceExposure.alb
+            exposure: PlatformServiceExposure.alb,
+            taskDefOverrides: {
+                cpu: 1024,
+                app: {
+                    cpuUnits: 944
+                }
+            }
         }
     ]
 ])

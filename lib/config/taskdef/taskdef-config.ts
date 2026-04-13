@@ -38,6 +38,13 @@ export interface AdotContainerConfig {
     logging: ContainerLoggingConfig
 }
 
+export interface TaskDefOverrides {
+    cpu ?: number
+    app ?: {
+        cpuUnits?: number
+    }
+}
+
 export interface TaskDefinitionConfig {
     family: string
     cpu: number
@@ -49,22 +56,23 @@ export interface TaskDefinitionConfig {
 export const defaultTaskDefConfig = (args: {
     serviceName: PlatformServiceName
     envConfig: EnvConfig
-    apsRemoteWriteEndpoint: string
+    apsRemoteWriteEndpoint: string,
+    taskDefOverrides?: TaskDefOverrides
 }): TaskDefinitionConfig => {
-    const { envConfig } = args
+    const { envConfig, taskDefOverrides } = args
     const projectName = envConfig.projectName
     const envName = envConfig.envName
     const port = 8080
 
     return {
         family: `${projectName}-${args.serviceName}-${envName}`,
-        cpu: 512,
+        cpu: taskDefOverrides?.cpu ?? 512,
         memoryMiB: 1024,
         app: {
             containerName: 'app',
             containerPortName: 'http',
             containerPort: port,
-            cpuUnits: 430,
+            cpuUnits: taskDefOverrides?.app?.cpuUnits ?? 430,
             memoryMiB: 800,
             essential: true,
             stopTimeoutSeconds: 30,

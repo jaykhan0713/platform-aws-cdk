@@ -10,6 +10,7 @@ import {
 import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 import {InternalServiceStack} from 'lib/stacks/services/internal-service-stack'
 import {PlatformServiceResource} from 'lib/config/service/platform-service-resource-registry'
+import {TaskDefOverrides} from 'lib/config/taskdef/taskdef-config'
 
 export class PlatformServiceStackFactory {
     private readonly scope: cdk.App
@@ -30,15 +31,16 @@ export class PlatformServiceStackFactory {
         const overrides = platformServiceOverridesMap.get(serviceName)
 
         if (overrides?.exposure === PlatformServiceExposure.alb) {
-            this.createInternalAlbServiceStack(serviceName, true)
+            this.createInternalAlbServiceStack(serviceName, true, overrides?.taskDefOverrides)
         } else {
-            this.createInternalServiceStack(serviceName)
+            this.createInternalServiceStack(serviceName, overrides?.taskDefOverrides)
         }
     }
 
     private createInternalAlbServiceStack(
         serviceName: PlatformServiceName,
-        vpcLinkEnabled?: boolean
+        vpcLinkEnabled?: boolean,
+        taskDefOverrides?: TaskDefOverrides
     ) {
         const stackDomain = serviceName
 
@@ -53,13 +55,15 @@ export class PlatformServiceStackFactory {
                 envConfig,
                 stackDomain,
                 serviceName,
-                vpcLinkEnabled
+                vpcLinkEnabled,
+                taskDefOverrides
             }
         )
     }
 
     private createInternalServiceStack(
         serviceName: PlatformServiceName,
+        taskDefOverrides?: TaskDefOverrides
     ) {
         const stackDomain = serviceName
 
@@ -73,7 +77,8 @@ export class PlatformServiceStackFactory {
                 ...stackProps,
                 envConfig,
                 stackDomain,
-                serviceName
+                serviceName,
+                taskDefOverrides
             }
         )
     }
