@@ -40,8 +40,10 @@ export interface AdotContainerConfig {
 
 export interface TaskDefOverrides {
     cpu ?: number
+    memoryMiB ?: number
     app ?: {
         cpuUnits?: number
+        memoryMib?: number
     }
 }
 
@@ -67,13 +69,13 @@ export const defaultTaskDefConfig = (args: {
     return {
         family: `${projectName}-${args.serviceName}-${envName}`,
         cpu: taskDefOverrides?.cpu ?? 512,
-        memoryMiB: 1024,
+        memoryMiB: taskDefOverrides?.memoryMiB ?? 1024,
         app: {
             containerName: 'app',
             containerPortName: 'http',
             containerPort: port,
             cpuUnits: taskDefOverrides?.app?.cpuUnits ?? 430,
-            memoryMiB: 800,
+            memoryMiB: taskDefOverrides?.app?.memoryMib ?? 800,
             essential: true,
             stopTimeoutSeconds: 30,
             env: {

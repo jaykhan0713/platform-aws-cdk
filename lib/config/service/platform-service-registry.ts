@@ -35,8 +35,10 @@ export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, Platf
             exposure: PlatformServiceExposure.alb,
             taskDefOverrides: {
                 cpu: 1024,
+                memoryMiB: 2048,
                 app: {
-                    cpuUnits: 944
+                    cpuUnits: 944,
+                    memoryMib: 1800
                 }
             }
         }
