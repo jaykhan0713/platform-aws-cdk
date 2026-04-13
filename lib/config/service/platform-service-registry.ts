@@ -38,7 +38,10 @@ export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, Platf
                 memoryMiB: 2048,
                 app: {
                     cpuUnits: 944,
-                    memoryMib: 1800
+                    memoryMib: 1800,
+                    env: {
+                        JAVA_TOOL_OPTIONS: '-Xms256m -Xmx1300m -XX:+UseContainerSupport'
+                    }
                 }
             }
         }

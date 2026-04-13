@@ -44,6 +44,9 @@ export interface TaskDefOverrides {
     app ?: {
         cpuUnits?: number
         memoryMib?: number
+        env?: {
+            JAVA_TOOL_OPTIONS?: string
+        }
     }
 }
 
@@ -80,7 +83,7 @@ export const defaultTaskDefConfig = (args: {
             stopTimeoutSeconds: 30,
             env: {
                 SPRING_PROFILES_ACTIVE: envName,
-                JAVA_TOOL_OPTIONS: '-Xms128m -Xmx512m -XX:+UseContainerSupport',
+                JAVA_TOOL_OPTIONS: taskDefOverrides?.app?.env?.JAVA_TOOL_OPTIONS ?? '-Xms128m -Xmx512m -XX:+UseContainerSupport',
                 SERVICE_NAME: args.serviceName
             },
             logging: {
