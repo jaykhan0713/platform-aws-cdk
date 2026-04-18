@@ -4,7 +4,7 @@ set -euo pipefail
 
 echo "=== AWAKE MODE INITIATED ==="
 
-echo "Step 1: Creating VPC Interface endpoints..."
+echo "Step 1: Creating VPC Interface endpoints and NAT..."
 ./ops/wake-infra.sh
 
 echo "Step 2: Creating Data Resources..."
