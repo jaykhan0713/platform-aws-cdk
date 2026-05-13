@@ -7,6 +7,11 @@ SERVICES=("edge-service" "voyager-service" "apollo-service")
 
 echo "Waking up services in cluster: $CLUSTER"
 
+echo "Enabling Container Insights..."
+npm run cdk:service-runtime -- deploy ServiceRuntime \
+  -c insights=true \
+  --require-approval never
+
 for SERVICE in "${SERVICES[@]}"; do
   echo "Scaling $SERVICE to 1..."
 
