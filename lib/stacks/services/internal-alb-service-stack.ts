@@ -4,6 +4,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs'
 import * as ecr from 'aws-cdk-lib/aws-ecr'
 import * as acm from 'aws-cdk-lib/aws-certificatemanager'
 import * as route53 from 'aws-cdk-lib/aws-route53'
+import * as targets from 'aws-cdk-lib/aws-route53-targets';
 
 import {BaseStack, BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformInternalAlb} from 'lib/constructs/alb/platform-internal-alb'
@@ -23,7 +24,6 @@ import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/servi
 import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
 
 import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
-import { AppContainerType } from 'lib/config/taskdef/app-container-type'
 import { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
 
 export interface InternalAlbServiceStackProps extends BaseStackProps {
@@ -110,8 +110,26 @@ export class InternalAlbServiceStack extends BaseStack {
             tg
         })
 
+        //this SG's ingress on port 443/80 allows main vpclink SG (that API gw uses). So have ALB subscribe to this SG
         if (vpcLinkSubSg) {
             platformInternalAlb.alb.addSecurityGroup(vpcLinkSubSg)
+        }
+
+        //if internal ALB but not routed for API gw via VPC link
+        if (!vpcLinkEnabled && envConfig.route53Config) {
+            const domainName = envConfig.route53Config.domainName
+            const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ServiceHostedZone', {
+                hostedZoneId: envConfig.route53Config.hostedZoneId,
+                zoneName: domainName
+            })
+
+            new route53.ARecord(this, `${serviceName}-ARecord`, {
+                zone: hostedZone,
+                recordName: serviceName, //will be something like <your-service>.<your-domain-api>.com
+                target: route53.RecordTarget.fromAlias(
+                    new targets.LoadBalancerTarget(platformInternalAlb.alb)
+                ),
+            });
         }
 
         // 2. create ECS Service SG and solve deps, optional: can create map and pass configs in with key serviceName
