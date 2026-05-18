@@ -40,7 +40,10 @@ export class PlatformServicePipelineStack extends BaseStack {
             ...props,
             repo: props.ecrRepo,
             buildSpecPath: "buildspecs/buildspec-image.yml",
-            enableReports: false
+            enableReports: false,
+
+            //TODO: customize this so other services can have their image built on ARM. MUST update buildspec files to build on ARM
+            useArmBuildImage: props.serviceName === PlatformServiceName.gotenbergService
         })
 
         this.pipeline = new codepipeline.Pipeline(this, 'Pipeline', {

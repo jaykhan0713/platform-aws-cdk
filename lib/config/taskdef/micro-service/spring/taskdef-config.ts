@@ -4,6 +4,7 @@ import { SideCarConfig, TaskDefinitionConfig, TaskDefOverrides } from 'lib/confi
 import { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
 import { defaultContainerConfig } from 'lib/config/taskdef/sidecar/adot-collector/container-config'
 import { ObservabilityImports } from 'lib/config/dependency/observability/observability-imports'
+import * as cdk from 'aws-cdk-lib'
 
 export const defaultTaskDefConfig = (args: {
     serviceName: PlatformServiceName
@@ -19,6 +20,7 @@ export const defaultTaskDefConfig = (args: {
         family: `${projectName}-${args.serviceName}-${envName}`,
         cpu: taskDefOverrides?.cpu ?? 512,
         memoryMiB: taskDefOverrides?.memoryMiB ?? 1024,
+
         app: {
             containerName: 'app',
             containerPortName: 'http',
@@ -37,6 +39,8 @@ export const defaultTaskDefConfig = (args: {
                 streamPrefix: 'ecs'
             }
         },
+
+        //TODO: add healthcheck defaults here
 
         sidecars: new Map<SideCarName, SideCarConfig>([
             [

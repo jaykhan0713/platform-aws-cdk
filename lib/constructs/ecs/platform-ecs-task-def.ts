@@ -42,7 +42,7 @@ export class PlatformEcsTaskDef extends Construct {
             cpu: taskDefCfg.cpu,
             memoryLimitMiB: taskDefCfg.memoryMiB,
             runtimePlatform: {
-                cpuArchitecture: ecs.CpuArchitecture.X86_64,
+                cpuArchitecture: taskDefCfg.runtimePlatform?.cpuArchitecture ?? ecs.CpuArchitecture.X86_64,
                 operatingSystemFamily: ecs.OperatingSystemFamily.LINUX
             },
             volumes: []
@@ -75,7 +75,7 @@ export class PlatformEcsTaskDef extends Construct {
                 })
             }),
             healthCheck: {
-                command: [
+                command: [ //TODO: for services behind service connect need better healthcheck i.e for actuator/health.
                     'CMD-SHELL',
                     'kill -0 1 || exit 1' // kill -0 verifies PID 1 (the JVM) exists and can receive signals; no signal is sent
                 ],

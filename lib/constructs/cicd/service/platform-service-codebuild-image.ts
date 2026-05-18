@@ -22,6 +22,8 @@ export interface PlatformServiceCodeBuildImageProps extends BaseStackProps {
 
     // optional knobs
     enableReports?: boolean
+
+    useArmBuildImage?: boolean
 }
 
 export class PlatformServiceCodebuildImage extends Construct {
@@ -80,7 +82,9 @@ export class PlatformServiceCodebuildImage extends Construct {
             projectName: codeBuildProjectName,
             role: this.role,
             environment: {
-                buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
+                buildImage: props.useArmBuildImage
+                    ? codebuild.LinuxArmBuildImage.AMAZON_LINUX_2_STANDARD_3_0
+                    : codebuild.LinuxBuildImage.STANDARD_7_0,
                 privileged: true
             },
             logging: {

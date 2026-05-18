@@ -4,6 +4,7 @@
 import { StackDomain } from 'lib/config/domain'
 
 import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
+import { AppContainerType } from 'lib/config/taskdef/app-container-type'
 
 export const PlatformServiceName = {
     edgeService: 'edge-service',
@@ -27,6 +28,8 @@ export type PlatformServiceOverrides = {
     readonly exposure?: PlatformServiceExposure
     readonly taskDefOverrides?: TaskDefOverrides
     readonly vpcLinkEnabled?: boolean //TODO make this only applicable for alb exposures
+    readonly appContainerType?: AppContainerType // need for services that don't own DTO
+    //readonly appContainerType?: AppContainerType //TODO might need later
 }
 
 export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, PlatformServiceOverrides> = new Map<
@@ -54,7 +57,9 @@ export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, Platf
     [
         PlatformServiceName.gotenbergService,
         {
-            exposure: PlatformServiceExposure.alb
+            exposure: PlatformServiceExposure.alb,
+            vpcLinkEnabled: false,
+            appContainerType: AppContainerType.thirdParty
         }
     ]
 ])

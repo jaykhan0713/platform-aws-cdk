@@ -11,7 +11,7 @@ import {
     getDtoPipelineStackDomainFromValue,
     getServicePipelineStackDomainFromValue,
     getPlatformServiceStackId,
-    PlatformServiceName
+    PlatformServiceName, platformServiceOverridesMap,
 } from 'lib/config/service/platform-service-registry'
 import {PlatformFoundationEcrReposStack} from 'lib/stacks/tools/cicd/foundation/platform-foundation-ecr-repos-stack'
 import {K6RunnerPipelineStack} from 'lib/stacks/tools/cicd/foundation/k6-runner-pipeline-stack'
@@ -23,6 +23,7 @@ import {
 } from 'lib/config/foundation/platform-foundation-registry'
 import {PlatformServiceDtoPipelineStack} from 'lib/stacks/tools/cicd/service/platform-service-dto-pipeline-stack'
 import {PlatformFoundationPipelineStack} from 'lib/stacks/tools/cicd/foundation/platform-foundation-pipeline-stack'
+import { AppContainerType } from 'lib/config/taskdef/app-container-type'
 
 export class PlatformCicdApp {
 
@@ -57,6 +58,10 @@ export class PlatformCicdApp {
             }
         }
 
+        /*
+         * TODO: clean this up so the above platformFoundationOverridesSet tells
+         *  us how to create those overridden foundation stacks elsewhere
+         */
         this.createK6RunnerPipelineStack(
             toolsStackProps,
             toolsConfig,
@@ -66,13 +71,16 @@ export class PlatformCicdApp {
 
         //dto pipelines first for publishing contracts
         for (const serviceName of Object.values(PlatformServiceName)) {
-            this.createPlatformServiceDtoPipelineStack(
-                serviceName,
-                toolsStackProps,
-                toolsConfig,
-                cicdInfraStack,
-                platformServiceEcrReposStack
-            )
+            //filter any third party service for creating dto pipeline as they are blackboxed.
+            if (platformServiceOverridesMap.get(serviceName)?.appContainerType !== AppContainerType.thirdParty) {
+                this.createPlatformServiceDtoPipelineStack(
+                    serviceName,
+                    toolsStackProps,
+                    toolsConfig,
+                    cicdInfraStack,
+                    platformServiceEcrReposStack
+                )
+            }
         }
 
         //service pipelines

@@ -1,3 +1,4 @@
+import * as ecs from 'aws-cdk-lib/aws-ecs'
 import type { EnvConfig } from 'lib/config/env/env-config'
 import { PlatformServiceName } from 'lib/config/service/platform-service-registry'
 import { TaskDefinitionConfig, TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
@@ -27,6 +28,9 @@ export const defaultTaskDefConfig = (args: {
                 logGroupName: `/ecs/${projectName}/${envName}/${args.serviceName}`,
                 streamPrefix: 'ecs'
             }
+        },
+        runtimePlatform: {
+            cpuArchitecture: ecs.CpuArchitecture.ARM64
         }
     }
 }

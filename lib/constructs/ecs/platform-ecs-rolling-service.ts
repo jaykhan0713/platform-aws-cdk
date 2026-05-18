@@ -57,7 +57,7 @@ export class PlatformEcsRollingService extends Construct {
                     {
                         portMappingName: props.serviceConnectServerMode.appPortName,
                         discoveryName: serviceName,
-                        dnsName: serviceName, //clients can use http://<serviceName>:8080
+                        dnsName: serviceName, //clients can use http://<serviceName>
                     },
                 ],
                 logDriver: scLogDriver
@@ -92,6 +92,7 @@ export class PlatformEcsRollingService extends Construct {
             maxHealthyPercent: 200
         })
 
+        //TODO make scaling customizable per service
         //auto scaling
         const scaling = this.fargateService.autoScaleTaskCount({
             // minCapacity is 0 to allow manual scale-to-zero in dev environments.

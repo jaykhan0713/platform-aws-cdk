@@ -155,7 +155,7 @@ export class InternalAlbServiceStack extends BaseStack {
                     `${resolvePlatformServiceRepoName(envConfig, serviceName)}`
                 ),
                 imageTag
-            ),
+            ), //TODO: customize sidecars so we dont have to pass this in for everything
             adotImage: ecs.ContainerImage.fromEcrRepository( //TODO import repo ARN from ssm
                 ecr.Repository.fromRepositoryName(
                     this,

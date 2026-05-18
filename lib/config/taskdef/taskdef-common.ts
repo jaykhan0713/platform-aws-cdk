@@ -1,5 +1,6 @@
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import type { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
+import * as cdk from 'aws-cdk-lib'
 
 export type EnvMap = Readonly<Record<string, string>>
 export type SecretMap = Readonly<Record<string, ecs.Secret>>
@@ -47,4 +48,14 @@ export interface TaskDefinitionConfig {
     memoryMiB: number
     app: AppContainerConfig //main app service
     sidecars?: Map<SideCarName, SideCarConfig>
+    runtimePlatform?: {
+        cpuArchitecture?: ecs.CpuArchitecture
+    },
+    healthCheck?: {
+        command: string[],
+        interval?: number,
+        timeout: number,
+        retries: number,
+        startPeriod: number
+    }
 }
