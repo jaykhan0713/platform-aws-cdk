@@ -3,7 +3,7 @@
 set -euo pipefail
 
 CLUSTER="jay-platform-cluster-prod"
-SERVICES=("edge-service" "voyager-service" "apollo-service")
+SERVICES=("edge-service" "voyager-service" "apollo-service" "gotenberg-service")
 
 echo "Putting services to sleep in cluster: $CLUSTER"
 
