@@ -1,14 +1,14 @@
 import * as cdk from 'aws-cdk-lib'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
-import * as ssm from 'aws-cdk-lib/aws-ssm'
 import * as logs from 'aws-cdk-lib/aws-logs'
 import * as iam from 'aws-cdk-lib/aws-iam'
 
 import {Construct} from 'constructs'
 
-import {TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import { TaskDefinitionConfig } from 'lib/config/taskdef/taskdef-common'
+import { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
 
 interface PlatformEcsTaskDefProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -86,35 +86,31 @@ export class PlatformEcsTaskDef extends Construct {
             }
         })
 
-        // adot sidecar
-        const adot = taskDefCfg.adot
+        // add sidecars, //TODO: decouple adot/sidecars into separate construct
+        const adot = taskDefCfg.sidecars?.get(SideCarName.adot)
 
-        this.fargateTaskDef.addContainer('AdotContainer', {
-            containerName: adot.containerName,
-            image: props.adotImage,
-            cpu: adot.cpuUnits,
-            memoryLimitMiB: adot.memoryMiB,
-            essential: adot.essential,
-            portMappings: [
-                {
-                    containerPort: adot.ports.grpc,
+        if (adot) {
+            this.fargateTaskDef.addContainer('AdotContainer', {
+                containerName: adot.containerName,
+                image: props.adotImage,
+                cpu: adot.cpuUnits,
+                memoryLimitMiB: adot.memoryMiB,
+                essential: adot.essential,
+                portMappings: adot.ports.map(port => ({
+                    containerPort: port,
                     protocol: ecs.Protocol.TCP
-                },
-                {
-                    containerPort: adot.ports.http,
-                    protocol: ecs.Protocol.TCP
-                }
-            ],
-            environment: adot.env,
-            logging: ecs.LogDrivers.awsLogs({
-                streamPrefix: adot.logging.streamPrefix,
-                logGroup: new logs.LogGroup(this, 'AdotLogGroup', {
-                    logGroupName: adot.logging.logGroupName,
-                    retention: logs.RetentionDays.THREE_DAYS,
-                    removalPolicy: cdk.RemovalPolicy.DESTROY,
-                })
-            }),
-        })
+                })),
+                environment: adot.env,
+                logging: ecs.LogDrivers.awsLogs({
+                    streamPrefix: adot.logging.streamPrefix,
+                    logGroup: new logs.LogGroup(this, 'AdotLogGroup', {
+                        logGroupName: adot.logging.logGroupName,
+                        retention: logs.RetentionDays.THREE_DAYS,
+                        removalPolicy: cdk.RemovalPolicy.DESTROY,
+                    })
+                }),
+            })
+        }
 
     }
 }

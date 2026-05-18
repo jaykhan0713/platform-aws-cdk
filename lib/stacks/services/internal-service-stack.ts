@@ -14,8 +14,8 @@ import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling-service'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
-import {TaskDefinitionConfig, TaskDefOverrides} from 'lib/config/taskdef/taskdef-config'
 import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
+import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
 
 export interface InternalServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName

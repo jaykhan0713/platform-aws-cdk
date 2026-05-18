@@ -1,12 +1,15 @@
-//note that adding another service here will automatically create an ECR repo for it.
-import {StackDomain} from 'lib/config/domain'
-import {PlatformServiceResource} from 'lib/config/service/platform-service-resource-registry'
-import {TaskDefOverrides} from 'lib/config/taskdef/taskdef-config'
+/*
+ * NOTE: Adding a service here will automatically create an ECR repo for it when deploying CICD app.
+ */
+import { StackDomain } from 'lib/config/domain'
+
+import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
 
 export const PlatformServiceName = {
     edgeService: 'edge-service',
     voyagerService: 'voyager-service',
-    apolloService: 'apollo-service'
+    apolloService: 'apollo-service',
+    gotenbergService: 'gotenberg-service',
 } as const
 
 export type PlatformServiceName = typeof PlatformServiceName[keyof typeof PlatformServiceName]
@@ -23,6 +26,7 @@ export type PlatformServiceExposure = typeof PlatformServiceExposure[keyof typeo
 export type PlatformServiceOverrides = {
     readonly exposure?: PlatformServiceExposure
     readonly taskDefOverrides?: TaskDefOverrides
+    readonly vpcLinkEnabled?: boolean //TODO make this only applicable for alb exposures
 }
 
 export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, PlatformServiceOverrides> = new Map<
@@ -33,17 +37,24 @@ export const platformServiceOverridesMap: ReadonlyMap<PlatformServiceName, Platf
         PlatformServiceName.edgeService,
         {
             exposure: PlatformServiceExposure.alb,
+            vpcLinkEnabled: true,
             taskDefOverrides: {
                 cpu: 1024,
                 memoryMiB: 2048,
                 app: {
                     cpuUnits: 944,
                     memoryMib: 1800,
-                    env: {
-                        JAVA_TOOL_OPTIONS: '-Xms256m -Xmx1300m -XX:+UseContainerSupport'
-                    }
+                    env: new Map<string, string>([
+                        ['JAVA_TOOL_OPTIONS', '-Xms256m -Xmx1300m -XX:+UseContainerSupport']
+                    ])
                 }
             }
+        }
+    ],
+    [
+        PlatformServiceName.gotenbergService,
+        {
+            exposure: PlatformServiceExposure.alb
         }
     ]
 ])

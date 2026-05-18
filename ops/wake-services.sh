@@ -3,7 +3,8 @@
 set -euo pipefail
 
 CLUSTER="jay-platform-cluster-prod"
-SERVICES=("edge-service" "voyager-service" "apollo-service")
+#SERVICES=("edge-service" "voyager-service" "apollo-service")
+SERVICES=("edge-service")
 
 echo "Waking up services in cluster: $CLUSTER"
 

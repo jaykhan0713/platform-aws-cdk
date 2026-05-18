@@ -4,12 +4,12 @@ import { Construct } from 'constructs'
 
 import {InternalServiceStackProps} from 'lib/stacks/services/internal-service-stack'
 import {InternalAlbServiceStackProps} from 'lib/stacks/services/internal-alb-service-stack'
-import {defaultTaskDefConfig, TaskDefinitionConfig} from 'lib/config/taskdef/taskdef-config'
+import { defaultTaskDefConfig } from 'lib/config/taskdef/micro-service/spring/taskdef-config'
 import {resolveSecretName, resolveSsmParamPath} from 'lib/config/naming'
 import {ParamNamespace, StackDomain} from 'lib/config/domain'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
-import {ObservabilityImports} from 'lib/config/dependency/observability/observability-imports'
 import {PlatformServiceResource, platformServiceResources} from 'lib/config/service/platform-service-resource-registry'
+import { TaskDefinitionConfig } from 'lib/config/taskdef/taskdef-common'
 
 //optional, when InternalAlb service stacks have resources- can add to that stack
 export class PlatformServiceTaskdefCfgFactory {
@@ -33,7 +33,6 @@ export class PlatformServiceTaskdefCfgFactory {
         const taskdefCfg = defaultTaskDefConfig({
             serviceName,
             envConfig: envConfig,
-            apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig),
             taskDefOverrides
         })
 
@@ -46,6 +45,7 @@ export class PlatformServiceTaskdefCfgFactory {
         return taskdefCfg
     }
 
+    //TODO: not all type of services i.e third party services need issuer-uri secret
     private mapDefaultSecrets = (
         taskdefCfg: TaskDefinitionConfig
     ) => {

@@ -21,7 +21,8 @@ import {AlbExports} from "lib/config/dependency/alb/alb-exports";
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
-import {TaskDefOverrides} from 'lib/config/taskdef/taskdef-config'
+
+import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
 
 export interface InternalAlbServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -35,7 +36,7 @@ export class InternalAlbServiceStack extends BaseStack {
     constructor(scope: cdk.App, id: string, props: InternalAlbServiceStackProps) {
         super(scope, id, props)
 
-        const { envConfig, serviceName, upstreamToAlbSgs } = props
+        const { envConfig, serviceName, upstreamToAlbSgs, vpcLinkEnabled } = props
 
         const imageTag = this.node.tryGetContext('imageTag')
 
@@ -48,7 +49,7 @@ export class InternalAlbServiceStack extends BaseStack {
 
         let albCertificateArn
 
-        if (envConfig.route53Config) {
+        if (vpcLinkEnabled && envConfig.route53Config) {
             const domainName = envConfig.route53Config.domainName
             const hostedZone = route53.HostedZone.fromHostedZoneAttributes(this, 'ApiHostedZone', {
                 hostedZoneId: envConfig.route53Config.hostedZoneId,
@@ -71,10 +72,10 @@ export class InternalAlbServiceStack extends BaseStack {
             containerPort: taskDefCfg.app.containerPort,
         }).tg
 
-        const vpcLinkSubSgId = props.vpcLinkEnabled
+        const vpcLinkSubSgId = vpcLinkEnabled
             ? NetworkImports.vpcLinkSubSgId(envConfig)
             : undefined
-        const vpcLinkSubSg = vpcLinkSubSgId
+        const vpcLinkSubSg = vpcLinkSubSgId //undefined if vpcLinkEnabled is false above.
             ? ec2.SecurityGroup.fromSecurityGroupId(
                 this,
                 'ImportedVpcLinkSg',
