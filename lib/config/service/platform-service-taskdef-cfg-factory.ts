@@ -4,12 +4,14 @@ import { Construct } from 'constructs'
 
 import {InternalServiceStackProps} from 'lib/stacks/services/internal-service-stack'
 import {InternalAlbServiceStackProps} from 'lib/stacks/services/internal-alb-service-stack'
-import { defaultTaskDefConfig } from 'lib/config/taskdef/micro-service/spring/taskdef-config'
+import { defaultSpringTaskDefConfig } from 'lib/config/taskdef/micro-service/spring/taskdef-config'
 import {resolveSecretName, resolveSsmParamPath} from 'lib/config/naming'
 import {ParamNamespace, StackDomain} from 'lib/config/domain'
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import {PlatformServiceResource, platformServiceResources} from 'lib/config/service/platform-service-resource-registry'
 import { TaskDefinitionConfig } from 'lib/config/taskdef/taskdef-common'
+import { defaultGotenbergTaskDefConfig } from 'lib/config/taskdef/third-party/gotenberg/taskdef-config'
+import { PlatformServiceName } from 'lib/config/service/platform-service-registry'
 
 //optional, when InternalAlb service stacks have resources- can add to that stack
 export class PlatformServiceTaskdefCfgFactory {
@@ -30,11 +32,16 @@ export class PlatformServiceTaskdefCfgFactory {
     public buildTaskdefCfg = () => {
         const { envConfig, serviceName, taskDefOverrides } = this.props
 
-        const taskdefCfg = defaultTaskDefConfig({
+        const defaultTaskdefConfigParams = {
             serviceName,
-            envConfig: envConfig,
+            envConfig,
             taskDefOverrides
-        })
+        }
+
+        //TODO: decouple choosing default task per app container type
+        const taskdefCfg = serviceName == PlatformServiceName.gotenbergService
+            ? defaultGotenbergTaskDefConfig(defaultTaskdefConfigParams)
+            : defaultSpringTaskDefConfig(defaultTaskdefConfigParams)
 
         this.mapDefaultSecrets(taskdefCfg)
 

@@ -19,7 +19,7 @@ interface PlatformEcsTaskDefProps extends BaseStackProps {
     taskExecutionRole: iam.IRole
 
     appImage: ecs.ContainerImage
-    adotImage: ecs.ContainerImage
+    adotImage?: ecs.ContainerImage
 }
 
 export class PlatformEcsTaskDef extends Construct {
@@ -89,7 +89,7 @@ export class PlatformEcsTaskDef extends Construct {
         // add sidecars, //TODO: decouple adot/sidecars into separate construct
         const adot = taskDefCfg.sidecars?.get(SideCarName.adot)
 
-        if (adot) {
+        if (props.adotImage && adot) {
             this.fargateTaskDef.addContainer('AdotContainer', {
                 containerName: adot.containerName,
                 image: props.adotImage,

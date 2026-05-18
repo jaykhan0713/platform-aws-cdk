@@ -18,6 +18,9 @@ interface PlatformEcsRollingServiceProps extends BaseStackProps {
         appPortName: string //'http'
     }
 
+    //TODO, for instances where we use alb service stack without outbound client we don't need SC at all.
+    disableServiceConnect?: boolean
+
     //network
     privateIsolatedSubnets: ec2.ISubnet[]
 
@@ -82,7 +85,7 @@ export class PlatformEcsRollingService extends Construct {
             },
             securityGroups: props.securityGroups,
             ...healthCheckGp,
-            serviceConnectConfiguration: scConfig,
+            serviceConnectConfiguration: props.disableServiceConnect ? undefined : scConfig,
             circuitBreaker: {
                 enable: true,
                 rollback: true

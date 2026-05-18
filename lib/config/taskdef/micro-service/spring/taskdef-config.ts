@@ -4,9 +4,8 @@ import { SideCarConfig, TaskDefinitionConfig, TaskDefOverrides } from 'lib/confi
 import { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
 import { defaultContainerConfig } from 'lib/config/taskdef/sidecar/adot-collector/container-config'
 import { ObservabilityImports } from 'lib/config/dependency/observability/observability-imports'
-import * as cdk from 'aws-cdk-lib'
 
-export const defaultTaskDefConfig = (args: {
+export const defaultSpringTaskDefConfig = (args: {
     serviceName: PlatformServiceName
     envConfig: EnvConfig
     taskDefOverrides?: TaskDefOverrides

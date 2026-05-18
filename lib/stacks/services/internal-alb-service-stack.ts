@@ -18,11 +18,13 @@ import {ObservabilityImports} from 'lib/config/dependency/observability/observab
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 import {resolveExportName} from "lib/config/naming";
 import {AlbExports} from "lib/config/dependency/alb/alb-exports";
-import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
+import { PlatformServiceName, platformServiceOverridesMap } from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
 
 import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
+import { AppContainerType } from 'lib/config/taskdef/app-container-type'
+import { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
 
 export interface InternalAlbServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -155,15 +157,21 @@ export class InternalAlbServiceStack extends BaseStack {
                     `${resolvePlatformServiceRepoName(envConfig, serviceName)}`
                 ),
                 imageTag
-            ), //TODO: customize sidecars so we dont have to pass this in for everything
-            adotImage: ecs.ContainerImage.fromEcrRepository( //TODO import repo ARN from ssm
-                ecr.Repository.fromRepositoryName(
-                    this,
-                    'AdotRepo',
-                    `${envConfig.projectName}/adot-collector`
-                ),
-                'stable'
-            )
+            ),
+
+            //TODO: customize sidecars so we dont have to pass this in for everything
+            //TODO: import repo ARN from ssm
+
+            adotImage: taskDefCfg.sidecars?.get(SideCarName.adot)
+                ? ecs.ContainerImage.fromEcrRepository(
+                    ecr.Repository.fromRepositoryName(
+                        this,
+                        'AdotRepo',
+                        `${envConfig.projectName}/adot-collector`
+                    ),
+                    'stable'
+                )
+                : undefined
         }).fargateTaskDef
 
         // 4. create ecs service, target groups, attach to TG
@@ -182,7 +190,10 @@ export class InternalAlbServiceStack extends BaseStack {
             privateIsolatedSubnets,
             serviceName,
             cluster,
-            httpNamespaceName: ServiceRuntimeImports.httpNamespaceName(envConfig)
+            httpNamespaceName: ServiceRuntimeImports.httpNamespaceName(envConfig),
+
+            //TODO: make this cleaner or remove later as this really should be behind an ALB in my architecture. only for POC
+            disableServiceConnect: serviceName === PlatformServiceName.gotenbergService
         }).fargateService
 
         //use L1 since attachToApplicationTargetGroup helper mutates SG's ingress and egress
