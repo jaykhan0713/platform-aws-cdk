@@ -6,6 +6,7 @@ interface InvokeK6RunnerEvent {
     vus?: number
     duration?: string
     sleepIntervalMs?: number
+    test?: string
 }
 
 export const handler = async (event: InvokeK6RunnerEvent) => {
@@ -58,6 +59,10 @@ export const handler = async (event: InvokeK6RunnerEvent) => {
                         {
                             name: 'SLEEP_INTERVAL',
                             value: event.sleepIntervalMs ? event.sleepIntervalMs.toString() : '0'
+                        },
+                        {
+                            name: 'TEST',
+                            value: event.test
                         }
                     ]
                 }

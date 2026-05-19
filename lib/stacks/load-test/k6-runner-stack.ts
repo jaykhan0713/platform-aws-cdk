@@ -80,7 +80,7 @@ export class K6RunnerStack extends cdk.Stack {
             ]
         })
 
-        //TODO: to save cost, reuses platform VPC but this should be in a separate VPC ideally as entry is public API gateway
+        //TODO: to save cost, reuses platform VPC and runs on public subnet. This should be in a separate VPC ideally
         const vpc = NetworkImports.vpcPublic(this, envConfig)
 
         this.securityGroup = new ec2.SecurityGroup(this, 'EcsTaskSecurityGroup', {

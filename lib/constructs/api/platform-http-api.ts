@@ -141,7 +141,7 @@ export class PlatformHttpApi extends Construct {
             }
         )
 
-        //public route, anonymous without login
+        //public route, anonymous without login. Note: this route is rate limited below.
         const publicRoutes = api.addRoutes({
             path: '/public/api/v1/{proxy+}',
             methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST], //TODO: delete POST after testing
@@ -154,7 +154,7 @@ export class PlatformHttpApi extends Construct {
             methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST],
             integration: userIntegration,
             authorizer,
-            //authorizationScopes: ['openid'] //TODO enforce scope later when using HttpOnly cookies
+            //authorizationScopes: ['openid'] //TODO: enforce scope, as im currently using secure HttpOnly cookies
         })
 
 
@@ -163,7 +163,7 @@ export class PlatformHttpApi extends Construct {
             methods: [apigwv2.HttpMethod.ANY],
             integration: internalIntegration,
             authorizer,
-            //authorizationScopes: ['openid'] //TODO enforce scope later when using HttpOnly cookies
+            //authorizationScopes: ['openid'] //TODO: enforce scope, as im currently using secure HttpOnly cookies
         })
 
         api.addRoutes({
