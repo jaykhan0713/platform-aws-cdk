@@ -1,9 +1,8 @@
 import type { EnvConfig } from 'lib/config/env/env-config'
 import { PlatformServiceName } from 'lib/config/service/platform-service-registry'
-import { SideCarConfig, TaskDefinitionConfig, TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
-import { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
-import { defaultContainerConfig } from 'lib/config/taskdef/sidecar/adot-collector/container-config'
-import { ObservabilityImports } from 'lib/config/dependency/observability/observability-imports'
+import { SideCarConfig, TaskDefinitionConfig, TaskDefOverrides } from 'lib/config/fargate/common/taskdef-common'
+import { SideCarName } from 'lib/config/fargate/sidecar/sidecar-registry'
+import { defaultAdotCollectorContainerConfig } from 'lib/config/fargate/sidecar/adot-collector/container-config'
 
 export const defaultSpringTaskDefConfig = (args: {
     serviceName: PlatformServiceName
@@ -37,14 +36,14 @@ export const defaultSpringTaskDefConfig = (args: {
                 logGroupName: `/ecs/${projectName}/${envName}/${args.serviceName}`,
                 streamPrefix: 'ecs'
             }
-        },
 
-        //TODO: add healthcheck defaults here
+            //TODO: add healthcheck defaults for spring here
+        },
 
         sidecars: new Map<SideCarName, SideCarConfig>([
             [
                 SideCarName.adot,
-                defaultContainerConfig({...args, appPort, apsRemoteWriteEndpoint: ObservabilityImports.apsRemoteWriteEndpoint(envConfig)})
+                defaultAdotCollectorContainerConfig({...args, appPort})
             ]
         ])
     }

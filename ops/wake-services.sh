@@ -13,6 +13,16 @@ npm run cdk:service-runtime -- deploy ServiceRuntime \
   -c insights=true \
   --require-approval never
 
+echo "setting mincount greater than 0 on gotenberg"
+
+#note that autoscaling will bring up desired count to 2 immedietly
+aws application-autoscaling register-scalable-target \
+  --service-namespace ecs \
+  --resource-id service/$CLUSTER/"gotenberg-service" \
+  --scalable-dimension ecs:service:DesiredCount \
+  --min-capacity 2 \
+  --max-capacity 6
+
 for SERVICE in "${SERVICES[@]}"; do
   echo "Scaling $SERVICE to 1..."
 

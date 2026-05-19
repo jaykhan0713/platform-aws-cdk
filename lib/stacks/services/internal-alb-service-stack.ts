@@ -19,12 +19,13 @@ import {ObservabilityImports} from 'lib/config/dependency/observability/observab
 import {resolvePlatformServiceRepoName} from 'lib/config/naming/ecr-repo'
 import {resolveExportName} from "lib/config/naming";
 import {AlbExports} from "lib/config/dependency/alb/alb-exports";
-import { PlatformServiceName, platformServiceOverridesMap } from 'lib/config/service/platform-service-registry'
+import { PlatformServiceName } from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
 
-import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
-import { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
+import { TaskDefOverrides } from 'lib/config/fargate/common/taskdef-common'
+import { SideCarName } from 'lib/config/fargate/sidecar/sidecar-registry'
+import { fargateServiceConfigRegistry } from 'lib/config/fargate/registry/service-config-registry'
 
 export interface InternalAlbServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -199,19 +200,18 @@ export class InternalAlbServiceStack extends BaseStack {
             vpc
         })
 
+        const overrides = fargateServiceConfigRegistry.get(serviceName)
+
         const fargateService = new PlatformEcsRollingService(this, 'PlatformEcsRollingService', {
             ...props,
             fargateTaskDef,
-            desiredCount: 1,
             securityGroups: [ecsTaskSg, internalServicesSg],
             healthCheckGracePeriodSeconds: 90,
             privateIsolatedSubnets,
             serviceName,
             cluster,
             httpNamespaceName: ServiceRuntimeImports.httpNamespaceName(envConfig),
-
-            //TODO: make this cleaner or remove later as this really should be behind an ALB in my architecture. only for POC
-            disableServiceConnect: serviceName === PlatformServiceName.gotenbergService
+            fargateServiceOverrides: overrides
         }).fargateService
 
         //use L1 since attachToApplicationTargetGroup helper mutates SG's ingress and egress

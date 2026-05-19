@@ -3,8 +3,8 @@
  */
 import { StackDomain } from 'lib/config/domain'
 
-import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
-import { AppContainerType } from 'lib/config/taskdef/app-container-type'
+import { TaskDefOverrides } from 'lib/config/fargate/common/taskdef-common'
+import { AppContainerType } from 'lib/config/fargate/registry/app-container-type'
 
 export const PlatformServiceName = {
     edgeService: 'edge-service',

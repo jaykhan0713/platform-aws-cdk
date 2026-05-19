@@ -7,8 +7,8 @@ import {Construct} from 'constructs'
 
 import {BaseStackProps} from 'lib/stacks/base-stack'
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
-import { TaskDefinitionConfig } from 'lib/config/taskdef/taskdef-common'
-import { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
+import { TaskDefinitionConfig } from 'lib/config/fargate/common/taskdef-common'
+import { SideCarName } from 'lib/config/fargate/sidecar/sidecar-registry'
 
 interface PlatformEcsTaskDefProps extends BaseStackProps {
     serviceName: PlatformServiceName

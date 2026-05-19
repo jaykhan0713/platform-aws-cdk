@@ -1,15 +1,16 @@
-import { SideCarConfig } from 'lib/config/taskdef/taskdef-common'
+import { SideCarConfig } from 'lib/config/fargate/common/taskdef-common'
 import { EnvConfig } from 'lib/config/env/env-config'
 import { PlatformServiceName } from 'lib/config/service/platform-service-registry'
+import { ObservabilityImports } from 'lib/config/dependency/observability/observability-imports'
 
-export const defaultContainerConfig = (args: {
+export const defaultAdotCollectorContainerConfig = (args: {
     serviceName: PlatformServiceName,
     envConfig: EnvConfig,
     appPort: number //for scraping app's prometheus endpoint
-    apsRemoteWriteEndpoint: string
     //TODO: add sidecar container overrides
 }): SideCarConfig => {
-    const { projectName, envName } = args.envConfig
+    const envConfig = args.envConfig
+    const { projectName, envName } = envConfig
 
     return {
         enabled: true,
@@ -21,7 +22,7 @@ export const defaultContainerConfig = (args: {
         env: {
             SERVICE_NAME: args.serviceName,
             APP_PORT: String(args.appPort),
-            APS_REMOTE_WRITE_ENDPOINT: args.apsRemoteWriteEndpoint
+            APS_REMOTE_WRITE_ENDPOINT: ObservabilityImports.apsRemoteWriteEndpoint(envConfig)
         },
         logging: {
             logGroupName: `/ecs/${projectName}/${envName}/${args.serviceName}-adot`,

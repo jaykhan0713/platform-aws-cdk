@@ -1,6 +1,5 @@
 import * as ecs from 'aws-cdk-lib/aws-ecs'
-import type { SideCarName } from 'lib/config/taskdef/sidecar/sidecar-registry'
-import * as cdk from 'aws-cdk-lib'
+import type { SideCarName } from 'lib/config/fargate/sidecar/sidecar-registry'
 
 export type EnvMap = Readonly<Record<string, string>>
 export type SecretMap = Readonly<Record<string, ecs.Secret>>

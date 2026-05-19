@@ -15,7 +15,7 @@ import {PlatformEcsRollingService} from 'lib/constructs/ecs/platform-ecs-rolling
 import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
-import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
+import { TaskDefOverrides } from 'lib/config/fargate/common/taskdef-common'
 
 export interface InternalServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -106,7 +106,6 @@ export class InternalServiceStack extends BaseStack {
         const fargateService = new PlatformEcsRollingService(this, 'PlatformEcsRollingService', {
             ...props,
             fargateTaskDef,
-            desiredCount: 1,
             securityGroups: [ecsTaskSg, internalServicesSg],
             privateIsolatedSubnets,
             serviceConnectServerMode: {

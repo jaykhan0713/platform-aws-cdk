@@ -1,12 +1,11 @@
 import * as ecs from 'aws-cdk-lib/aws-ecs'
 import type { EnvConfig } from 'lib/config/env/env-config'
 import { PlatformServiceName } from 'lib/config/service/platform-service-registry'
-import { TaskDefinitionConfig, TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
+import { TaskDefinitionConfig, TaskDefOverrides } from 'lib/config/fargate/common/taskdef-common'
 
-export const defaultGotenbergTaskDefConfig = (args: {
+export const gotenbergTaskDefConfig = (args: {
     serviceName: PlatformServiceName
     envConfig: EnvConfig
-    taskDefOverrides?: TaskDefOverrides
 }): TaskDefinitionConfig => {
     const { envConfig } = args
     const projectName = envConfig.projectName
@@ -14,20 +13,22 @@ export const defaultGotenbergTaskDefConfig = (args: {
 
     return {
         family: `${projectName}-${args.serviceName}-${envName}`,
-        cpu: 512,
-        memoryMiB: 1024,
+        cpu: 1024,
+        memoryMiB: 4096,
         app: {
             containerName: 'app',
             containerPortName: 'http',
             containerPort: 3000,
-            cpuUnits: 512,
-            memoryMiB: 1024,
+            cpuUnits: 1024,
+            memoryMiB: 4096,
             essential: true,
             stopTimeoutSeconds: 60, //TODO: handle usecase where a long PDF parsing process (i.e 15 min) is going before termination
             logging: {
                 logGroupName: `/ecs/${projectName}/${envName}/${args.serviceName}`,
                 streamPrefix: 'ecs'
             }
+
+            //TODO add health check overrides here
         },
         runtimePlatform: {
             cpuArchitecture: ecs.CpuArchitecture.ARM64

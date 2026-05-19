@@ -23,7 +23,7 @@ import {
 } from 'lib/config/foundation/platform-foundation-registry'
 import {PlatformServiceDtoPipelineStack} from 'lib/stacks/tools/cicd/service/platform-service-dto-pipeline-stack'
 import {PlatformFoundationPipelineStack} from 'lib/stacks/tools/cicd/foundation/platform-foundation-pipeline-stack'
-import { AppContainerType } from 'lib/config/taskdef/app-container-type'
+import { AppContainerType } from 'lib/config/fargate/registry/app-container-type'
 
 export class PlatformCicdApp {
 
@@ -72,6 +72,7 @@ export class PlatformCicdApp {
         //dto pipelines first for publishing contracts
         for (const serviceName of Object.values(PlatformServiceName)) {
             //filter any third party service for creating dto pipeline as they are blackboxed.
+            //TODO: maybe better logic than this as third party services might need dto publishing (?)
             if (platformServiceOverridesMap.get(serviceName)?.appContainerType !== AppContainerType.thirdParty) {
                 this.createPlatformServiceDtoPipelineStack(
                     serviceName,

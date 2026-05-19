@@ -10,7 +10,7 @@ import {
 import {InternalAlbServiceStack} from 'lib/stacks/services/internal-alb-service-stack'
 import {InternalServiceStack} from 'lib/stacks/services/internal-service-stack'
 
-import { TaskDefOverrides } from 'lib/config/taskdef/taskdef-common'
+import { TaskDefOverrides } from 'lib/config/fargate/common/taskdef-common'
 
 export class PlatformServiceStackFactory {
     private readonly scope: cdk.App
