@@ -24,12 +24,18 @@ aws application-autoscaling register-scalable-target \
   --max-capacity 6
 
 for SERVICE in "${SERVICES[@]}"; do
-  echo "Scaling $SERVICE to 1..."
+  if [ "$SERVICE" == "gotenberg-service" ]; then
+    echo "Scaling $SERVICE to 2..."
+    DESIRED=2
+  else
+    echo "Scaling $SERVICE to 1..."
+    DESIRED=1
+  fi
 
   aws ecs update-service \
     --cluster "$CLUSTER" \
     --service "$SERVICE" \
-    --desired-count 1 \
+    --desired-count $DESIRED \
     >/dev/null
 
 done
