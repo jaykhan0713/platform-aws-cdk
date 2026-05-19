@@ -144,14 +144,14 @@ export class PlatformHttpApi extends Construct {
         //public route, anonymous without login
         const publicRoutes = api.addRoutes({
             path: '/public/api/v1/{proxy+}',
-            methods: [apigwv2.HttpMethod.GET],
+            methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST], //TODO: delete POST after testing
             integration: publicIntegration
         })
 
         //authorized routes: user, admin, synthetic traffic
         api.addRoutes({
             path: '/api/v1/{proxy+}', //{proxy+} takes anything
-            methods: [apigwv2.HttpMethod.GET],
+            methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST],
             integration: userIntegration,
             authorizer,
             //authorizationScopes: ['openid'] //TODO enforce scope later when using HttpOnly cookies
