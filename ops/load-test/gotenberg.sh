@@ -7,7 +7,7 @@ aws lambda invoke \
     "vus": 1,
     "duration": "10m",
     "sleepIntervalMs": 0.05,
-    "gotenberg": true
+    "test": "gotenberg"
   }' \
   response.json
 
