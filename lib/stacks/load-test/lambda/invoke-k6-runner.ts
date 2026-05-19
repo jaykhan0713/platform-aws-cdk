@@ -24,8 +24,6 @@ export const handler = async (event: InvokeK6RunnerEvent) => {
         throw new Error(`Virtual users cannot exceed 10: ${event.vus}`)
     }
 
-    const duration = event.duration ? validateDuration(event.duration) : '10s'
-
     const command = new RunTaskCommand({
         cluster: clusterArn,
         taskDefinition: taskDefArn,
@@ -54,7 +52,7 @@ export const handler = async (event: InvokeK6RunnerEvent) => {
                         },
                         {
                             name: 'DURATION',
-                            value: duration
+                            value: validateDuration(event.duration)
                         },
                         {
                             name: 'SLEEP_INTERVAL',
@@ -81,7 +79,10 @@ export const handler = async (event: InvokeK6RunnerEvent) => {
 }
 
 //accounts for "1h30m15s", "10s", "10m", etc
-function validateDuration(duration: string) {
+function validateDuration(duration: string | undefined) {
+
+    if (duration === undefined) return undefined
+
     const strict = /^(\d+(ms|s|m|h))+$/
     if (!strict.test(duration)) {
         throw new Error(`Invalid duration format: ${duration}`)
