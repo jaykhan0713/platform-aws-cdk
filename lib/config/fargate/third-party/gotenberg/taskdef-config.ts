@@ -13,13 +13,13 @@ export const gotenbergTaskDefConfig = (args: {
 
     return {
         family: `${projectName}-${args.serviceName}-${envName}`,
-        cpu: 1024,
+        cpu: 2048,
         memoryMiB: 4096,
         app: {
             containerName: 'app',
             containerPortName: 'http',
             containerPort: 3000,
-            cpuUnits: 1024,
+            cpuUnits: 2048,
             memoryMiB: 4096,
             essential: true,
             stopTimeoutSeconds: 60, //TODO: handle usecase where a long PDF parsing process (i.e 15 min) is going before termination
