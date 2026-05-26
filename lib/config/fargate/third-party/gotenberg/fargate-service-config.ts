@@ -2,15 +2,15 @@ import { FargateServiceOverrides } from 'lib/config/fargate/common/service-commo
 
 export const gotenbergFargateServiceOverrides: FargateServiceOverrides = {
     healthCheckGracePeriodSeconds: 90,
-    desiredCount: 1,
+    desiredCount: 2,
     disableServiceConnect: true,
     scaling: {
-        minCapacity: 1,
-        maxCapacity: 5,
+        minCapacity: 2,
+        maxCapacity: 6,
         scaleOnCpuUtilization: {
             targetUtilizationPercent: 50,
             scaleInCooldown: 200,  //prevents thrashing after a burst
-            scaleOutCooldown: 60, //aggressive scale out
+            scaleOutCooldown: 300, //TODO: do we want aggressive scale out?
         }
     }
 }

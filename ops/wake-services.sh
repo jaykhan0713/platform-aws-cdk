@@ -20,13 +20,13 @@ aws application-autoscaling register-scalable-target \
   --service-namespace ecs \
   --resource-id service/$CLUSTER/"gotenberg-service" \
   --scalable-dimension ecs:service:DesiredCount \
-  --min-capacity 0 \
+  --min-capacity 2 \
   --max-capacity 6
 
 for SERVICE in "${SERVICES[@]}"; do
   if [ "$SERVICE" == "gotenberg-service" ]; then
     echo "Scaling $SERVICE to 1..."
-    DESIRED=1 #may need to change later
+    DESIRED=2 #may need to change later
   else
     echo "Scaling $SERVICE to 1..."
     DESIRED=1
