@@ -17,7 +17,7 @@ export const handler = async (event: InvokeK6RunnerEvent) => {
     const containerName = process.env.CONTAINER_NAME
 
     if (!(clusterArn && taskDefArn && subnetIds && securityGroupId && containerName)) {
-        throw new Error("Missing required ENV variable(s)")
+        throw new Error('Missing required ENV variable(s)')
     }
 
     if (event.vus && event.vus > 10) {

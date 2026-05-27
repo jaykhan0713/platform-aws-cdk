@@ -16,7 +16,8 @@
     "cdk:data": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/data.ts\"",
     "cdk:cicd": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/cicd.ts\"",
     "cdk:gateway": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/gateway.ts\"",
-    "cdk:load-test": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/load-test.ts\""
+    "cdk:load-test": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/load-test.ts\"",
+    "cdk:lambdas": "npx cdk --app \"npx ts-node -r tsconfig-paths/register --prefer-ts-exts bin/lambdas.ts\""
   },
   "devDependencies": {
     "@types/jest": "^30",
@@ -29,6 +30,7 @@
     "typescript": "~5.9.3"
   },
   "dependencies": {
+    "@aws-sdk/client-application-auto-scaling": "^3.1054.0",
     "@aws-sdk/client-ecs": "^3.996.0",
     "aws-cdk-lib": "^2.234.1",
     "constructs": "^10.0.0"

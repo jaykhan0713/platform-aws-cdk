@@ -6,3 +6,10 @@
 - rotate secrets for resources like RDS (need custom spring boot code), can also use IAM db auth for RDS
 - remove AWS managed AmazonECSTaskExecutionRolePolicy w/ ecr and logs "*" access from (custom policy already scoped tight)
 - move cert work in api-stack to it's own stack as it doesnt cost money to keep cert persistent.
+- lambdas using Node20-24 are dependent local docker, change this later to support the cdk projects package.json(?)
+-----------
+Refactor:
+- service registries and resources etc move those up from service to fargate
+- create reusable constructs + pattern for lambda
+- move load-test lambda in load test to lambdas app.
+- can use the fargate updater lambda in place of my sh sleep/wake

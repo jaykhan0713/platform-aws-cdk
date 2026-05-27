@@ -32,7 +32,11 @@ export const StackDomain = {
 
     ...serviceDtoPipelineDomains,
 
-    ...foundationPipelineDomains
+    ...foundationPipelineDomains,
+
+    // lambda stacks
+    gotenbergServiceUpdater: 'gotenberg-service-updater',
+
 } as const
 
 export type StackDomain = typeof StackDomain[keyof typeof StackDomain]

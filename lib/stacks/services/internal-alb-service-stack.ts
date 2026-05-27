@@ -26,6 +26,8 @@ import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-serv
 import { TaskDefOverrides } from 'lib/config/fargate/common/taskdef-common'
 import { SideCarName } from 'lib/config/fargate/sidecar/sidecar-registry'
 import { fargateServiceConfigRegistry } from 'lib/config/fargate/registry/service-config-registry'
+import { FargateImports } from 'lib/config/dependency/fargate/fargate-imports'
+import { FargateExports } from 'lib/config/dependency/fargate/fargate-exports'
 
 export interface InternalAlbServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -234,5 +236,10 @@ export class InternalAlbServiceStack extends BaseStack {
             exportName: resolveExportName(envConfig, props.stackDomain, AlbExports.albListenerArn)
         })
 
+        new cdk.CfnOutput(this, 'CfnOutputFargateServiceArn', {
+            key: 'FargateServiceArn',
+            value: fargateService.serviceArn,
+            exportName: resolveExportName(envConfig, props.stackDomain, FargateExports.serviceArn)
+        })
     }
 }

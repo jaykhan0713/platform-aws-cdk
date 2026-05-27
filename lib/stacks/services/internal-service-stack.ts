@@ -16,6 +16,8 @@ import {PlatformServiceName} from 'lib/config/service/platform-service-registry'
 import {ServiceRuntimeImports} from 'lib/config/dependency/service-runtime/service-runtime-imports'
 import {PlatformServiceTaskdefCfgFactory} from 'lib/config/service/platform-service-taskdef-cfg-factory'
 import { TaskDefOverrides } from 'lib/config/fargate/common/taskdef-common'
+import { resolveExportName } from 'lib/config/naming'
+import { FargateExports } from 'lib/config/dependency/fargate/fargate-exports'
 
 export interface InternalServiceStackProps extends BaseStackProps {
     serviceName: PlatformServiceName
@@ -115,5 +117,12 @@ export class InternalServiceStack extends BaseStack {
             cluster,
             httpNamespaceName: ServiceRuntimeImports.httpNamespaceName(envConfig)
         }).fargateService
+
+        new cdk.CfnOutput(this, 'CfnOutputFargateServiceArn', {
+            key: 'FargateServiceArn',
+            value: fargateService.serviceArn,
+            exportName: resolveExportName(envConfig, props.stackDomain, FargateExports.serviceArn)
+        })
+
     }
 }

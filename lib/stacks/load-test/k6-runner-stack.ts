@@ -31,7 +31,7 @@ export class K6RunnerStack extends cdk.Stack {
     public readonly securityGroup: ec2.ISecurityGroup
 
     constructor(construct: cdk.App, id: string, props: K6RunnerStackProps) {
-        super(construct, id, props);
+        super(construct, id, props)
 
         const imageDigestUri = this.node.tryGetContext('imageDigestUri')
         if (!imageDigestUri) {
