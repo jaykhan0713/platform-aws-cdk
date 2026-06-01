@@ -3,17 +3,17 @@
 set -euo pipefail
 
 CLUSTER="jay-platform-cluster-prod"
-SERVICES=("edge-service" "voyager-service" "apollo-service" "gotenberg-service")
+SERVICES=("edge-service" "voyager-service" "apollo-service")
 
 echo "Setting min count to 0 on gotenberg"
 
 #Need to set services who's min capacity is not 0 to 0 otherwise desired count to 0 is ignored as min <= desired <= max
-aws application-autoscaling register-scalable-target \
-  --service-namespace ecs \
-  --resource-id service/$CLUSTER/"gotenberg-service" \
-  --scalable-dimension ecs:service:DesiredCount \
-  --min-capacity 0 \
-  --max-capacity 6
+#aws application-autoscaling register-scalable-target \
+#  --service-namespace ecs \
+#  --resource-id service/$CLUSTER/"gotenberg-service" \
+#  --scalable-dimension ecs:service:DesiredCount \
+#  --min-capacity 0
+#  #--max-capacity 6
 
 
 echo "Putting services to sleep in cluster: $CLUSTER"
