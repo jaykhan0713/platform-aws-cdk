@@ -6,6 +6,7 @@
 - rotate secrets for resources like RDS (need custom spring boot code), can also use IAM db auth for RDS
 - remove AWS managed AmazonECSTaskExecutionRolePolicy w/ ecr and logs "*" access from (custom policy already scoped tight)
 - move cert work in api-stack to it's own stack as it doesnt cost money to keep cert persistent.
+  - **Note it needs to go to it's own stack or you get race condition when destroying
 - lambdas using Node20-24 are dependent local docker, change this later to support the cdk projects package.json(?)
 -----------
 Refactor:
