@@ -36,47 +36,54 @@ export class ObservabilityStack extends BaseStack {
             `${apsAliasName}`
         )
 
-        const grafanaWorkspaceRole = new iam.Role(this, 'GrafanaWorkspaceRole', {
-            roleName: `${projectName}-grafana-workspace-${envName}`,
-            assumedBy: new iam.ServicePrincipal('grafana.amazonaws.com')
-        })
+        if (envConfig.grafanaConfig?.enabled) {
+            const grafanaWorkspaceRole = new iam.Role(this, 'GrafanaWorkspaceRole', {
+                roleName: `${projectName}-grafana-workspace-${envName}`,
+                assumedBy: new iam.ServicePrincipal('grafana.amazonaws.com')
+            })
 
-        // CloudWatch datasource access (AWS managed)
-        grafanaWorkspaceRole.addManagedPolicy(
-            iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchReadOnlyAccess')
-        )
+            // CloudWatch datasource access (AWS managed)
+            grafanaWorkspaceRole.addManagedPolicy(
+                iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchReadOnlyAccess')
+            )
 
-        //Cloudwatch logs + insights
-        grafanaWorkspaceRole.addManagedPolicy(
-            iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchLogsReadOnlyAccess')
-        )
+            //Cloudwatch logs + insights
+            grafanaWorkspaceRole.addManagedPolicy(
+                iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchLogsReadOnlyAccess')
+            )
 
-        grafanaWorkspaceRole.addManagedPolicy(
-            iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXrayReadOnlyAccess')
-        )
+            grafanaWorkspaceRole.addManagedPolicy(
+                iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXrayReadOnlyAccess')
+            )
 
-        // APS datasource access (inline, per AWS docs)
-        grafanaWorkspaceRole.addToPolicy(new iam.PolicyStatement({
-            effect: iam.Effect.ALLOW,
-            actions: [
-                'aps:ListWorkspaces',
-                'aps:DescribeWorkspace',
-                'aps:QueryMetrics',
-                'aps:GetLabels',
-                'aps:GetSeries',
-                'aps:GetMetricMetadata'
-            ],
-            resources: ['*']
-        }))
+            // APS datasource access (inline, per AWS docs)
+            grafanaWorkspaceRole.addToPolicy(new iam.PolicyStatement({
+                effect: iam.Effect.ALLOW,
+                actions: [
+                    'aps:ListWorkspaces',
+                    'aps:DescribeWorkspace',
+                    'aps:QueryMetrics',
+                    'aps:GetLabels',
+                    'aps:GetSeries',
+                    'aps:GetMetricMetadata'
+                ],
+                resources: ['*']
+            }))
 
 
-        const grafanaWorkspace = new grafana.CfnWorkspace(this, 'GrafanaWorkspace', {
-            name: `${projectName}-grafana-${envName}`,
-            accountAccessType: 'CURRENT_ACCOUNT',
-            authenticationProviders: ['AWS_SSO'],
-            permissionType: 'CUSTOMER_MANAGED',
-            roleArn: grafanaWorkspaceRole.roleArn
-        })
+            const grafanaWorkspace = new grafana.CfnWorkspace(this, 'GrafanaWorkspace', {
+                name: `${projectName}-grafana-${envName}`,
+                accountAccessType: 'CURRENT_ACCOUNT',
+                authenticationProviders: ['AWS_SSO'],
+                permissionType: 'CUSTOMER_MANAGED',
+                roleArn: grafanaWorkspaceRole.roleArn
+            })
+
+            //grafana outputs
+            new cdk.CfnOutput(this, 'GrafanaUrl', {
+                value: grafanaWorkspace.attrEndpoint
+            })
+        }
 
         //Outputs with exports
         this.apsRemoteWriteEndpoint = cdk.Fn.sub('${URL}api/v1/remote_write', {
@@ -122,10 +129,6 @@ export class ObservabilityStack extends BaseStack {
             key: 'ApsPrometheusEndpoint',
             description: 'APS Prometheus endpoint (ends with /api/v1/)',
             value: apsPrometheusEndpoint.toString()
-        })
-
-        new cdk.CfnOutput(this, 'GrafanaUrl', {
-            value: grafanaWorkspace.attrEndpoint
         })
     }
 }

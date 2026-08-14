@@ -35,6 +35,11 @@ export type EnvConfig = {
         hostedZoneId: string
     },
 
+    /*** observability ***/
+    grafanaConfig?: {
+        enabled: boolean
+    }
+
     /*** services ***/
 
     ecsClusterConfig?: {
@@ -69,6 +74,10 @@ const ENV: Record<EnvName, Omit<EnvConfig, 'envName'>> = {
         route53Config: {
             domainName: 'jay-platform-api.com',
             hostedZoneId: 'Z04506972PM9CI98WZAOC'
+        },
+
+        grafanaConfig: {
+            enabled: false,
         },
 
         ecsClusterConfig: {
